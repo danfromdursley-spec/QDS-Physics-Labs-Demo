@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS Rotation Evidence Lab v1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #030515;
+      --bg-alt: #06091f;
+      --card: #0b1024;
+      --card-soft: rgba(11, 16, 36, 0.92);
+      --border-soft: rgba(120, 150, 255, 0.4);
+      --accent: #4af2ff;
+      --accent-soft: rgba(74, 242, 255, 0.15);
+      --accent-warm: #ff7ee5;
+      --accent-warm-soft: rgba(255, 126, 229, 0.18);
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --pill-bg: rgba(255, 255, 255, 0.05);
+      --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.7);
+      --radius-lg: 20px;
+      --radius-pill: 999px;
+      --bad: #ff5c7a;
+      --ok: #ffb347;
+      --good: #6dff9a;
+      --muted: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(90, 255, 210, 0.18) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(120, 140, 255, 0.24) 0, transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255, 126, 229, 0.18) 0, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+    }
+
+    header {
+      background: linear-gradient(
+          135deg,
+          rgba(255, 126, 229, 0.16),
+          rgba(74, 242, 255, 0.1)
+        ),
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 55%),
+        var(--card-soft);
+      border-radius: 24px;
+      padding: 16px 16px 14px;
+      border: 1px solid rgba(145, 180, 255, 0.45);
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 720px) {
+      header {
+        padding: 20px 24px 16px;
+      }
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2ff);
+      box-shadow: 0 0 18px rgba(74, 242, 255, 0.8);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.84rem;
+      color: var(--text-soft);
+      margin: 2px 0 0;
+      max-width: 680px;
+    }
+
+    .subtitle span {
+      color: var(--accent);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      font-size: 0.73rem;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--pill-bg);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pill.badge-hot strong {
+      color: var(--accent-warm);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4af2ff, #ff7ee5);
+      box-shadow: 0 0 10px rgba(250, 255, 255, 0.6);
+    }
+
+    .layout {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 840px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      background: var(--card-soft);
+      border-radius: 20px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8);
+      padding: 12px 12px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 720px) {
+      .panel {
+        padding: 14px 16px 16px;
+      }
+    }
+
+    .panel h2 {
+      font-size: 0.95rem;
+      margin: 0 0 8px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .panel small {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(140, 170, 255, 0.6);
+      background: rgba(5, 8, 26, 0.9);
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+    }
+
+    .field-inline {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .field-inline > div {
+      flex: 1;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid rgba(120, 160, 255, 0.9);
+      background: radial-gradient(circle at 0 0, rgba(74, 242, 255, 0.15), transparent 70%),
+        rgba(9, 13, 40, 0.98);
+      color: var(--text);
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+      transition: background 0.12s ease, transform 0.1s ease, box-shadow 0.12s ease;
+    }
+
+    button:hover {
+      background: rgba(74, 242, 255, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.8);
+    }
+
+    button.secondary {
+      border-color: rgba(120, 160, 255, 0.6);
+      background: rgba(5, 8, 26, 0.9);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--muted);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge.good {
+      color: var(--good);
+      border-color: rgba(109, 255, 154, 0.7);
+    }
+
+    .badge.ok {
+      color: var(--ok);
+      border-color: rgba(255, 179, 71, 0.7);
+    }
+
+    .badge.bad {
+      color: var(--bad);
+      border-color: rgba(255, 92, 122, 0.7);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+    }
+
+    .metric {
+      background: rgba(3, 6, 26, 0.9);
+      border-radius: 10px;
+      padding: 5px 7px;
+      border: 1px solid rgba(110, 140, 255, 0.4);
+    }
+
+    .metric label {
+      font-size: 0.72rem;
+      margin-bottom: 2px;
+    }
+
+    .metric strong {
+      font-size: 0.82rem;
+    }
+
+    .metric span.sub {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    .verdict {
+      margin-top: 6px;
+      font-size: 0.8rem;
+    }
+
+    .verdict span.em {
+      font-weight: 600;
+    }
+
+    .verdict small {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 100%;
+      background: radial-gradient(circle at 0 0, rgba(74, 242, 255, 0.1), transparent 65%),
+        radial-gradient(circle at 100% 100%, rgba(255, 126, 229, 0.12), transparent 70%),
+        #05081a;
+      border-radius: 16px;
+      border: 1px solid rgba(110, 140, 255, 0.6);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+      display: block;
+    }
+
+    .plot-wrapper {
+      position: relative;
+    }
+
+    .plot-legend {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.7rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(3, 4, 20, 0.92);
+      border: 1px solid rgba(180, 200, 255, 0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .legend-swatch {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+    }
+
+    .swatch-obs {
+      background: #ffffff;
+    }
+    .swatch-base {
+      background: #4af2ff;
+    }
+    .swatch-qds {
+      background: #ff7ee5;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      border-radius: 12px;
+      border: 1px solid rgba(120, 150, 255, 0.6);
+      background: rgba(5, 8, 26, 0.9);
+      color: var(--text-soft);
+      font-size: 0.78rem;
+      padding: 6px 8px;
+      resize: vertical;
+    }
+
+    .footnote {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    .footnote strong {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="header-top">
+        <div class="dot"></div>
+        <div>
+          <h1>QDS Rotation Evidence Lab v1</h1>
+          <p class="subtitle">
+            Public <span>ROTMOD</span> rotation curves, single-galaxy fits. Baseline baryons vs a
+            simple QDS kernel correction. χ²-first, no cloud, no bullshit.
+          </p>
+        </div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Data:</strong> rotmod_csv/*.csv (public, static)</span>
+        </div>
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Models:</strong> obs vs baryons vs QDS(α, λ<sub>c</sub>)</span>
+        </div>
+        <div class="pill badge-hot">
+          <span class="pill-dot"></span>
+          <span><strong>Use in Nature pack:</strong> per-galaxy evidence + session log</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Left: controls + metrics + log -->
+      <section class="panel">
+        <h2>1. Galaxy & model</h2>
+        <small>Select a galaxy, tweak QDS parameters, recompute fit.</small>
+
+        <div class="field-group">
+          <label for="galaxySelect">Galaxy (from MANIFEST_rotmod_csv.csv)</label>
+          <select id="galaxySelect">
+            <option value="">Loading manifest…</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Data source</label>
+          <div id="dataSource" style="font-size:0.78rem;color:var(--text-soft);">
+            —
+          </div>
+        </div>
+
+        <div class="field-inline">
+          <div>
+            <label for="alphaInput">QDS α (dimensionless)</label>
+            <input id="alphaInput" type="number" step="0.05" value="0.8" />
+          </div>
+          <div>
+            <label for="lambdaInput">λ<sub>c</sub> (kpc)</label>
+            <input id="lambdaInput" type="number" step="0.5" value="10" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="noteInput">Run note (optional)</label>
+          <input id="noteInput" type="text" placeholder="e.g. default priors, hero demo" />
+        </div>
+
+        <div class="btn-row">
+          <button id="recomputeBtn">Recompute fit</button>
+          <button id="addToLogBtn" class="secondary">Add to session log</button>
+        </div>
+
+        <div class="verdict" id="verdictBlock">
+          <span class="em">Verdict:</span> waiting for data…
+          <small>We compare χ²/N for baseline (baryons only) vs QDS-modified curve.</small>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <label>Baseline χ² / N</label>
+            <strong id="chi2Base">—</strong>
+            <span class="sub" id="chi2BaseSub">χ² baseline</span>
+          </div>
+          <div class="metric">
+            <label>QDS χ² / N</label>
+            <strong id="chi2Qds">—</strong>
+            <span class="sub" id="chi2QdsSub">χ² QDS</span>
+          </div>
+          <div class="metric">
+            <label>Δχ² / N (QDS − base)</label>
+            <strong id="deltaChi2">—</strong>
+            <span class="sub" id="deltaChi2Sub">negative = QDS better</span>
+          </div>
+          <div class="metric">
+            <label>Points used</label>
+            <strong id="nPoints">—</strong>
+            <span class="sub" id="nPointsSub">after basic sanity filter</span>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <span id="verdictBadge" class="badge">Status: —</span>
+        </div>
+
+        <h2 style="margin-top:16px;">2. Session log</h2>
+        <small>Each entry: galaxy, α, λ<sub>c</sub>, metrics, note, timestamp. Copy into Nature evidence pack.</small>
+        <textarea id="logBox" readonly></textarea>
+
+        <div class="btn-row" style="margin-top:6px;">
+          <button id="copyLogBtn" class="secondary">Copy log JSON</button>
+          <button id="clearLogBtn" class="secondary">Clear log</button>
+        </div>
+
+        <div class="footnote">
+          <strong>Scope / honesty note.</strong> This lab is a thin-slice check: public ROTMOD rotation curves with a simple QDS
+          correction layered on top of baryons. It is not a full cosmological parameter fit. Use it as “can the kernel fit
+          real galaxies without obviously breaking them?”, not as a final word on dynamics.
+        </div>
+      </section>
+
+      <!-- Right: plot -->
+      <section class="panel">
+        <h2>3. Rotation curve</h2>
+        <small>Observed velocities (points) vs baseline baryons vs QDS-modified curve.</small>
+
+        <div class="plot-wrapper">
+          <canvas id="rcCanvas" width="640" height="420"></canvas>
+          <div class="plot-legend">
+            <div class="legend-item">
+              <span class="legend-swatch swatch-obs"></span>
+              <span>Obs (with errors)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch swatch-base"></span>
+              <span>Baseline (baryons)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch swatch-qds"></span>
+              <span>QDS(α,λ<sub>c</sub>)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // === Small helpers ===
+    function parseCsv(text) {
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      if (!lines.length) return { header: [], rows: [] };
+      const header = lines[0].split(',').map(s => s.trim());
+      const rows = lines.slice(1).map(line => line.split(',').map(s => s.trim()));
+      return { header, rows };
+    }
+
+    function fmt(x, digits) {
+      if (x === null || x === undefined || Number.isNaN(x)) return '—';
+      return Number(x).toFixed(digits);
+    }
+
+    function nowIso() {
+      return new Date().toISOString();
+    }
+
+    // === Global-ish state ===
+    const state = {
+      manifest: [],
+      currentGalaxy: null,
+      galaxyData: null,
+      metrics: null,
+      log: []
+    };
+
+    const paths = {
+      manifest: 'data/rotmod_public/MANIFEST_rotmod_csv.csv',
+      baseDir: 'data/rotmod_public/rotmod_csv'
+    };
+
+    const el = {};
+    function $(id) { return document.getElementById(id); }
+
+    // === Manifest loading ===
+    async function loadManifest() {
+      const res = await fetch(paths.manifest);
+      if (!res.ok) throw new Error('Failed to load manifest: ' + res.status);
+      const txt = await res.text();
+      const { header, rows } = parseCsv(txt);
+
+      // Try to guess column indices
+      // Fallback: treat first column as id, second as file if present
+      const hLower = header.map(h => h.toLowerCase());
+      let idxName = hLower.findIndex(h => h.includes('name') || h.includes('gal') || h.includes('id'));
+      if (idxName < 0) idxName = 0;
+      let idxFile = hLower.findIndex(h => h.includes('file') || h.includes('csv'));
+      if (idxFile < 0) idxFile = 0;
+
+      let idxSource = hLower.findIndex(h => h.includes('source') || h.includes('ref'));
+      if (idxSource < 0) idxSource = -1;
+
+      const manifest = rows.map(cols => {
+        const name = cols[idxName] || '';
+        const file = cols[idxFile] || (name + '.csv');
+        const source = idxSource >= 0 ? (cols[idxSource] || '') : '';
+        return {
+          name: name,
+          file: file,
+          csvPath: paths.baseDir + '/' + file,
+          source: source
+        };
+      }).filter(e => e.name);
+
+      state.manifest = manifest;
+      populateGalaxySelect(manifest);
+    }
+
+    function populateGalaxySelect(manifest) {
+      const sel = el.galaxySelect;
+      sel.innerHTML = '';
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = 'Select a galaxy…';
+      sel.appendChild(opt0);
+
+      manifest.forEach(entry => {
+        const opt = document.createElement('option');
+        opt.value = entry.name;
+        opt.textContent = entry.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function findGalaxyByName(name) {
+      return state.manifest.find(g => g.name === name) || null;
+    }
+
+    // === Galaxy CSV loading & model evaluation ===
+    async function loadGalaxyData(galaxyEntry) {
+      const res = await fetch(galaxyEntry.csvPath);
+      if (!res.ok) throw new Error('Failed to load galaxy CSV: ' + res.status);
+      const txt = await res.text();
+      const { header, rows } = parseCsv(txt);
+      const hLower = header.map(h => h.toLowerCase());
+
+      const idxR = hLower.findIndex(h => h.startsWith('r') && h.includes('kpc'));
+      const idxVobs = hLower.findIndex(h => h.startsWith('vobs') || h === 'vobs');
+      const idxErr = hLower.findIndex(h => h.includes('err'));
+      const idxVgas = hLower.findIndex(h => h.startsWith('vgas'));
+      const idxVdisk = hLower.findIndex(h => h.startsWith('vdisk'));
+      const idxVbul = hLower.findIndex(h => h.startsWith('vbul'));
+
+      if (idxR < 0 || idxVobs < 0 || idxErr < 0 || idxVgas < 0 || idxVdisk < 0 || idxVbul < 0) {
+        throw new Error('CSV for ' + galaxyEntry.name + ' missing one or more required columns');
+      }
+
+      const data = [];
+      for (const cols of rows) {
+        const r = Number(cols[idxR]);
+        const vobs = Number(cols[idxVobs]);
+        const err = Number(cols[idxErr]);
+        const vgas = Number(cols[idxVgas]);
+        const vdisk = Number(cols[idxVdisk]);
+        const vbul = Number(cols[idxVbul]);
+
+        if (!Number.isFinite(r) || !Number.isFinite(vobs) || !Number.isFinite(err)) continue;
+        if (!Number.isFinite(vgas) || !Number.isFinite(vdisk) || !Number.isFinite(vbul)) continue;
+        if (err <= 0) continue;
+
+        const vbase = Math.sqrt(vgas*vgas + vdisk*vdisk + vbul*vbul);
+        if (!Number.isFinite(vbase)) continue;
+
+        data.push({ r, vobs, err, vgas, vdisk, vbul, vbase });
+      }
+
+      // Sort by radius
+      data.sort((a, b) => a.r - b.r);
+
+      state.galaxyData = data;
+      return data;
+    }
+
+    function computeQdsCurve(data, alpha, lambdaC) {
+      // Simple phenomenological QDS tweak:
+      // v_qds^2 = v_base^2 * [1 + α * exp(-r/λ_c)]
+      // This preserves baryon curve shape but adds a finite-range boost.
+      return data.map(row => {
+        const boost = 1 + alpha * Math.exp(-row.r / lambdaC);
+        const vq2 = row.vbase * row.vbase * boost;
+        const vq = vq2 > 0 ? Math.sqrt(vq2) : row.vbase;
+        return { r: row.r, vq };
+      });
+    }
+
+    function computeChi2(data, modelFn) {
+      let chi2 = 0;
+      let n = 0;
+      for (const row of data) {
+        const vmodel = modelFn(row);
+        if (!Number.isFinite(vmodel) || !Number.isFinite(row.vobs) || !Number.isFinite(row.err)) continue;
+        const z = (vmodel - row.vobs) / row.err;
+        chi2 += z * z;
+        n += 1;
+      }
+      if (n === 0) return { chi2: NaN, n: 0, chi2PerN: NaN };
+      return { chi2, n, chi2PerN: chi2 / n };
+    }
+
+    function updateMetricsDisplay(metrics) {
+      state.metrics = metrics;
+
+      el.chi2Base.textContent = fmt(metrics.chi2BasePerN, 3);
+      el.chi2BaseSub.textContent = `χ² base = ${fmt(metrics.chi2Base, 2)}, N = ${metrics.n}`;
+      el.chi2Qds.textContent = fmt(metrics.chi2QdsPerN, 3);
+      el.chi2QdsSub.textContent = `χ² QDS = ${fmt(metrics.chi2Qds, 2)}, N = ${metrics.n}`;
+      el.deltaChi2.textContent = fmt(metrics.deltaPerN, 3);
+      el.deltaChi2Sub.textContent = `Δχ² = ${fmt(metrics.deltaChi2, 2)} (QDS − base)`;
+      el.nPoints.textContent = metrics.n.toString();
+      el.nPointsSub.textContent = `points with finite v, err > 0`;
+
+      let verdictText = '';
+      let badgeClass = '';
+      let badgeText = '';
+
+      if (!Number.isFinite(metrics.chi2BasePerN) || !Number.isFinite(metrics.chi2QdsPerN)) {
+        verdictText = 'Unable to compute χ² reliably for this dataset.';
+        badgeClass = '';
+        badgeText = 'Status: no metrics';
+      } else {
+        const delta = metrics.deltaPerN;
+        if (delta < -0.1) {
+          verdictText = 'For this galaxy and these parameters, QDS provides a better χ²/N than the pure baryon baseline.';
+          badgeClass = 'good';
+          badgeText = 'Status: QDS better (this run)';
+        } else if (Math.abs(delta) <= 0.1) {
+          verdictText = 'QDS and the baryon baseline are statistically comparable at this coarse χ²/N level.';
+          badgeClass = 'ok';
+          badgeText = 'Status: comparable';
+        } else {
+          verdictText = 'For this galaxy and parameter choice, the QDS correction does worse than the baryon baseline.';
+          badgeClass = 'bad';
+          badgeText = 'Status: QDS worse (this run)';
+        }
+      }
+
+      el.verdictBlock.innerHTML = `<span class="em">Verdict:</span> ${verdictText}<small>Crude χ²/N only. Not a full MCMC or parameter scan.</small>`;
+
+      el.verdictBadge.className = 'badge ' + (badgeClass ? badgeClass : '');
+      el.verdictBadge.textContent = badgeText;
+    }
+
+    // === Canvas plot ===
+    function drawPlot(canvas, data, qdsCurve) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Background
+      const bgGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, W);
+      bgGrad.addColorStop(0, 'rgba(74,242,255,0.18)');
+      bgGrad.addColorStop(1, '#05081a');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      if (!data || !data.length) {
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.fillText('No data loaded yet.', 20, 30);
+        return;
+      }
+
+      const marginLeft = 54;
+      const marginRight = 16;
+      const marginTop = 24;
+      const marginBottom = 40;
+
+      const xs = data.map(d => d.r);
+      const vs = data.map(d => d.vobs)
+        .concat(data.map(d => d.vbase))
+        .concat(qdsCurve ? qdsCurve.map(d => d.vq) : []);
+
+      const xmin = 0;
+      const xmax = Math.max(...xs) * 1.05 || 1;
+      const ymin = 0;
+      const ymax = (Math.max(...vs) || 1) * 1.1;
+
+      function xToPx(x) {
+        return marginLeft + (x - xmin) / (xmax - xmin || 1) * (W - marginLeft - marginRight);
+      }
+      function yToPx(v) {
+        return H - marginBottom - (v - ymin) / (ymax - ymin || 1) * (H - marginTop - marginBottom);
+      }
+
+      // Axes
+      ctx.strokeStyle = 'rgba(200,210,255,0.85)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(marginLeft, marginTop);
+      ctx.lineTo(marginLeft, H - marginBottom);
+      ctx.lineTo(W - marginRight, H - marginBottom);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(200,210,255,0.7)';
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.fillText('r [kpc]', W - marginRight - 40, H - marginBottom + 24);
+      ctx.save();
+      ctx.translate(marginLeft - 34, marginTop + (H - marginTop - marginBottom)/2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('v [km/s]', 0, 0);
+      ctx.restore();
+
+      // Grid + ticks
+      ctx.strokeStyle = 'rgba(140,160,220,0.35)';
+      ctx.lineWidth = 0.6;
+      ctx.setLineDash([3, 3]);
+
+      const nx = 5;
+      const ny = 5;
+      for (let i = 1; i <= nx; i++) {
+        const xVal = xmin + (xmax - xmin) * (i / nx);
+        const px = xToPx(xVal);
+        ctx.beginPath();
+        ctx.moveTo(px, marginTop);
+        ctx.lineTo(px, H - marginBottom);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(200,210,255,0.6)';
+        ctx.font = '10px system-ui, sans-serif';
+        ctx.fillText(xVal.toFixed(1), px - 10, H - marginBottom + 14);
+        ctx.setLineDash([3,3]);
+      }
+
+      for (let j = 1; j <= ny; j++) {
+        const vVal = ymin + (ymax - ymin) * (j / ny);
+        const py = yToPx(vVal);
+        ctx.beginPath();
+        ctx.moveTo(marginLeft, py);
+        ctx.lineTo(W - marginRight, py);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(200,210,255,0.6)';
+        ctx.font = '10px system-ui, sans-serif';
+        ctx.fillText(vVal.toFixed(0), 8, py + 3);
+        ctx.setLineDash([3,3]);
+      }
+
+      ctx.setLineDash([]);
+
+      // Baseline curve
+      ctx.strokeStyle = '#4af2ff';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      let started = false;
+      for (const row of data) {
+        const px = xToPx(row.r);
+        const py = yToPx(row.vbase);
+        if (!started) {
+          ctx.moveTo(px, py);
+          started = true;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+
+      // QDS curve
+      if (qdsCurve && qdsCurve.length) {
+        ctx.strokeStyle = '#ff7ee5';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        started = false;
+        for (const row of qdsCurve) {
+          const px = xToPx(row.r);
+          const py = yToPx(row.vq);
+          if (!started) {
+            ctx.moveTo(px, py);
+            started = true;
+          } else {
+            ctx.lineTo(px, py);
+          }
+        }
+        ctx.stroke();
+      }
+
+      // Observed data points + error bars
+      ctx.lineWidth = 1;
+      for (const row of data) {
+        const px = xToPx(row.r);
+        const py = yToPx(row.vobs);
+        const pyErrTop = yToPx(row.vobs + row.err);
+        const pyErrBot = yToPx(row.vobs - row.err);
+
+        // Error bar
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+        ctx.beginPath();
+        ctx.moveTo(px, pyErrTop);
+        ctx.lineTo(px, pyErrBot);
+        ctx.stroke();
+
+        // Cap
+        ctx.beginPath();
+        ctx.moveTo(px - 4, pyErrTop);
+        ctx.lineTo(px + 4, pyErrTop);
+        ctx.moveTo(px - 4, pyErrBot);
+        ctx.lineTo(px + 4, pyErrBot);
+        ctx.stroke();
+
+        // Point
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // === Session log ===
+    function syncLogBox() {
+      const logJson = JSON.stringify(state.log, null, 2);
+      el.logBox.value = logJson || '';
+    }
+
+    function addCurrentToLog() {
+      if (!state.currentGalaxy || !state.metrics || !state.galaxyData) {
+        alert('Need galaxy, metrics and data before logging.');
+        return;
+      }
+      const alpha = Number(el.alphaInput.value);
+      const lambdaC = Number(el.lambdaInput.value);
+      const note = el.noteInput.value || '';
+
+      const entry = {
+        t: nowIso(),
+        galaxy: state.currentGalaxy.name,
+        csv: state.currentGalaxy.csvPath,
+        source: state.currentGalaxy.source || '',
+        alpha: alpha,
+        lambda_c_kpc: lambdaC,
+        metrics: {
+          n: state.metrics.n,
+          chi2_base: state.metrics.chi2Base,
+          chi2_base_perN: state.metrics.chi2BasePerN,
+          chi2_qds: state.metrics.chi2Qds,
+          chi2_qds_perN: state.metrics.chi2QdsPerN,
+          delta_chi2: state.metrics.deltaChi2,
+          delta_chi2_perN: state.metrics.deltaPerN
+        },
+        note: note
+      };
+      state.log.push(entry);
+      syncLogBox();
+    }
+
+    async function copyLogToClipboard() {
+      const txt = el.logBox.value || '';
+      if (!txt) {
+        alert('Log is empty.');
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(txt);
+          alert('Log JSON copied to clipboard.');
+        } catch (e) {
+          console.warn('Clipboard write failed', e);
+          alert('Clipboard write failed. You can still select + copy manually.');
+        }
+      } else {
+        alert('Clipboard API not available. Please long-press and copy manually.');
+      }
+    }
+
+    // === Main recompute pipeline ===
+    async function recompute() {
+      const selName = el.galaxySelect.value;
+      if (!selName) {
+        alert('Pick a galaxy first.');
+        return;
+      }
+      const galaxy = findGalaxyByName(selName);
+      if (!galaxy) {
+        alert('Galaxy not found in manifest.');
+        return;
+      }
+      state.currentGalaxy = galaxy;
+      el.dataSource.textContent = galaxy.source || (galaxy.csvPath || 'source: manifest row');
+
+      const alpha = Number(el.alphaInput.value);
+      const lambdaC = Number(el.lambdaInput.value);
+      if (!Number.isFinite(alpha) || !Number.isFinite(lambdaC) || lambdaC <= 0) {
+        alert('Please provide sensible QDS parameters (α finite, λc > 0).');
+        return;
+      }
+
+      try {
+        const data = await loadGalaxyData(galaxy);
+        if (!data.length) {
+          throw new Error('No valid data rows after filtering.');
+        }
+
+        const qdsCurve = computeQdsCurve(data, alpha, lambdaC);
+
+        // Compute metrics
+        const mBase = computeChi2(data, row => row.vbase);
+        const mQds = computeChi2(data, row => {
+          const boost = 1 + alpha * Math.exp(-row.r / lambdaC);
+          const vq2 = row.vbase * row.vbase * boost;
+          return vq2 > 0 ? Math.sqrt(vq2) : row.vbase;
+        });
+
+        const metrics = {
+          n: Math.min(mBase.n, mQds.n),
+          chi2Base: mBase.chi2,
+          chi2BasePerN: mBase.chi2PerN,
+          chi2Qds: mQds.chi2,
+          chi2QdsPerN: mQds.chi2PerN,
+          deltaChi2: mQds.chi2 - mBase.chi2,
+          deltaPerN: mQds.chi2PerN - mBase.chi2PerN
+        };
+        updateMetricsDisplay(metrics);
+
+        drawPlot(el.rcCanvas, data, qdsCurve);
+      } catch (err) {
+        console.error(err);
+        alert('Error during recompute: ' + err.message);
+      }
+    }
+
+    // === Init ===
+    async function init() {
+      el.galaxySelect = $('galaxySelect');
+      el.dataSource = $('dataSource');
+      el.alphaInput = $('alphaInput');
+      el.lambdaInput = $('lambdaInput');
+      el.noteInput = $('noteInput');
+      el.recomputeBtn = $('recomputeBtn');
+      el.addToLogBtn = $('addToLogBtn');
+      el.chi2Base = $('chi2Base');
+      el.chi2BaseSub = $('chi2BaseSub');
+      el.chi2Qds = $('chi2Qds');
+      el.chi2QdsSub = $('chi2QdsSub');
+      el.deltaChi2 = $('deltaChi2');
+      el.deltaChi2Sub = $('deltaChi2Sub');
+      el.nPoints = $('nPoints');
+      el.nPointsSub = $('nPointsSub');
+      el.verdictBlock = $('verdictBlock');
+      el.verdictBadge = $('verdictBadge');
+      el.logBox = $('logBox');
+      el.copyLogBtn = $('copyLogBtn');
+      el.clearLogBtn = $('clearLogBtn');
+      el.rcCanvas = $('rcCanvas');
+
+      el.recomputeBtn.addEventListener('click', recompute);
+      el.addToLogBtn.addEventListener('click', addCurrentToLog);
+      el.copyLogBtn.addEventListener('click', copyLogToClipboard);
+      el.clearLogBtn.addEventListener('click', () => {
+        if (state.log.length && !confirm('Clear the session log?')) return;
+        state.log = [];
+        syncLogBox();
+      });
+
+      try {
+        await loadManifest();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to load manifest. Check MANIFEST_rotmod_csv.csv path/format.');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>QDS Number Coherence Lab v2</title>
+<style>
+  :root{
+    /* USER THEME: neon orange-red borders + yellow text on black */
+    --bg:#050607;
+    --panel:#07090b;
+    --panel2:#050608;
+    --ink:#ffe86a;          /* yellow */
+    --muted:#ffcc33;        /* warmer yellow */
+    --accent:#ff3b00;       /* neon orange-red */
+    --accent2:#ff6a00;      /* orange */
+    --good:#7CFF6B;
+    --warn:#FFD54A;
+    --bad:#FF4D6D;
+    --line: rgba(255,59,0,.38);
+    --line2: rgba(255,106,0,.28);
+    --shadow: 0 16px 50px rgba(0,0,0,.62);
+    --radius:18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 650px at 15% -10%, rgba(255,59,0,.15), transparent 60%),
+      radial-gradient(900px 520px at 120% 0%, rgba(255,106,0,.12), transparent 55%),
+      radial-gradient(900px 520px at 30% 120%, rgba(255,232,106,.10), transparent 60%),
+      linear-gradient(180deg, #020203, var(--bg));
+    font-family:var(--sans);
+  }
+  header{
+    position:sticky; top:0; z-index:9;
+    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,.62);
+    border-bottom:1px solid var(--line);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:14px 14px 22px}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .brand{display:flex; gap:12px; align-items:center; justify-content:space-between}
+  .title{display:flex; flex-direction:column; gap:2px}
+  h1{font-size:16px; margin:0; letter-spacing:.35px}
+  .sub{font-size:12px; color:var(--muted); opacity:.9}
+  .badge{
+    font-size:12px; padding:6px 10px;
+    border:1px solid rgba(255,59,0,.55);
+    border-radius:999px; color:var(--accent);
+    background: rgba(255,59,0,.10);
+    font-family:var(--mono)
+  }
+  .pill{
+    font-size:12px; padding:6px 10px;
+    border:1px solid rgba(255,106,0,.35);
+    border-radius:999px; color:var(--muted);
+    background: rgba(0,0,0,.22);
+    font-family:var(--mono)
+  }
+  .grid{display:grid; gap:12px}
+  @media(min-width:900px){ .grid{grid-template-columns: 1.2fr .8fr} }
+  .card{
+    background: linear-gradient(180deg, rgba(7,9,11,.90), rgba(5,6,8,.86));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    padding:12px 12px;
+    border-bottom:1px solid rgba(255,59,0,.28);
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    background: rgba(0,0,0,.20);
+  }
+  .card h2{font-size:13px; margin:0; letter-spacing:.35px}
+  .card .bd{padding:12px}
+  textarea,input,select{
+    width:100%;
+    background: rgba(0,0,0,.35);
+    border:1px solid rgba(255,59,0,.42);
+    color:var(--ink);
+    border-radius:14px;
+    padding:10px 10px;
+    font-size:13px;
+    outline:none;
+  }
+  textarea{min-height:118px; resize:vertical; font-family:var(--mono)}
+  .btn{
+    border:1px solid rgba(255,59,0,.55);
+    background: rgba(0,0,0,.30);
+    color:var(--ink);
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:13px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .btn:hover{border-color:rgba(255,106,0,.70)}
+  .btn.primary{
+    border-color:rgba(255,106,0,.75);
+    background: rgba(255,59,0,.12);
+    color:var(--ink);
+  }
+  .btn.good{
+    border-color: rgba(124,255,107,.45);
+    background: rgba(124,255,107,.12);
+    color: var(--good);
+  }
+  .btn.warn{
+    border-color: rgba(255,213,74,.55);
+    background: rgba(255,213,74,.10);
+    color: var(--warn);
+  }
+  .btn.bad{
+    border-color: rgba(255,77,109,.55);
+    background: rgba(255,77,109,.10);
+    color: var(--bad);
+  }
+  .kv{display:grid; grid-template-columns: 1fr; gap:10px}
+  @media(min-width:900px){ .kv{grid-template-columns: 1fr 1fr} }
+  .kbox{
+    border:1px solid rgba(255,59,0,.32);
+    border-radius:14px;
+    padding:10px;
+    background: rgba(0,0,0,.28);
+  }
+  .kbox .k{font-size:11px; color:var(--muted); font-family:var(--mono); opacity:.95}
+  .kbox .v{font-size:14px; margin-top:4px; font-family:var(--mono)}
+  .mini{font-size:12px; color:var(--muted); line-height:1.35; opacity:.92}
+  .hr{height:1px; background:rgba(255,59,0,.22); margin:12px 0}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap}
+  .tab{
+    padding:8px 10px; border-radius:999px;
+    border:1px solid rgba(255,59,0,.35);
+    background: rgba(0,0,0,.22);
+    font-size:12px; color:var(--muted);
+    cursor:pointer
+  }
+  .tab.on{border-color:rgba(255,106,0,.75); color:var(--ink); background:rgba(255,59,0,.12)}
+  .hide{display:none}
+  canvas{
+    width:100%; height:190px;
+    border-radius:14px;
+    border:1px solid rgba(255,59,0,.32);
+    background: rgba(0,0,0,.26)
+  }
+  .mono{font-family:var(--mono)}
+  .log{
+    max-height:280px; overflow:auto;
+    border:1px solid rgba(255,59,0,.32);
+    border-radius:14px;
+    padding:10px;
+    background: rgba(0,0,0,.24);
+    font-family:var(--mono);
+    font-size:12px;
+    line-height:1.35;
+    white-space:pre-wrap;
+  }
+  .tiny{font-size:11px; color:var(--muted); opacity:.9}
+  .toggle{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); user-select:none}
+  .toggle input{width:auto}
+  .warnBox{
+    border:1px solid rgba(255,213,74,.55);
+    background: rgba(255,213,74,.08);
+    border-radius:14px;
+    padding:10px;
+    color:var(--warn);
+    font-size:12px;
+  }
+  .goodBox{
+    border:1px solid rgba(124,255,107,.45);
+    background: rgba(124,255,107,.08);
+    border-radius:14px;
+    padding:10px;
+    color:var(--good);
+    font-size:12px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap brand">
+    <div class="title">
+      <h1>QDS Number Coherence Lab <span class="badge">Mode: instrument</span></h1>
+      <div class="sub">Kernel-weighted coherence in numeric strings • 2D symbol kernel • better null stats • Hebrew seam miner</div>
+    </div>
+    <div class="row">
+      <span class="pill">offline • no calls</span>
+      <label class="toggle"><input id="lowFx" type="checkbox" /> Low-FX</label>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card" style="margin-bottom:12px">
+    <div class="hd">
+      <h2>Reality check</h2>
+      <span class="pill">QDS_PROTO_DISCLAIMER_V1</span>
+    </div>
+    <div class="bd mini">
+      This is a <b>structure / coherence instrument</b>. It does <b>not</b> decode truth.
+      It will produce meaningful-looking fragments by chance, especially on boundaries.
+      Use <b>Null</b> and <b>MC Null</b> to keep yourself honest.
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Input</h2>
+        <div class="tabs">
+          <div class="tab on" data-tab="t_main">Main</div>
+          <div class="tab" data-tab="t_hebrew">Hebrew seam lab</div>
+          <div class="tab" data-tab="t_export">Export</div>
+        </div>
+      </div>
+      <div class="bd">
+
+        <div id="t_main">
+          <div class="mini">Paste a number (or any text). Numeric modes extract digits. Base-26 parses the full integer (BigInt) then converts.</div>
+          <div style="height:8px"></div>
+          <textarea id="numIn" spellcheck="false">150130937545296572356771972164254457814047970568738777235893533016064</textarea>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <div style="flex:1 1 220px">
+              <div class="tiny mono">Tokenization</div>
+              <select id="tokenMode">
+                <option value="digits">Digits (0–9)</option>
+                <option value="pairs">Pairs (00–99)</option>
+                <option value="triplets" selected>Triplets (000–999)</option>
+                <option value="base26">Base-26 letters from whole integer (A=0..Z=25)</option>
+              </select>
+            </div>
+            <div style="flex:1 1 220px">
+              <div class="tiny mono">Max tokens (cap)</div>
+              <input id="maxN" type="number" min="50" max="12000" value="2400" />
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <button class="btn primary" id="runBtn">Run analysis</button>
+            <button class="btn" id="resetBtn">Reset</button>
+            <button class="btn warn" id="nullBtn">Null (shuffle)</button>
+            <label class="toggle"><input id="mcOn" type="checkbox" checked /> MC Null</label>
+            <input id="mcIters" type="number" min="10" max="200" value="50" style="max-width:120px" />
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="row">
+            <button class="btn" id="presetDigits">Preset: Digits</button>
+            <button class="btn" id="presetPairs">Preset: Pairs</button>
+            <button class="btn" id="presetTriplets">Preset: Triplets</button>
+            <button class="btn" id="presetBig">Preset: Big run (5000)</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div id="powerWarn" class="warnBox hide"></div>
+
+          <div class="kv">
+            <div class="kbox"><div class="k">tokens n</div><div class="v" id="kv_tokens">—</div></div>
+            <div class="kbox"><div class="k">unique (alphabet) | repeats</div><div class="v" id="kv_alpha">—</div></div>
+
+            <div class="kbox"><div class="k">entropy H (bits/token) | normalized h</div><div class="v" id="kv_H">—</div></div>
+            <div class="kbox"><div class="k">transition entropy H₁ (smoothed) | h₁</div><div class="v" id="kv_H1">—</div></div>
+
+            <div class="kbox"><div class="k">ACF area (positive) | weighted</div><div class="v" id="kv_acfA">—</div></div>
+            <div class="kbox"><div class="k">τ̂ (exp fit) | stability</div><div class="v" id="kv_tauhat">—</div></div>
+
+            <div class="kbox"><div class="k">2D symbol-kernel similarity (weighted)</div><div class="v" id="kv_sim">—</div></div>
+            <div class="kbox"><div class="k">QDS coherence score (0–1)</div><div class="v" id="kv_score">—</div></div>
+
+            <div class="kbox"><div class="k">Null mean ± sd | z-score</div><div class="v" id="kv_null">—</div></div>
+            <div class="kbox"><div class="k">Δ vs null</div><div class="v" id="kv_delta">—</div></div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <div style="flex:1 1 360px">
+              <div class="tiny mono">QDS kernel params</div>
+              <div class="mini">
+                Index distance = time-like <span class="mono">d</span>. Token-value distance = symbol-space <span class="mono">r</span>.
+                We use: <span class="mono">w(d)=exp(-d/τ)</span> and <span class="mono">g(r)=exp(-(r/λ)²/2)</span>.
+              </div>
+              <div style="height:8px"></div>
+              <div class="row">
+                <div style="flex:1 1 120px">
+                  <div class="tiny mono">τ (tokens)</div>
+                  <input id="tau" type="number" min="1" max="12000" value="42" />
+                </div>
+                <div style="flex:1 1 120px">
+                  <div class="tiny mono">λ (token units)</div>
+                  <input id="lam" type="number" min="0.1" step="0.1" value="50" />
+                </div>
+                <div style="flex:1 1 120px">
+                  <div class="tiny mono">max lag</div>
+                  <input id="maxLag" type="number" min="10" max="600" value="140" />
+                </div>
+              </div>
+              <div style="height:8px"></div>
+              <div class="row">
+                <label class="toggle"><input id="useNumericACF" type="checkbox" checked /> Numeric ACF</label>
+                <label class="toggle"><input id="useSymbolKernel" type="checkbox" checked /> Symbol-kernel similarity</label>
+                <label class="toggle"><input id="fastMC" type="checkbox" checked /> Fast MC</label>
+              </div>
+              <div class="tiny">Fast MC computes the score without full ACF curves (faster on mobile).</div>
+            </div>
+            <div style="flex:1 1 360px">
+              <div class="tiny mono">Charts</div>
+              <canvas id="chartCanvas" width="900" height="230"></canvas>
+              <div class="tiny">Blue = ACF • Green = symbol similarity • Orange = exp fit (if any)</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="tiny mono">Notes</div>
+          <div class="mini">
+            v2 fixes v1’s H₁ degeneracy by smoothing and adds a 2D kernel component (index + token distance).
+            If repeats are near zero (uniq≈n), coherence claims are underpowered by definition.
+          </div>
+        </div>
+
+        <div id="t_hebrew" class="hide">
+          <div class="mini">
+            Accuracy-first Hebrew numeral spelling from decimal triplets (additive hundreds/tens/ones, with 15/16 convention).
+            Seam scan checks a watchlist (editable).
+          </div>
+          <div style="height:10px"></div>
+          <div class="row">
+            <button class="btn primary" id="hebRunBtn">Build Hebrew stream</button>
+            <div style="flex:1 1 220px">
+              <div class="tiny mono">Watchlist (comma-separated)</div>
+              <input id="hebWatch" value="מהר,את,סדר,עזר,רצו,שנו,שלח,תשלח" />
+            </div>
+            <label class="toggle"><input id="hebWatchOn" type="checkbox" checked/> Watch hits</label>
+          </div>
+          <div style="height:10px"></div>
+          <div class="tiny mono">Hebrew blocks (000–999)</div>
+          <div class="log" id="hebBlocks">—</div>
+          <div style="height:10px"></div>
+          <div class="tiny mono">Seam hits (in order)</div>
+          <div class="log" id="hebSeams">—</div>
+          <div class="tiny">Reminder: seam hits are easy to generate by chance. Use Null in Main if you want a collision baseline.</div>
+        </div>
+
+        <div id="t_export" class="hide">
+          <div class="mini">Export the latest run as JSON or TXT. Nothing leaves your device.</div>
+          <div style="height:10px"></div>
+          <div class="row">
+            <button class="btn good" id="copyJsonBtn">Copy JSON</button>
+            <button class="btn" id="dlJsonBtn">Download JSON</button>
+            <button class="btn" id="dlTxtBtn">Download TXT</button>
+          </div>
+          <div style="height:10px"></div>
+          <div class="tiny mono">Last result</div>
+          <div class="log" id="outBox">Run analysis to populate…</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Null model + run log</h2>
+        <span class="pill mono" id="statusPill">ready</span>
+      </div>
+      <div class="bd">
+        <div class="mini">
+          Null = shuffle tokens (same frequency, destroyed order). MC Null estimates mean/sd of score under random order.
+        </div>
+        <div style="height:10px"></div>
+        <div class="log" id="logBox"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id)=>document.getElementById(id);
+  const logBox = $("logBox");
+  const statusPill = $("statusPill");
+  const outBox = $("outBox");
+  const powerWarn = $("powerWarn");
+
+  let last = null;      // last analysis result
+  let lastNull = null;  // last null (mc) stats
+
+  function setStatus(s){ statusPill.textContent = s; }
+  function log(msg){
+    const ts = new Date().toISOString().slice(11,19);
+    logBox.textContent += `[${ts}] ${msg}\n`;
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+  function fmt(x, d=4){
+    if (x === null || x === undefined || !isFinite(x)) return "—";
+    const ax = Math.abs(x);
+    if (ax !== 0 && (ax < 1e-3 || ax > 1e6)) return x.toExponential(3);
+    return x.toFixed(d);
+  }
+  function digitsOnly(s){ return (s||"").replace(/\D+/g,""); }
+
+  // ===== Tokenization =====
+  function tokenizeDigits(d, maxN){
+    const arr = d.split("").slice(0,maxN).map(ch=>ch.charCodeAt(0)-48);
+    return {tokens: arr, alpha: 10, kind:"digits", displayKind:"digits"};
+  }
+  function tokenizeChunks(d, k, maxN){
+    const n = Math.floor(d.length / k);
+    const take = Math.min(n, maxN);
+    const out = new Array(take);
+    for(let i=0;i<take;i++){
+      out[i] = parseInt(d.slice(i*k, i*k+k), 10);
+    }
+    const alpha = Math.pow(10,k);
+    return {tokens: out, alpha, kind:`chunks${k}`, displayKind:`${k}-digit chunks`};
+  }
+  function tokenizeBase26FromBigInt(d, maxN){
+    try{
+      let x = BigInt(d);
+      if (x < 0n) x = -x;
+      if (x === 0n) return {tokens:[0], alpha:26, kind:"base26", displayKind:"base26"};
+      const out = [];
+      const base = 26n;
+      while(x > 0n && out.length < maxN){
+        out.push(Number(x % base));
+        x = x / base;
+      }
+      out.reverse();
+      return {tokens: out, alpha:26, kind:"base26", displayKind:"base26"};
+    }catch(e){
+      return {tokens:[], alpha:26, kind:"base26", err:"BigInt parse failed", displayKind:"base26"};
+    }
+  }
+
+  function buildTokens(){
+    const raw = $("numIn").value || "";
+    const mode = $("tokenMode").value;
+    const maxN = clamp(parseInt($("maxN").value||"2400",10), 50, 12000);
+
+    const d = digitsOnly(raw);
+    if (!d.length) return {tokens:[], alpha:0, kind:"none", displayKind:"none"};
+
+    if (mode === "base26"){
+      const r = tokenizeBase26FromBigInt(d, maxN);
+      if (r.err){
+        log("Base-26 parse failed; falling back to digits.");
+        return tokenizeDigits(d, maxN);
+      }
+      return r;
+    }
+    if (mode === "digits") return tokenizeDigits(d, maxN);
+    if (mode === "pairs") return tokenizeChunks(d, 2, maxN);
+    return tokenizeChunks(d, 3, maxN);
+  }
+
+  // ===== Stats =====
+  function uniqueCount(arr){ return new Set(arr).size; }
+
+  function shannonEntropyBits(arr){
+    const n = arr.length; if (!n) return 0;
+    const m = new Map();
+    for(const v of arr) m.set(v, (m.get(v)||0)+1);
+    let H=0;
+    for(const c of m.values()){
+      const p = c/n;
+      H -= p * Math.log2(p);
+    }
+    return H;
+  }
+
+  function transitionEntropySmoothed(arr, alpha=0.5){
+    // FIX: v1 degeneracy -> add Laplace smoothing on per-state outgoing distribution
+    // H1 = sum_a P(a) * H(P(b|a))
+    const n = arr.length;
+    if (n < 2) return 0;
+
+    const out = new Map();     // a -> Map(b->count)
+    const countsA = new Map(); // a -> outdegree counts (transition count)
+    const supportA = new Map();// a -> number of distinct b seen
+
+    for(let i=0;i<n-1;i++){
+      const a = arr[i], b = arr[i+1];
+      countsA.set(a, (countsA.get(a)||0)+1);
+      if(!out.has(a)) out.set(a, new Map());
+      const mm = out.get(a);
+      mm.set(b, (mm.get(b)||0)+1);
+    }
+    for(const [a, mm] of out.entries()){
+      supportA.set(a, mm.size);
+    }
+
+    // approximate alphabet for b given a as global unique count (conservative)
+    const K = Math.max(2, uniqueCount(arr));
+
+    let H1=0;
+    const denomTotal = n-1;
+    for(const [a, mm] of out.entries()){
+      const ca = countsA.get(a);
+      const pa = ca/denomTotal;
+
+      // smoothed probs over K symbols:
+      // p(b|a) = (count + alpha) / (ca + alpha*K)
+      const Z = ca + alpha*K;
+      let Ha = 0;
+
+      // sum over observed b
+      for(const [b, cb] of mm.entries()){
+        const p = (cb + alpha) / Z;
+        Ha -= p * Math.log2(p);
+      }
+
+      // add unobserved mass: (K - mm.size) symbols each with alpha/Z
+      const unobs = K - mm.size;
+      if (unobs > 0){
+        const p0 = alpha / Z;
+        Ha -= unobs * (p0 * Math.log2(p0));
+      }
+
+      H1 += pa * Ha;
+    }
+    return H1;
+  }
+
+  function mean(arr){
+    let s=0; for(const v of arr) s += v;
+    return s/arr.length;
+  }
+  function variance(arr, mu){
+    let s=0; for(const v of arr){ const d=v-mu; s += d*d; }
+    return s/arr.length;
+  }
+
+  function acf(arr, maxLag){
+    const n = arr.length;
+    if (n < 3) return {lags:[], ac:[]};
+    const mu = mean(arr);
+    const v = variance(arr, mu);
+    if (v === 0) return {lags:[0], ac:[1]};
+    const L = clamp(maxLag, 1, Math.min(600, n-2));
+    const ac = new Array(L+1);
+    ac[0]=1;
+    for(let lag=1; lag<=L; lag++){
+      let s=0;
+      const m = n-lag;
+      for(let i=0;i<m;i++){
+        s += (arr[i]-mu)*(arr[i+lag]-mu);
+      }
+      ac[lag] = (s/m)/v;
+    }
+    const lags = Array.from({length:L+1}, (_,i)=>i);
+    return {lags, ac};
+  }
+
+  function positiveArea(ac){
+    let s=0;
+    for(let i=1;i<ac.length;i++) if (ac[i] > 0) s += ac[i];
+    return s;
+  }
+
+  function fitExpTau(ac){
+    // fit log(ac[lag]) ~ -lag/tau using early positive region
+    const xs=[], ys=[];
+    const L = Math.min(ac.length-1, 120);
+    for(let lag=1; lag<=L; lag++){
+      const y = ac[lag];
+      if (y > 0.03 && y < 0.999){
+        xs.push(lag);
+        ys.push(Math.log(y));
+      }
+    }
+    if (xs.length < 6) return null;
+    let sx=0, sy=0, sxx=0, sxy=0;
+    for(let i=0;i<xs.length;i++){
+      const x=xs[i], y=ys[i];
+      sx += x; sy += y; sxx += x*x; sxy += x*y;
+    }
+    const n = xs.length;
+    const denom = (n*sxx - sx*sx);
+    if (denom === 0) return null;
+    const b = (n*sxy - sx*sy) / denom;
+    if (b >= 0) return null;
+    const tau = -1/b;
+    if (!isFinite(tau) || tau <= 0) return null;
+    return tau;
+  }
+
+  function wTime(d, tau){ return Math.exp(-d / tau); }
+  function gSym(r, lam){ return Math.exp(-0.5 * (r/lam) * (r/lam)); }
+
+  function weightedACF(ac, tau){
+    let s=0;
+    for(let d=1; d<ac.length; d++){
+      if (ac[d] > 0) s += wTime(d, tau) * ac[d];
+    }
+    return s;
+  }
+
+  function symbolKernelSimilarity(tokens, maxLag, tau, lam){
+    // s(d) = mean_i g(|x_i - x_{i+d}|; lam)
+    // weighted sum: Sum_d w(d;tau) * max(0, s(d) - baseline)
+    const n = tokens.length;
+    const L = clamp(maxLag, 10, Math.min(600, n-2));
+    const s = new Array(L+1);
+    s[0]=1;
+
+    // baseline similarity for random pairing (estimate with a small sample)
+    // sample 256 random pairs (fast)
+    let base=0, m=0;
+    const SAMP = Math.min(256, n*(n-1));
+    for(let k=0;k<SAMP;k++){
+      const i = (Math.random()*n)|0;
+      const j = (Math.random()*n)|0;
+      if (i===j) continue;
+      base += gSym(Math.abs(tokens[i]-tokens[j]), lam);
+      m++;
+    }
+    base = m ? base/m : 0;
+
+    for(let d=1; d<=L; d++){
+      let acc=0;
+      const M = n-d;
+      for(let i=0;i<M;i++){
+        acc += gSym(Math.abs(tokens[i]-tokens[i+d]), lam);
+      }
+      s[d] = acc/M;
+    }
+
+    let wsum=0;
+    for(let d=1; d<=L; d++){
+      const delta = Math.max(0, s[d] - base);
+      wsum += wTime(d, tau) * delta;
+    }
+    return {s, base, weighted: wsum, L};
+  }
+
+  function coherenceScore(parts){
+    // parts: {h, h1, a, sim}
+    // Score: prefer low entropy + low transition entropy + long-range structure + symbol similarity
+    // weights tuned for stability (no “salesman on coke”)
+    const score = clamp(
+      0.34*(1-parts.h) +
+      0.20*(1-parts.h1) +
+      0.23*(parts.a) +
+      0.23*(parts.sim),
+      0, 1
+    );
+    return score;
+  }
+
+  function drawChart(canvas, lags, ac, simArr, tauFit){
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    function mapX(x, L){ return 40 + (W-55) * (x / Math.max(1,L)); }
+    function mapY01(y){ return 10 + (H-45) * (1 - clamp(y,0,1)); }
+    function mapYcorr(y){ return 10 + (H-45) * (1 - (clamp(y,-1,1)+1)/2); }
+
+    // axes
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,106,0,.35)";
+    ctx.beginPath();
+    ctx.moveTo(40, H-30); ctx.lineTo(W-10, H-30);
+    ctx.moveTo(40, 10); ctx.lineTo(40, H-30);
+    ctx.stroke();
+
+    const L = lags.length ? lags[lags.length-1] : 1;
+
+    // ACF (blue-ish via alpha only; we avoid hardcoded colors per your request? — but you requested neon theme.
+    // We'll keep semantic separation via alpha + strokeStyle using accent mix.)
+    ctx.strokeStyle = "rgba(255,232,106,.85)"; // yellow for ACF
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(let i=0;i<lags.length;i++){
+      const x = mapX(lags[i], L);
+      const y = mapYcorr(ac[i]);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // Symbol similarity (green box uses good color)
+    if (simArr && simArr.length){
+      ctx.strokeStyle = "rgba(124,255,107,.75)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for(let i=0;i<simArr.length;i++){
+        const x = mapX(i, L);
+        const y = mapY01(simArr[i]);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // exp fit overlay
+    if (tauFit && isFinite(tauFit) && tauFit>0){
+      ctx.strokeStyle = "rgba(255,59,0,.75)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for(let i=0;i<lags.length;i++){
+        const d = lags[i];
+        const yv = (d===0) ? 1 : Math.exp(-d/tauFit);
+        const x = mapX(d, L);
+        const y = mapYcorr(yv);
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // labels
+    ctx.fillStyle = "rgba(255,204,51,.95)";
+    ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+    ctx.fillText("ACF", 44, 22);
+    ctx.fillText("lag", W-42, H-12);
+    ctx.fillText("sym", 44, 38);
+  }
+
+  function shuffleCopy(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = (Math.random()*(i+1))|0;
+      const t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function powerCheck(n, uniq){
+    const repRatio = 1 - (uniq / Math.max(1,n));
+    const msg = [];
+    if (n < 120) msg.push(`Low sample: n=${n}. Try digits or increase max tokens.`);
+    if (repRatio < 0.10) msg.push(`Low repeats: uniq≈n (repeat ratio ${(repRatio*100).toFixed(1)}%). Transition/grammar claims underpowered.`);
+    return msg;
+  }
+
+  function analyze(tokens, pack, settings, fast=false){
+    const n = tokens.length;
+    const uniq = uniqueCount(tokens);
+
+    const H = shannonEntropyBits(tokens);
+    const H1 = transitionEntropySmoothed(tokens, 0.5);
+
+    const Hmax = Math.log2(Math.max(2, uniq));
+    const h = clamp(H / Hmax, 0, 1);
+    const h1 = clamp(H1 / Hmax, 0, 1);
+
+    const maxLag = clamp(settings.maxLag, 10, Math.min(600, n-2));
+    let acfObj = {lags:[], ac:[]};
+    let tauHat = null;
+    let acAreaPos = null;
+    let acAreaW = 0;
+    if (settings.useNumericACF && !fast){
+      acfObj = acf(tokens, maxLag);
+      tauHat = fitExpTau(acfObj.ac);
+      acAreaPos = positiveArea(acfObj.ac);
+      acAreaW = weightedACF(acfObj.ac, settings.tau);
+    } else if (settings.useNumericACF && fast){
+      // fast ACF proxy: compute only lags 1..min(60,maxLag)
+      const L = Math.min(60, maxLag);
+      const n2 = tokens.length;
+      const mu = mean(tokens);
+      const v = variance(tokens, mu) || 1e-12;
+      let sW=0;
+      for(let lag=1; lag<=L; lag++){
+        let s=0;
+        const m = n2-lag;
+        for(let i=0;i<m;i++) s += (tokens[i]-mu)*(tokens[i+lag]-mu);
+        const corr = (s/m)/v;
+        if (corr > 0) sW += wTime(lag, settings.tau) * corr;
+      }
+      acAreaW = sW;
+      // chart uses full only; keep empty
+    }
+
+    let sim = {weighted:0, base:0, s:[], L:maxLag};
+    let simNorm = 0;
+    if (settings.useSymbolKernel){
+      sim = symbolKernelSimilarity(tokens, maxLag, settings.tau, settings.lam);
+      // normalize similarity weight by a conservative denom
+      const denom = Math.max(8, Math.min(60, maxLag));
+      simNorm = clamp(sim.weighted / denom, 0, 1);
+    }
+
+    // normalize ACF weight similarly
+    const denomA = Math.max(8, Math.min(60, maxLag));
+    const aNorm = clamp(acAreaW / denomA, 0, 1);
+
+    const parts = {h, h1, a:aNorm, sim:simNorm};
+    const score = coherenceScore(parts);
+
+    return {
+      n, uniq, alpha: pack.alpha, kind: pack.kind, displayKind: pack.displayKind,
+      H, H1, Hmax, h, h1,
+      maxLag,
+      acf: acfObj,
+      acAreaPos, acAreaW, aNorm,
+      tauHat,
+      sim_base: sim.base, sim_weighted: sim.weighted, simNorm,
+      sim_curve: sim.s || [],
+      score, score_parts: parts,
+      power: {repeatRatio: 1-(uniq/Math.max(1,n))}
+    };
+  }
+
+  function setKV(res){
+    $("kv_tokens").textContent = res ? String(res.n) : "—";
+    $("kv_alpha").textContent = res ? `${res.uniq} | repeats ${(100*(1-res.uniq/Math.max(1,res.n))).toFixed(1)}%` : "—";
+    $("kv_H").textContent = res ? `${fmt(res.H,4)} (max~${fmt(res.Hmax,4)}) | h=${fmt(res.h,3)}` : "—";
+    $("kv_H1").textContent = res ? `${fmt(res.H1,4)} | h1=${fmt(res.h1,3)}` : "—";
+    $("kv_acfA").textContent = res ? `${res.acAreaPos==null?"—":fmt(res.acAreaPos,4)} | w:${fmt(res.acAreaW,4)} | a=${fmt(res.aNorm,3)}` : "—";
+    $("kv_tauhat").textContent = res ? `${res.tauHat?fmt(res.tauHat,2)+" tokens":"—"} | ${res.tauHat?"fit ok":"fit weak"}` : "—";
+    $("kv_sim").textContent = res ? `base=${fmt(res.sim_base,4)} | w=${fmt(res.sim_weighted,4)} | sim=${fmt(res.simNorm,3)}` : "—";
+    $("kv_score").textContent = res ? `${fmt(res.score,4)}  (1-h=${fmt(1-res.h,3)} 1-h1=${fmt(1-res.h1,3)} a=${fmt(res.aNorm,3)} sim=${fmt(res.simNorm,3)})` : "—";
+  }
+
+  function setNullKV(nullStats, main){
+    if (!nullStats || !main){
+      $("kv_null").textContent = "—";
+      $("kv_delta").textContent = "—";
+      return;
+    }
+    const mu = nullStats.mean;
+    const sd = nullStats.sd;
+    const delta = main.score - mu;
+    const z = (sd>0) ? (delta/sd) : 0;
+    $("kv_null").textContent = `${fmt(mu,4)} ± ${fmt(sd,4)} | z=${fmt(z,3)}`;
+    $("kv_delta").textContent = `${fmt(delta,4)}`;
+  }
+
+  function buildPayload(pack, res, nullStats, settings){
+    const rawDigits = digitsOnly($("numIn").value||"");
+    return {
+      tool: "QDS Number Coherence Lab v2",
+      ts: new Date().toISOString(),
+      input: { mode: $("tokenMode").value, kind: pack.kind, displayKind: pack.displayKind, raw_len: ($("numIn").value||"").length, digits_len: rawDigits.length },
+      settings,
+      result: res,
+      null_model: nullStats || null
+    };
+  }
+
+  function runMain(){
+    setStatus("running…");
+    const settings = {
+      tau: clamp(parseFloat($("tau").value||"42"), 1, 12000),
+      lam: clamp(parseFloat($("lam").value||"50"), 0.1, 1e9),
+      maxLag: clamp(parseInt($("maxLag").value||"140",10), 10, 600),
+      useNumericACF: $("useNumericACF").checked,
+      useSymbolKernel: $("useSymbolKernel").checked
+    };
+
+    const pack = buildTokens();
+    const tokens = pack.tokens;
+
+    if (!tokens || tokens.length < 12){
+      setStatus("need more data");
+      log("Not enough tokens (need ≥ 12). Try digits or raise max tokens.");
+      return;
+    }
+
+    // Power warning
+    const uniq = uniqueCount(tokens);
+    const warns = powerCheck(tokens.length, uniq);
+    if (warns.length){
+      powerWarn.classList.remove("hide");
+      powerWarn.textContent = "Power warning: " + warns.join("  ");
+    } else {
+      powerWarn.classList.add("hide");
+      powerWarn.textContent = "";
+    }
+
+    const fast = $("mcOn").checked ? $("fastMC").checked : false;
+    const res = analyze(tokens, pack, settings, false);
+    last = res;
+
+    // chart
+    const lags = res.acf.lags && res.acf.lags.length ? res.acf.lags : Array.from({length: Math.min(120, res.maxLag)+1}, (_,i)=>i);
+    const ac = res.acf.ac && res.acf.ac.length ? res.acf.ac : lags.map((i)=> i===0 ? 1 : 0);
+    const simCurve = res.sim_curve && res.sim_curve.length ? res.sim_curve : [];
+    drawChart($("chartCanvas"), lags, ac, simCurve, res.tauHat);
+
+    setKV(res);
+    setNullKV(lastNull, last);
+
+    const payload = buildPayload(pack, res, lastNull, settings);
+    outBox.textContent = JSON.stringify(payload, null, 2);
+
+    setStatus("done");
+    log(`main: ${pack.displayKind} n=${res.n} uniq=${res.uniq} H=${fmt(res.H,3)} H1=${fmt(res.H1,3)} score=${fmt(res.score,4)} sim=${fmt(res.simNorm,3)} tauHat=${res.tauHat?fmt(res.tauHat,1):"—"}`);
+
+    // MC null
+    if ($("mcOn").checked){
+      const iters = clamp(parseInt($("mcIters").value||"50",10), 10, 200);
+      runMCNull(pack, tokens, settings, iters, fast);
+    }
+  }
+
+  function runNullOnce(){
+    const pack = buildTokens();
+    const tokens = pack.tokens;
+    if (!tokens || tokens.length < 12){
+      setStatus("need more data");
+      log("Null: not enough tokens.");
+      return;
+    }
+    const settings = {
+      tau: clamp(parseFloat($("tau").value||"42"), 1, 12000),
+      lam: clamp(parseFloat($("lam").value||"50"), 0.1, 1e9),
+      maxLag: clamp(parseInt($("maxLag").value||"140",10), 10, 600),
+      useNumericACF: $("useNumericACF").checked,
+      useSymbolKernel: $("useSymbolKernel").checked
+    };
+    setStatus("null…");
+    const sh = shuffleCopy(tokens);
+    const fast = true; // always fast for single null (we only need a point)
+    const r = analyze(sh, pack, settings, fast);
+    log(`null (single): score=${fmt(r.score,4)} H=${fmt(r.H,3)} H1=${fmt(r.H1,3)} sim=${fmt(r.simNorm,3)}`);
+    setStatus("done");
+  }
+
+  function runMCNull(pack, tokens, settings, iters, fast){
+    setStatus("MC null…");
+    let s=0, s2=0;
+    for(let k=0;k<iters;k++){
+      const sh = shuffleCopy(tokens);
+      const r = analyze(sh, pack, settings, fast);
+      s += r.score; s2 += r.score*r.score;
+    }
+    const mean = s/iters;
+    const varr = Math.max(0, s2/iters - mean*mean);
+    const sd = Math.sqrt(varr);
+    lastNull = {mc_iters: iters, mean, sd};
+    setNullKV(lastNull, last);
+
+    // update export payload with new null
+    const payload = buildPayload(pack, last, lastNull, settings);
+    outBox.textContent = JSON.stringify(payload, null, 2);
+
+    const z = (sd>0) ? (last.score-mean)/sd : 0;
+    log(`MC null x${iters}: mean=${fmt(mean,4)} sd=${fmt(sd,4)} z=${fmt(z,3)} (Δ=${fmt(last.score-mean,4)})`);
+    setStatus("done");
+  }
+
+  // ===== Tabs =====
+  function setTab(id){
+    document.querySelectorAll("[data-tab]").forEach(el=>{
+      el.classList.toggle("on", el.dataset.tab === id);
+    });
+    $("t_main").classList.toggle("hide", id !== "t_main");
+    $("t_hebrew").classList.toggle("hide", id !== "t_hebrew");
+    $("t_export").classList.toggle("hide", id !== "t_export");
+  }
+  document.querySelectorAll("[data-tab]").forEach(el=>{
+    el.addEventListener("click", ()=>setTab(el.dataset.tab));
+  });
+
+  // ===== Presets =====
+  function setMode(mode){
+    $("tokenMode").value = mode;
+    if (mode === "digits"){ $("tau").value = 42; $("lam").value = 1.5; $("maxLag").value = 220; }
+    if (mode === "pairs"){ $("tau").value = 42; $("lam").value = 12;  $("maxLag").value = 180; }
+    if (mode === "triplets"){ $("tau").value = 42; $("lam").value = 50; $("maxLag").value = 140; }
+  }
+  $("presetDigits").addEventListener("click", ()=>{ setMode("digits"); runMain(); });
+  $("presetPairs").addEventListener("click", ()=>{ setMode("pairs"); runMain(); });
+  $("presetTriplets").addEventListener("click", ()=>{ setMode("triplets"); runMain(); });
+  $("presetBig").addEventListener("click", ()=>{ $("maxN").value = 5000; runMain(); });
+
+  // ===== Buttons =====
+  $("runBtn").addEventListener("click", runMain);
+  $("nullBtn").addEventListener("click", ()=>{
+    if ($("mcOn").checked) runMain(); else runNullOnce();
+  });
+  $("resetBtn").addEventListener("click", ()=>{
+    last = null; lastNull = null;
+    $("kv_tokens").textContent = "—";
+    $("kv_alpha").textContent = "—";
+    $("kv_H").textContent = "—";
+    $("kv_H1").textContent = "—";
+    $("kv_acfA").textContent = "—";
+    $("kv_tauhat").textContent = "—";
+    $("kv_sim").textContent = "—";
+    $("kv_score").textContent = "—";
+    $("kv_null").textContent = "—";
+    $("kv_delta").textContent = "—";
+    outBox.textContent = "Run analysis to populate…";
+    logBox.textContent = "";
+    powerWarn.classList.add("hide");
+    powerWarn.textContent = "";
+    setStatus("ready");
+  });
+
+  // ===== Low-FX =====
+  $("lowFx").addEventListener("change", ()=>{
+    document.body.style.background = $("lowFx").checked ? "#050607" : "";
+  });
+
+  // ===== Export =====
+  function dl(filename, text){
+    const blob = new Blob([text], {type:"text/plain"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 250);
+  }
+  $("copyJsonBtn").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(outBox.textContent || "");
+      log("export: JSON copied");
+    }catch(e){
+      log("export: clipboard copy failed (permission). Use download.");
+    }
+  });
+  $("dlJsonBtn").addEventListener("click", ()=>{
+    dl("qds_number_coherence_v2.json", outBox.textContent || "{}");
+    log("export: JSON downloaded");
+  });
+  $("dlTxtBtn").addEventListener("click", ()=>{
+    const lines = [];
+    lines.push("QDS Number Coherence Lab v2");
+    lines.push(new Date().toISOString());
+    lines.push("");
+    if (last){
+      lines.push(`mode: ${last.displayKind}`);
+      lines.push(`n: ${last.n}`);
+      lines.push(`uniq: ${last.uniq}`);
+      lines.push(`H: ${last.H}`);
+      lines.push(`H1_smoothed: ${last.H1}`);
+      lines.push(`score: ${last.score}`);
+      lines.push(`tauHat: ${last.tauHat}`);
+      lines.push(`simNorm: ${last.simNorm}`);
+      if (lastNull){
+        lines.push(`null_mean: ${lastNull.mean}`);
+        lines.push(`null_sd: ${lastNull.sd}`);
+        lines.push(`delta: ${last.score - lastNull.mean}`);
+        lines.push(`z: ${(lastNull.sd>0)?((last.score-lastNull.mean)/lastNull.sd):0}`);
+      }
+    } else lines.push("(no run yet)");
+    dl("qds_number_coherence_v2.txt", lines.join("\n"));
+    log("export: TXT downloaded");
+  });
+
+  // ===== Hebrew numeral lab =====
+  const HEB = [
+    {v:400, l:"ת"}, {v:300, l:"ש"}, {v:200, l:"ר"}, {v:100, l:"ק"},
+    {v:90, l:"צ"},  {v:80,  l:"פ"}, {v:70,  l:"ע"}, {v:60,  l:"ס"}, {v:50, l:"נ"}, {v:40,l:"מ"},
+    {v:30, l:"ל"},  {v:20,  l:"כ"}, {v:10,  l:"י"},
+    {v:9,  l:"ט"},  {v:8,   l:"ח"}, {v:7,   l:"ז"}, {v:6,  l:"ו"}, {v:5,l:"ה"}, {v:4,l:"ד"}, {v:3,l:"ג"}, {v:2,l:"ב"}, {v:1,l:"א"},
+  ];
+
+  function hebSpell_0_999(n){
+    n = Math.floor(Math.abs(n));
+    n = clamp(n, 0, 999);
+    if (n === 0) return "—";
+    let out = "";
+    let rem = n;
+
+    // hundreds
+    for (const t of HEB){
+      if (t.v >= 100){
+        while(rem >= t.v){
+          out += t.l;
+          rem -= t.v;
+        }
+      }
+    }
+
+    // 15/16 convention
+    if (rem === 15){ out += "טו"; return out; }
+    if (rem === 16){ out += "טז"; return out; }
+
+    // tens+ones
+    for (const t of HEB){
+      if (t.v < 100){
+        while(rem >= t.v){
+          out += t.l;
+          rem -= t.v;
+        }
+      }
+    }
+    return out;
+  }
+
+  function hebBlocksFromDigits(d){
+    const k=3;
+    const n = Math.floor(d.length/k);
+    const blocks = [];
+    for(let i=0;i<n;i++){
+      const chunk = parseInt(d.slice(i*k, i*k+k), 10);
+      blocks.push({chunk, heb: hebSpell_0_999(chunk)});
+    }
+    return blocks;
+  }
+
+  function seamScanHebrew(blocks, watch, watchOn){
+    const parts = blocks.map(b => (b.heb==="—" ? "" : b.heb));
+    const joined = parts.join("");
+    const seams = [];
+
+    // boundary seam: last2(prev)+first2(next)
+    for(let i=0;i<parts.length-1;i++){
+      const a = parts[i], b = parts[i+1];
+      if (!a || !b) continue;
+      const a2 = a.slice(Math.max(0,a.length-2));
+      const b2 = b.slice(0,2);
+      const seam4 = a2 + b2;
+
+      const hits = [];
+      if (watchOn){
+        for (const w of watch){
+          if (w && seam4.includes(w)) hits.push(w);
+        }
+      }
+      if (hits.length){
+        seams.push({i, seam: seam4, hits});
+      }
+    }
+
+    const globalHits = [];
+    if (watchOn){
+      for(const w of watch){
+        if (!w) continue;
+        let idx = joined.indexOf(w);
+        while(idx !== -1){
+          globalHits.push({w, pos: idx});
+          idx = joined.indexOf(w, idx+1);
+        }
+      }
+      globalHits.sort((p,q)=>p.pos-q.pos);
+    }
+    return {joined, seams, globalHits};
+  }
+
+  $("hebRunBtn").addEventListener("click", ()=>{
+    const d = digitsOnly($("numIn").value||"");
+    if (d.length < 6){
+      $("hebBlocks").textContent = "Need at least 6 digits (two triplets).";
+      $("hebSeams").textContent = "—";
+      return;
+    }
+    const blocks = hebBlocksFromDigits(d);
+    const pretty = blocks.map(b => `${String(b.chunk).padStart(3,"0")} → ${b.heb}`).join("\n");
+    $("hebBlocks").textContent = pretty;
+
+    const watch = ($("hebWatch").value||"").split(",").map(s=>s.trim()).filter(Boolean);
+    const seam = seamScanHebrew(blocks, watch, $("hebWatchOn").checked);
+
+    const seamLines = [];
+    seamLines.push("joined:");
+    seamLines.push(seam.joined || "—");
+    seamLines.push("\nseam hits (boundary 4-letters, watchlist):");
+    if (seam.seams.length){
+      seam.seams.forEach(s=> seamLines.push(`#${s.i}: ${s.seam}  hits=[${s.hits.join(", ")}]`));
+    } else seamLines.push("(none)");
+    seamLines.push("\nglobal watch hits (joined string):");
+    if (seam.globalHits.length){
+      seam.globalHits.forEach(h=> seamLines.push(`${h.w} @ ${h.pos}`));
+    } else seamLines.push("(none)");
+
+    $("hebSeams").textContent = seamLines.join("\n");
+    log("hebrew: built blocks + seam scan");
+  });
+
+  // boot
+  setStatus("ready");
+  log("ready: paste number → Run analysis. Use MC Null to sanity-check significance.");
+})();
+</script>
+</body>
+</html>

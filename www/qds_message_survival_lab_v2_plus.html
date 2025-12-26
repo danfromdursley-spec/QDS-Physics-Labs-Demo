@@ -1,0 +1,1313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="color-scheme" content="dark"/>
+<title>QDS Message Survival Lab v2+ (NASA)</title>
+<style>
+  :root{
+    --bg0:#060a14;
+    --bg1:#0b1224;
+    --card:#0b142c;
+    --card2:#0a1022;
+    --line:#1a2a52;
+    --muted:#8fa2c9;
+    --text:#e9f1ff;
+    --cyan:#3ee7ff;
+    --teal:#22d3ee;
+    --amber:#ffb020;
+    --green:#34d399;
+    --red:#fb7185;
+    --shadow: 0 18px 60px rgba(0,0,0,.55);
+    --radius:18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+
+  /* Hard anti-bleed */
+  html,body{max-width:100%; overflow-x:hidden;}
+  *,*::before,*::after{box-sizing:border-box;}
+  img,canvas,svg{max-width:100%; height:auto;}
+
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(62,231,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(255,176,32,.10), transparent 55%),
+      radial-gradient(1000px 700px at 50% 110%, rgba(34,211,238,.12), transparent 60%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+  }
+
+  .wrap{max-width:980px; margin:0 auto; padding:16px 12px 40px;}
+  .top{
+    border:1px solid rgba(62,231,255,.22);
+    background: linear-gradient(180deg, rgba(10,16,34,.72), rgba(10,16,34,.35));
+    border-radius:22px;
+    padding:14px 14px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .top::before{
+    content:"";
+    position:absolute; inset:-2px;
+    background: radial-gradient(700px 220px at 10% 0%, rgba(62,231,255,.16), transparent 60%);
+    pointer-events:none;
+  }
+
+  .pillrow{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px;}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 11px;
+    border-radius:999px;
+    background:rgba(10,16,34,.85);
+    border:1px solid rgba(62,231,255,.22);
+    color:var(--muted);
+    font-size:13px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%; background:var(--green); box-shadow:0 0 18px rgba(52,211,153,.35);}
+  .title{
+    font-size:26px; font-weight:850; letter-spacing:.2px; margin:6px 0 8px;
+  }
+  .subtitle{color:var(--muted); line-height:1.35; font-size:14px; margin:0;}
+  .rc{
+    margin-top:12px;
+    padding:12px;
+    border-radius:16px;
+    background:rgba(255,176,32,.08);
+    border:1px solid rgba(255,176,32,.22);
+    color:#ffe6b8;
+    font-size:13px;
+    line-height:1.35;
+  }
+
+  .grid{display:grid; grid-template-columns:1fr; gap:12px; margin-top:12px;}
+  @media(min-width:920px){ .grid{grid-template-columns: 1.1fr .9fr;} }
+
+  .card{
+    background: linear-gradient(180deg, rgba(11,20,44,.85), rgba(11,20,44,.55));
+    border:1px solid rgba(62,231,255,.16);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card h3{
+    margin:0; padding:12px 14px;
+    font-size:14px;
+    letter-spacing:.3px;
+    text-transform:uppercase;
+    color:#bfefff;
+    border-bottom:1px solid rgba(62,231,255,.12);
+    background:rgba(10,16,34,.55);
+  }
+  .card .pad{padding:12px 14px;}
+  textarea{
+    width:100%;
+    min-height:150px;
+    resize:vertical;
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid rgba(62,231,255,.16);
+    background:rgba(6,10,20,.65);
+    color:var(--text);
+    outline:none;
+    font-family:var(--mono);
+    font-size:13px;
+    line-height:1.35;
+  }
+  textarea:focus{border-color:rgba(62,231,255,.38); box-shadow:0 0 0 3px rgba(62,231,255,.10);}
+
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .row > *{flex: 1 1 auto;}
+  .small{font-size:12px; color:var(--muted);}
+  label{font-size:12px; color:var(--muted); display:block; margin-bottom:5px;}
+  select,input[type="number"],input[type="text"]{
+    width:100%;
+    padding:10px 10px;
+    border-radius:12px;
+    border:1px solid rgba(62,231,255,.16);
+    background:rgba(6,10,20,.55);
+    color:var(--text);
+    outline:none;
+    font-family:var(--sans);
+    font-size:13px;
+  }
+  input[type="checkbox"]{ transform: scale(1.15); }
+  .chk{display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:12px; border:1px solid rgba(62,231,255,.12); background:rgba(6,10,20,.45); color:var(--muted); font-size:13px;}
+  .btnbar{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+  button{
+    appearance:none;
+    border:1px solid rgba(62,231,255,.22);
+    background:linear-gradient(180deg, rgba(34,211,238,.18), rgba(10,16,34,.70));
+    color:var(--text);
+    padding:11px 12px;
+    border-radius:14px;
+    font-weight:750;
+    letter-spacing:.2px;
+    cursor:pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  button.secondary{
+    background:linear-gradient(180deg, rgba(255,176,32,.12), rgba(10,16,34,.70));
+    border-color: rgba(255,176,32,.22);
+  }
+  button.ghost{
+    background:rgba(10,16,34,.55);
+    border-color: rgba(62,231,255,.12);
+    color:var(--muted);
+    box-shadow:none;
+  }
+  button:active{transform: translateY(1px);}
+  button[disabled]{opacity:.45; cursor:not-allowed; transform:none;}
+
+  .status{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .gate{
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid rgba(62,231,255,.18);
+    background:rgba(10,16,34,.55);
+    font-size:12px;
+    color:var(--muted);
+  }
+  .gate b{color:var(--text);}
+  .gate.green{border-color:rgba(52,211,153,.35); background:rgba(52,211,153,.08);}
+  .gate.amber{border-color:rgba(255,176,32,.35); background:rgba(255,176,32,.08);}
+  .gate.red{border-color:rgba(251,113,133,.35); background:rgba(251,113,133,.08);}
+
+  .prog{
+    height:10px;
+    width:100%;
+    border-radius:999px;
+    background:rgba(62,231,255,.08);
+    border:1px solid rgba(62,231,255,.14);
+    overflow:hidden;
+  }
+  .bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, rgba(62,231,255,.80), rgba(34,211,238,.55));
+    border-radius:999px;
+    transition:width .15s ease;
+  }
+
+  .kpi{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+  @media(min-width:920px){ .kpi{grid-template-columns:repeat(3,1fr);} }
+  .k{
+    border-radius:14px;
+    border:1px solid rgba(62,231,255,.12);
+    background:rgba(6,10,20,.45);
+    padding:10px 10px;
+  }
+  .k .t{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.25px;}
+  .k .v{font-family:var(--mono); font-size:15px; margin-top:6px;}
+  .mono{font-family:var(--mono);}
+
+  table{width:100%; border-collapse:collapse;}
+  th,td{padding:10px 8px; border-bottom:1px solid rgba(62,231,255,.10); vertical-align:top;}
+  th{color:#bfefff; text-transform:uppercase; font-size:11px; letter-spacing:.25px; text-align:left;}
+  td{font-size:13px; color:var(--text);}
+  .muted{color:var(--muted);}
+  .warn{color:#ffe6b8;}
+  .ok{color:#bfffe1;}
+  .bad{color:#ffb9c8;}
+  .log{
+    background:rgba(6,10,20,.55);
+    border:1px solid rgba(62,231,255,.12);
+    border-radius:14px;
+    padding:10px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#cfe6ff;
+    max-height:240px;
+    overflow:auto;
+    white-space:pre-wrap;
+  }
+  .foot{margin-top:12px; font-size:12px; color:var(--muted); text-align:center;}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="pillrow">
+      <div class="pill"><span class="dot"></span> offline • no calls</div>
+      <div class="pill">Mode: instrument</div>
+      <div class="pill">NASA-modern • v2+</div>
+      <div class="pill">QDS_PROTO_DISCLAIMER_V1</div>
+      <div class="pill">No pink ✅</div>
+    </div>
+    <div class="title">QDS Message Survival Lab v2+</div>
+    <p class="subtitle">
+      Meaning survival as <b>structure</b> (words ⇄ numbers). Razor-first, hard-nulls, and “which phrases survive”.
+      This is a <b>sanity instrument</b>, not a truth-decoder.
+    </p>
+    <div class="rc">
+      <b>Reality check:</b> It hunts structure that survives increasingly strong nulls.
+      If your “signal” dies under Markov-2, it was local grammar — that’s not failure, that’s honesty.
+      <div class="mono" style="margin-top:8px;">
+        score = wE·(1−h) + wT·(1−h1) + wA·a + wS·simEx<br/>
+        hard-null gate = minZ over {block, markov1, markov2} (shift = debug-only in circular mode)
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>1) Input</h3>
+      <div class="pad">
+        <textarea id="inp" placeholder="Paste text OR numeric tokens. Spaces/newlines ok."></textarea>
+        <div class="btnbar">
+          <button class="secondary" id="demo">Load demo feed</button>
+          <button class="ghost" id="clear">Clear</button>
+          <button class="ghost" id="cancel" disabled>Cancel</button>
+        </div>
+        <div class="status">
+          <div class="gate" id="busyPill"><b>busy:</b> no</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2) Controls</h3>
+      <div class="pad">
+        <div class="row">
+          <div>
+            <label>Token mode</label>
+            <select id="tokMode">
+              <option value="words">Words (lowercased)</option>
+              <option value="chars">Characters (A–Z0–9 kept)</option>
+              <option value="space">Space-separated tokens (verbatim)</option>
+              <option value="digits">Digits (0–9)</option>
+              <option value="pairs">Digit pairs (00–99)</option>
+              <option value="triplets">Digit triplets (000–999)</option>
+            </select>
+          </div>
+          <div>
+            <label>Encoder</label>
+            <select id="encMode">
+              <option value="identity">Identity (tokens as-is)</option>
+              <option value="wordid">Word-ID dictionary (stable IDs)</option>
+              <option value="a1z26sum">A1Z26 sum per token</option>
+              <option value="base26word">Base-26 per token (A=0..Z=25)</option>
+              <option value="a1z26stream">A1Z26 per char stream</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Max tokens</label>
+            <input id="maxN" type="number" min="20" max="50000" value="5000"/>
+          </div>
+          <div class="chk" style="margin-top:18px;">
+            <input id="circular" type="checkbox" checked/>
+            <div><b>Circular</b> (wrap)</div>
+          </div>
+          <div>
+            <label>edgeTrim (linear only)</label>
+            <input id="edgeTrim" type="number" min="0" max="2000" value="0"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>MC runs (R)</label>
+            <input id="R" type="number" min="20" max="2000" value="200"/>
+          </div>
+          <div>
+            <label>Block size</label>
+            <input id="blk" type="number" min="2" max="500" value="12"/>
+          </div>
+          <div>
+            <label>Seed</label>
+            <input id="seed" type="number" min="1" max="999999999" value="1337"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Max lag</label>
+            <input id="maxLag" type="number" min="10" max="2000" value="120"/>
+          </div>
+          <div>
+            <label>τ (tokens)</label>
+            <input id="tau" type="number" min="2" max="2000" value="160"/>
+          </div>
+          <div>
+            <label>λ (tokens)</label>
+            <input id="lam" type="number" min="2" max="2000" value="50"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Weights (wE / wT / wA / wS)</label>
+            <input id="weights" type="text" value="0.20,0.35,0.30,0.15"/>
+            <div class="small">Must sum ~1.00 (we’ll auto-normalise if not).</div>
+          </div>
+        </div>
+
+        <div class="btnbar" style="margin-top:12px;">
+          <button id="run" title="Boardroom pipeline: hard-nulls → analysis → phrase scan">RUN SURVIVAL (1-button)</button>
+          <button class="ghost" id="analysisOnly">Analysis only</button>
+          <button class="ghost" id="hardNulls">Hard nulls</button>
+          <button class="ghost" id="scan">Phrase scan</button>
+        </div>
+
+        <div class="status">
+          <div class="gate" id="gatePill"><b>gate:</b> ready</div>
+        </div>
+        <div class="prog" style="margin-top:10px;"><div class="bar" id="bar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:12px;">
+    <div class="card">
+      <h3>3) Results</h3>
+      <div class="pad">
+        <div class="kpi">
+          <div class="k"><div class="t">Tokens • Alphabet</div><div class="v mono" id="kTok">—</div></div>
+          <div class="k"><div class="t">Score</div><div class="v mono" id="kScore">—</div></div>
+          <div class="k"><div class="t">Hard-null minZ</div><div class="v mono" id="kMinZ">—</div></div>
+          <div class="k"><div class="t">Entropy h / h1</div><div class="v mono" id="kEnt">—</div></div>
+          <div class="k"><div class="t">ACF area a</div><div class="v mono" id="kA">—</div></div>
+          <div class="k"><div class="t">Similarity simEx</div><div class="v mono" id="kSim">—</div></div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="secondary" id="copy">Copy readout</button>
+          <button class="ghost" id="dlJson">Download JSON</button>
+          <button class="ghost" id="dlTxt">Download TXT</button>
+        </div>
+
+        <div class="small" style="margin-top:10px;">
+          Notes: “Hard nulls” = block/Markov-1/Markov-2. Shuffle is shown for context, not gating.
+          Shift is debug-only when circular=true (invariance check).
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>4) Phrase survival (top)</h3>
+      <div class="pad">
+        <div class="row">
+          <div>
+            <label>n-gram range (e.g. 2,6)</label>
+            <input id="ngRange" type="text" value="2,6"/>
+          </div>
+          <div>
+            <label>topK</label>
+            <input id="topK" type="number" min="10" max="200" value="40"/>
+          </div>
+          <div>
+            <label>scan MC shuffles (K)</label>
+            <input id="scanK" type="number" min="10" max="200" value="40"/>
+          </div>
+        </div>
+        <div class="small" style="margin-top:8px;">
+          Two-phase scan: pick top observed n-grams, then estimate null mean/sd via K shuffles (frequency-preserving).
+        </div>
+        <div style="margin-top:10px; overflow:auto;">
+          <table>
+            <thead>
+              <tr><th>z</th><th>count</th><th>phrase</th><th class="muted">encoded</th></tr>
+            </thead>
+            <tbody id="phT"><tr><td class="muted" colspan="4">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3>Progress log</h3>
+    <div class="pad">
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Kernel weights: w(d)=exp(-d/τ), g(d)=exp(-(d/λ)²/2). Offline. No external calls. v2+.
+  </div>
+</div>
+
+<script>
+/* ---------- Global formatters (fixes your fmt3 bug forever) ---------- */
+(function(){
+  function _fmtN(x,n){ return (Number.isFinite(x) ? (+x).toFixed(n) : "—"); }
+  window.fmt2 = window.fmt2 || (x)=>_fmtN(x,2);
+  window.fmt3 = window.fmt3 || (x)=>_fmtN(x,3);
+  window.fmt4 = window.fmt4 || (x)=>_fmtN(x,4);
+})();
+
+/* ---------- Tiny utils ---------- */
+const $ = (id)=>document.getElementById(id);
+const now = ()=>new Date().toTimeString().slice(0,8);
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+function log(s){ const el=$("log"); el.textContent += `[${now()}] ${s}\n`; el.scrollTop = el.scrollHeight; }
+function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+/* ---------- Deterministic PRNG (Mulberry32) ---------- */
+function mulberry32(seed){
+  let t = seed >>> 0;
+  return function(){
+    t += 0x6D2B79F5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function randInt(rng, n){ return (rng()*n) | 0; }
+function shuffleInPlace(arr, rng){
+  for(let i=arr.length-1;i>0;i--){
+    const j = randInt(rng, i+1);
+    const tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+  }
+}
+
+/* ---------- Tokenise ---------- */
+function tokenise(raw, mode){
+  const s = String(raw||"");
+  if(mode==="space"){
+    return s.trim().length ? s.trim().split(/\s+/g) : [];
+  }
+  if(mode==="words"){
+    const m = s.toLowerCase().match(/[a-z0-9]+/g);
+    return m ? m : [];
+  }
+  if(mode==="chars"){
+    const m = s.toUpperCase().match(/[A-Z0-9]/g);
+    return m ? m : [];
+  }
+  if(mode==="digits"){
+    const m = s.match(/[0-9]/g);
+    return m ? m : [];
+  }
+  if(mode==="pairs" || mode==="triplets"){
+    const d = (s.match(/[0-9]/g)||[]).join("");
+    const k = (mode==="pairs") ? 2 : 3;
+    const out=[];
+    for(let i=0;i+k<=d.length;i+=k) out.push(d.slice(i,i+k));
+    return out;
+  }
+  return [];
+}
+
+/* ---------- Encoders (word ⇄ number-ish) ---------- */
+function a1z26Sum(tok){
+  let sum=0;
+  for(const ch of tok.toUpperCase()){
+    const c = ch.charCodeAt(0);
+    if(c>=65 && c<=90) sum += (c-64);
+  }
+  return String(sum);
+}
+function base26Word(tok){
+  let v=0, any=false;
+  for(const ch of tok.toUpperCase()){
+    const c = ch.charCodeAt(0);
+    if(c>=65 && c<=90){
+      any=true;
+      v = (v*26 + (c-65)) >>> 0;
+    }
+  }
+  return any ? String(v) : "0";
+}
+function encodeTokens(tokens, encMode){
+  const dict = new Map();
+  const dictArr = [];
+  const out = [];
+  if(encMode==="identity"){
+    for(const t of tokens) out.push(String(t));
+    return {enc:out, dict:null, dictArr:null};
+  }
+  if(encMode==="wordid"){
+    for(const t of tokens){
+      const k = String(t);
+      if(!dict.has(k)){ dict.set(k, dict.size+1); dictArr.push([k, dict.get(k)]); }
+      out.push(String(dict.get(k)));
+    }
+    return {enc:out, dict, dictArr};
+  }
+  if(encMode==="a1z26sum"){
+    for(const t of tokens) out.push(a1z26Sum(String(t)));
+    return {enc:out, dict:null, dictArr:null};
+  }
+  if(encMode==="base26word"){
+    for(const t of tokens) out.push(base26Word(String(t)));
+    return {enc:out, dict:null, dictArr:null};
+  }
+  if(encMode==="a1z26stream"){
+    // treat input as char stream; caller should supply tokenised chars already, but we’ll handle anyway
+    const chars = tokens.join("").toUpperCase().match(/[A-Z]/g) || [];
+    for(const ch of chars) out.push(String(ch.charCodeAt(0)-64));
+    return {enc:out, dict:null, dictArr:null};
+  }
+  for(const t of tokens) out.push(String(t));
+  return {enc:out, dict:null, dictArr:null};
+}
+
+/* ---------- Entropy (H, H1) ---------- */
+function entropy(tokens){
+  const n=tokens.length;
+  const c=new Map();
+  for(const t of tokens) c.set(t, (c.get(t)||0)+1);
+  const A=c.size || 1;
+  let H=0;
+  for(const [k,v] of c){
+    const p=v/n;
+    H -= p*Math.log2(p);
+  }
+  const h = H / Math.log2(A);
+  return {H,h,A,counts:c};
+}
+function entropy1(tokens, circular){
+  const n=tokens.length;
+  if(n<2) return {H1:0,h1:0};
+  const trans=new Map(); // key "a→b"
+  const outCount=new Map();
+  const L = circular ? n : (n-1);
+  for(let i=0;i<L;i++){
+    const a = tokens[i];
+    const b = tokens[(i+1)%n];
+    const k = a+"\u0001"+b;
+    trans.set(k, (trans.get(k)||0)+1);
+    outCount.set(a, (outCount.get(a)||0)+1);
+  }
+  let H1=0;
+  for(const [k,v] of trans){
+    const [a,b]=k.split("\u0001");
+    const p_ab = v / L;
+    const p_a = (outCount.get(a)||1) / L;
+    const p_b_given_a = p_ab / p_a;
+    H1 -= p_ab * Math.log2(p_b_given_a);
+  }
+  // normalize by log2(A)
+  const A = new Set(tokens).size || 1;
+  const h1 = H1 / Math.log2(A);
+  return {H1,h1};
+}
+
+/* ---------- Coherence: ACF area + similarity (categorical match kernel) ---------- */
+function acfArea(tokens, maxLag, tau, circular){
+  const n=tokens.length;
+  if(n<5) return {a:0, tauHat:0};
+  const A = new Set(tokens).size || 1;
+  const base = 1/A;
+  const denom = (1-base) || 1;
+
+  const L = Math.min(maxLag, Math.floor(n/2));
+  let wSum=0, vSum=0;
+
+  // Also gather a quick tauHat by crude e-fold crossing
+  let firstBelow = null;
+  for(let d=1; d<=L; d++){
+    const w = Math.exp(-d/Math.max(1,tau));
+    wSum += w;
+
+    let matches=0;
+    let mCount=0;
+    const steps = circular ? n : (n-d);
+    for(let i=0;i<steps;i++){
+      const j = circular ? ((i+d)%n) : (i+d);
+      if(j>=n) break;
+      mCount++;
+      if(tokens[i]===tokens[j]) matches++;
+    }
+    const m = matches / Math.max(1,mCount);
+    const corr = (m - base) / denom; // ~0 under iid
+    vSum += w * corr;
+
+    if(firstBelow===null && corr < 0.367879) firstBelow = d;
+    if(d%40===0){} // (kept for easy perf tuning)
+  }
+  const a = clamp(vSum / Math.max(1e-9,wSum), -1, 1);
+  const tauHat = firstBelow ? firstBelow : Math.min(L, Math.max(1, Math.round(tau/10)));
+  return {a: Math.max(0,a), tauHat};
+}
+
+function simExcess(tokens, maxLag, lam, circular){
+  const n=tokens.length;
+  if(n<5) return {sim:0, base:0, ex:0, simEx:0};
+  const A = new Set(tokens).size || 1;
+  const base = 1/A;
+  const denom = (1-base) || 1;
+  const L = Math.min(maxLag, Math.floor(n/2));
+  let gSum=0, mSum=0;
+
+  for(let d=1; d<=L; d++){
+    const g = Math.exp(-0.5 * (d/Math.max(1,lam))**2);
+    gSum += g;
+
+    let matches=0;
+    let mCount=0;
+    const steps = circular ? n : (n-d);
+    for(let i=0;i<steps;i++){
+      const j = circular ? ((i+d)%n) : (i+d);
+      if(j>=n) break;
+      mCount++;
+      if(tokens[i]===tokens[j]) matches++;
+    }
+    const m = matches / Math.max(1,mCount);
+    mSum += g * m;
+  }
+  const sim = mSum / Math.max(1e-9,gSum);
+  const ex = sim - base;
+  const simEx = clamp(ex/denom, -1, 1);
+  return {sim, base, ex, simEx: Math.max(0,simEx)};
+}
+
+function parseWeights(s){
+  const parts = String(s||"").split(",").map(x=>parseFloat(x.trim())).filter(x=>Number.isFinite(x));
+  let w=[0.2,0.35,0.30,0.15];
+  if(parts.length>=4) w = parts.slice(0,4);
+  let sum = w.reduce((a,b)=>a+b,0);
+  if(!(sum>0)) sum=1;
+  w = w.map(x=>x/sum);
+  return w;
+}
+
+/* ---------- Null models ---------- */
+function blockShuffle(tokens, blk, rng){
+  const n=tokens.length;
+  const out=[];
+  const blocks=[];
+  for(let i=0;i<n;i+=blk) blocks.push(tokens.slice(i,i+blk));
+  shuffleInPlace(blocks, rng);
+  for(const b of blocks) out.push(...b);
+  return out;
+}
+
+function buildMarkov1(tokens, circular){
+  const n=tokens.length;
+  const next = new Map(); // a -> Map(b->count)
+  const outCount = new Map();
+  const L = circular ? n : (n-1);
+  for(let i=0;i<L;i++){
+    const a=tokens[i], b=tokens[(i+1)%n];
+    if(!next.has(a)) next.set(a, new Map());
+    const m=next.get(a);
+    m.set(b, (m.get(b)||0)+1);
+    outCount.set(a, (outCount.get(a)||0)+1);
+  }
+  return {next, outCount};
+}
+function sampleFromCountMap(map, rng){
+  let total=0;
+  for(const v of map.values()) total += v;
+  let r = rng()*total;
+  for(const [k,v] of map){
+    r -= v;
+    if(r<=0) return k;
+  }
+  return map.keys().next().value;
+}
+function genMarkov1(tokens, circular, rng){
+  const n=tokens.length;
+  if(n<3) return tokens.slice();
+  const {next} = buildMarkov1(tokens, circular);
+  const states = Array.from(next.keys());
+  let cur = states[randInt(rng, states.length)];
+  const out=[cur];
+  for(let i=1;i<n;i++){
+    const m = next.get(cur);
+    if(!m){ cur = states[randInt(rng, states.length)]; out.push(cur); continue; }
+    cur = sampleFromCountMap(m, rng);
+    out.push(cur);
+  }
+  return out;
+}
+
+function buildMarkov2(tokens, circular){
+  const n=tokens.length;
+  if(n<5) return null;
+  const next = new Map(); // "a\0b" -> Map(c->count)
+  const L = circular ? n : (n-2);
+  for(let i=0;i<L;i++){
+    const a=tokens[i];
+    const b=tokens[(i+1)%n];
+    const c=tokens[(i+2)%n];
+    const k=a+"\u0000"+b;
+    if(!next.has(k)) next.set(k, new Map());
+    const m=next.get(k);
+    m.set(c, (m.get(c)||0)+1);
+  }
+  return {next};
+}
+function genMarkov2(tokens, circular, rng){
+  const n=tokens.length;
+  const built = buildMarkov2(tokens, circular);
+  if(!built) return null;
+  const keys = Array.from(built.next.keys());
+  if(keys.length<3) return null;
+  let k = keys[randInt(rng, keys.length)];
+  let [a,b]=k.split("\u0000");
+  const out=[a,b];
+  for(let i=2;i<n;i++){
+    const m = built.next.get(k);
+    if(!m){
+      k = keys[randInt(rng, keys.length)];
+      [a,b]=k.split("\u0000");
+      out.push(b);
+      continue;
+    }
+    const c = sampleFromCountMap(m, rng);
+    out.push(c);
+    k = b+"\u0000"+c;
+    b=c;
+  }
+  return out.slice(0,n);
+}
+
+/* ---------- Score pipeline ---------- */
+function computeAll(tokens, maxLag, tau, lam, circular, weights){
+  const e = entropy(tokens);
+  const e1 = entropy1(tokens, circular);
+  const acf = acfArea(tokens, maxLag, tau, circular);
+  const sim = simExcess(tokens, maxLag, lam, circular);
+
+  const [wE,wT,wA,wS] = weights;
+  const score = wE*(1-e.h) + wT*(1-e1.h1) + wA*acf.a + wS*sim.simEx;
+
+  return {
+    n: tokens.length, A:e.A, H:e.H, h:e.h, H1:e1.H1, h1:e1.h1,
+    a: acf.a, tauHat: acf.tauHat,
+    sim: sim.sim, simBase: sim.base, simExRaw: sim.ex, simEx: sim.simEx,
+    score
+  };
+}
+
+async function mcScore(obs, tokens, fam, R, params, rngSeed, onProg, earlyStopZ, cancelRef){
+  const rng = mulberry32(rngSeed>>>0);
+  const scores = [];
+  let runsUsed=0;
+
+  // early-stop bound: if we stop at r, p_emp is ≤ (k+1)/(r+1); we will report that
+  let earlyStop=false;
+
+  for(let r=0;r<R;r++){
+    if(cancelRef.cancel) break;
+
+    let t=null;
+    if(fam==="shuffle"){
+      t=tokens.slice(); shuffleInPlace(t, rng);
+    } else if(fam==="block"){
+      t=blockShuffle(tokens, params.blk, rng);
+    } else if(fam==="markov1"){
+      t=genMarkov1(tokens, params.circular, rng);
+    } else if(fam==="markov2"){
+      t=genMarkov2(tokens, params.circular, rng);
+      if(!t){ return {fam, runs:0, ok:false, why:"markov2 not available"}; }
+    } else if(fam==="shift"){
+      // invariance debug only: rotate sequence
+      const n=tokens.length;
+      const k = randInt(rng, n);
+      t = tokens.slice(k).concat(tokens.slice(0,k));
+    } else {
+      t=tokens.slice(); shuffleInPlace(t, rng);
+    }
+
+    const m = computeAll(t, params.maxLag, params.tau, params.lam, params.circular, params.weights);
+    scores.push(m.score);
+    runsUsed++;
+
+    if(runsUsed % 10 === 0){
+      if(onProg) onProg(runsUsed, R);
+      await sleep(0);
+    }
+
+    if(earlyStopZ && runsUsed>=30){
+      // cheap z estimate for early stop
+      const mu = mean(scores);
+      const sd = stdev(scores, mu);
+      if(sd>0){
+        const z = (obs.score - mu)/sd;
+        if(Math.abs(z) >= earlyStopZ){
+          earlyStop=true;
+          break;
+        }
+      }
+    }
+  }
+
+  if(scores.length<3){
+    return {fam, runs:runsUsed, ok:false, why: cancelRef.cancel ? "cancelled" : "insufficient runs"};
+  }
+
+  const mu = mean(scores);
+  const sd = stdev(scores, mu);
+  const z  = sd>0 ? (obs.score - mu)/sd : 0;
+
+  // one-sided p: how often null >= obs
+  let ge=0;
+  for(const x of scores) if(x >= obs.score) ge++;
+  const pEmp = (ge+1)/(scores.length+1);
+
+  let pNote = "";
+  let pBound = null;
+  if(earlyStop && scores.length < R){
+    // upper bound on p given limited resolution
+    pBound = (ge+1)/(scores.length+1);
+    pNote  = `≤${pBound.toFixed(4)} (early-stop; low-res)`;
+  }
+
+  return {fam, runs:runsUsed, ok:true, mu, sd, z, pEmp, pNote, pBound};
+}
+
+function mean(a){ return a.reduce((x,y)=>x+y,0)/Math.max(1,a.length); }
+function stdev(a, mu){
+  let v=0;
+  for(const x of a) v += (x-mu)*(x-mu);
+  v /= Math.max(1, a.length-1);
+  return Math.sqrt(v);
+}
+
+/* ---------- Phrase survival scan (two-phase) ---------- */
+function ngramCounts(tokens, n, circular){
+  const N=tokens.length;
+  const out=new Map();
+  if(N<n) return out;
+  const L = circular ? N : (N-n+1);
+  for(let i=0;i<L;i++){
+    let parts=[];
+    for(let k=0;k<n;k++) parts.push(tokens[(i+k)%N]);
+    const key = parts.join(" ");
+    out.set(key, (out.get(key)||0)+1);
+  }
+  return out;
+}
+
+async function phraseScan(tokens, encTokens, nMin, nMax, topK, K, seed, circular, cancelRef){
+  // Phase 1: collect top observed keys across n range
+  const cand = new Map(); // key -> {n, count}
+  for(let n=nMin;n<=nMax;n++){
+    if(cancelRef.cancel) break;
+    const c = ngramCounts(tokens, n, circular);
+    // take top ~topK*2 per n by count
+    const arr = Array.from(c.entries()).sort((a,b)=>b[1]-a[1]).slice(0, topK*2);
+    for(const [k,v] of arr){
+      const prev = cand.get(k);
+      if(!prev || v>prev.count) cand.set(k, {n, count:v});
+    }
+    await sleep(0);
+  }
+  const cands = Array.from(cand.entries()).sort((a,b)=>b[1].count-a[1].count).slice(0, topK);
+
+  // Phase 2: estimate null mean/sd for each candidate via K shuffles
+  const rng0 = mulberry32((seed*99991)>>>0);
+  const stats = cands.map(([k,meta])=>({key:k, n:meta.n, obs:meta.count, mu:0, sd:0, z:0}));
+
+  // Pre-split tokens for faster counting
+  const obsMap = new Map(stats.map(s=>[s.key, s]));
+
+  // accumulate sums
+  const sum = new Map(stats.map(s=>[s.key,0]));
+  const sum2= new Map(stats.map(s=>[s.key,0]));
+
+  for(let r=0;r<K;r++){
+    if(cancelRef.cancel) break;
+    const sh = encTokens.slice(); shuffleInPlace(sh, rng0);
+
+    // count only candidate n-grams
+    for(const st of stats){
+      const n=st.n;
+      const N=sh.length;
+      let cnt=0;
+      if(N>=n){
+        const L = circular ? N : (N-n+1);
+        for(let i=0;i<L;i++){
+          // compare without building arrays: string join is ok for K<=40 topK<=40
+          let ok=true;
+          const parts = st.key.split(" ");
+          for(let k=0;k<n;k++){
+            if(sh[(i+k)%N] !== parts[k]){ ok=false; break; }
+          }
+          if(ok) cnt++;
+        }
+      }
+      sum.set(st.key, sum.get(st.key)+cnt);
+      sum2.set(st.key, sum2.get(st.key)+cnt*cnt);
+    }
+
+    if((r+1)%5===0) await sleep(0);
+  }
+
+  const runs = Math.max(1, Math.min(K, K)); // just for consistency
+  for(const st of stats){
+    const m = sum.get(st.key)/runs;
+    const v = (sum2.get(st.key)/runs) - m*m;
+    const sd = Math.sqrt(Math.max(0, v));
+    const z = sd>0 ? (st.obs - m)/sd : 0;
+    st.mu=m; st.sd=sd; st.z=z;
+  }
+
+  // Render phrase + a “decoded” view (pretty) and encoded (already enc tokens)
+  stats.sort((a,b)=>b.z-a.z);
+  return stats;
+}
+
+/* ---------- UI state ---------- */
+const state = {
+  busy:false,
+  cancel:{cancel:false},
+  last:null,
+  lastHard:null,
+  lastScan:null,
+  lastDict:null
+};
+
+function setBusy(on){
+  state.busy = on;
+  $("busyPill").innerHTML = `<b>busy:</b> ${on ? "YES" : "no"}`;
+  $("cancel").disabled = !on;
+  // Lock all buttons except Cancel when busy
+  for(const id of ["run","analysisOnly","hardNulls","scan","demo","clear","copy","dlJson","dlTxt"]){
+    $(id).disabled = on;
+  }
+  $("cancel").disabled = !on;
+}
+function setBar(p){
+  $("bar").style.width = clamp(p,0,100).toFixed(1)+"%";
+}
+function setGate(kind, text){
+  const el=$("gatePill");
+  el.classList.remove("green","amber","red");
+  if(kind) el.classList.add(kind);
+  el.innerHTML = `<b>gate:</b> ${text}`;
+}
+
+/* ---------- Core actions ---------- */
+function getParams(){
+  const raw = $("inp").value || "";
+  const tokMode = $("tokMode").value;
+  const encMode = $("encMode").value;
+
+  let tokens = tokenise(raw, tokMode);
+  const maxN = clamp(parseInt($("maxN").value||"5000",10), 20, 50000);
+  tokens = tokens.slice(0, maxN);
+
+  const circular = !!$("circular").checked;
+  const edgeTrim = clamp(parseInt($("edgeTrim").value||"0",10), 0, 2000);
+
+  // apply edgeTrim only if linear
+  if(!circular && edgeTrim>0 && tokens.length > edgeTrim*2){
+    tokens = tokens.slice(edgeTrim, tokens.length-edgeTrim);
+  }
+
+  // If encoder is stream-based, force token base
+  if(encMode==="a1z26stream"){
+    const chars = tokenise(raw, "chars").filter(ch=>/^[A-Z]$/.test(ch));
+    tokens = chars.slice(0, maxN);
+  }
+
+  const enc = encodeTokens(tokens, encMode);
+
+  const R = clamp(parseInt($("R").value||"200",10), 20, 2000);
+  const blk = clamp(parseInt($("blk").value||"12",10), 2, 500);
+  const seed = clamp(parseInt($("seed").value||"1337",10), 1, 999999999);
+
+  const maxLag = clamp(parseInt($("maxLag").value||"120",10), 10, 2000);
+  const tau = clamp(parseInt($("tau").value||"160",10), 2, 2000);
+  const lam = clamp(parseInt($("lam").value||"50",10), 2, 2000);
+  const weights = parseWeights($("weights").value);
+
+  // phrase scan params
+  const ng = ($("ngRange").value||"2,6").split(",").map(x=>parseInt(x.trim(),10)).filter(Number.isFinite);
+  const nMin = clamp(ng[0]||2, 1, 12);
+  const nMax = clamp(ng[1]||6, nMin, 12);
+  const topK = clamp(parseInt($("topK").value||"40",10), 10, 200);
+  const scanK= clamp(parseInt($("scanK").value||"40",10), 10, 200);
+
+  return {
+    raw, tokMode, encMode,
+    tokens, encTokens: enc.enc, dictArr: enc.dictArr,
+    circular, edgeTrim,
+    R, blk, seed,
+    maxLag, tau, lam, weights,
+    nMin, nMax, topK, scanK
+  };
+}
+
+function renderResults(obs, hard){
+  $("kTok").textContent = `${obs.n} • ${obs.A}`;
+  $("kScore").textContent = fmt4(obs.score);
+  $("kEnt").textContent = `h=${fmt4(obs.h)} / h1=${fmt4(obs.h1)}`;
+  $("kA").textContent = `${fmt4(obs.a)} (τ̂≈${fmt2(obs.tauHat)})`;
+  $("kSim").textContent = `simEx=${fmt4(obs.simEx)} (base=${fmt4(obs.simBase)})`;
+
+  if(hard && hard.ok){
+    $("kMinZ").textContent = fmt3(hard.minZ);
+    // Gate logic
+    const minZ = hard.minZ;
+    if(minZ > 3) setGate("green", `GREEN • robust (minZ=${fmt2(minZ)})`);
+    else if(minZ > 0) setGate("amber", `AMBER • fragile (minZ=${fmt2(minZ)})`);
+    else setGate("red", `RED • minZ=${fmt2(minZ)} (bin the hype)`);
+  } else {
+    $("kMinZ").textContent = "—";
+    setGate(null, "ready");
+  }
+}
+
+function renderPhrases(rows){
+  const tb=$("phT");
+  tb.innerHTML = "";
+  if(!rows || !rows.length){
+    tb.innerHTML = `<tr><td class="muted" colspan="4">—</td></tr>`;
+    return;
+  }
+  for(const r of rows.slice(0, 50)){
+    const phrase = r.key;
+    // “encoded” for this build is already the token string itself (we’re scanning encoded tokens)
+    tb.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td class="mono">${fmt2(r.z)}</td>
+        <td class="mono">${r.obs}</td>
+        <td>${escapeHtml(phrase)}</td>
+        <td class="muted mono">${escapeHtml(phrase)}</td>
+      </tr>
+    `);
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+
+/* ---------- Hard-null gate ---------- */
+async function runHardNulls(params){
+  const obs = computeAll(params.encTokens, params.maxLag, params.tau, params.lam, params.circular, params.weights);
+  log(`analysis: tokMode=${params.tokMode} enc=${params.encMode} n=${obs.n} A=${obs.A} circular=${params.circular} edgeTrim=${params.edgeTrim}`);
+  log(`analysis: score=${fmt4(obs.score)} a=${fmt4(obs.a)} simEx=${fmt4(obs.simEx)} (h=${fmt4(obs.h)} h1=${fmt4(obs.h1)})`);
+
+  const cancelRef = state.cancel;
+  const earlyStopZ = 12;
+
+  // gate families (NO SHIFT here)
+  const fams = ["block","markov1","markov2"];
+  const out = [];
+  let minZ = Infinity;
+  let worst = null;
+
+  for(let i=0;i<fams.length;i++){
+    if(cancelRef.cancel) break;
+    const fam = fams[i];
+    log(`hard-null: ${fam} x${params.R} …`);
+    setBar( (i/fams.length)*40 + 5 );
+
+    const mc = await mcScore(obs, params.encTokens, fam, params.R, params, (params.seed + 777*i)>>>0,
+      (r,R)=>setBar( (i/fams.length)*40 + 5 + (r/R)*35 ),
+      earlyStopZ,
+      cancelRef
+    );
+
+    if(!mc.ok){
+      out.push({fam, ok:false, why:mc.why});
+      continue;
+    }
+    out.push(mc);
+    if(Number.isFinite(mc.z) && mc.z < minZ){ minZ = mc.z; worst = mc; }
+
+    const pStr = mc.pNote ? mc.pNote : fmt4(mc.pEmp);
+    log(`hard-null: ${fam} z=${fmt2(mc.z)} p=${pStr} runs=${mc.runs}${mc.pNote? " (low-res)" : ""}`);
+    await sleep(0);
+  }
+
+  const hard = {ok: Number.isFinite(minZ), minZ, out, worst};
+  return {obs, hard};
+}
+
+/* ---------- RUN SURVIVAL pipeline (locks buttons) ---------- */
+async function runPipeline(){
+  if(state.busy) return;
+  state.cancel.cancel = false;
+  setBusy(true);
+  setGate(null, "running…");
+  setBar(0);
+  log("RUN SURVIVAL: starting (boardroom pipeline: hard-nulls → analysis → phrase scan → export)…");
+
+  try{
+    const params = getParams();
+    if(params.encTokens.length < 20){
+      log("❌ need more tokens (>=20).");
+      setGate("red","too short");
+      return;
+    }
+
+    // 1) Hard nulls first (boardroom rule)
+    setBar(2);
+    const {obs, hard} = await runHardNulls(params);
+    state.last = obs;
+    state.lastHard = hard;
+    renderResults(obs, hard);
+
+    if(state.cancel.cancel) { log("cancelled."); return; }
+
+    // 2) Phrase scan (uses encoded tokens)
+    setBar(55);
+    log(`phrase scan: n=${params.nMin}..${params.nMax} topK=${params.topK} shufflesK=${params.scanK} …`);
+    const rows = await phraseScan(params.encTokens, params.encTokens, params.nMin, params.nMax, params.topK, params.scanK, params.seed, params.circular, state.cancel);
+    state.lastScan = rows;
+    renderPhrases(rows);
+    setBar(92);
+
+    // 3) Final note
+    if(hard.ok){
+      if(hard.minZ>3) log(`✅ gate GREEN: minZ=${fmt2(hard.minZ)} (survives hard nulls)`);
+      else if(hard.minZ>0) log(`⚠️ gate AMBER: minZ=${fmt2(hard.minZ)} (fragile under some hard nulls)`);
+      else log(`🛑 gate RED: minZ=${fmt2(hard.minZ)} (hard null explains it)`);
+    }
+    setBar(100);
+    log("RUN SURVIVAL: done.");
+
+  }catch(e){
+    log("❌ error: "+(e && e.message ? e.message : String(e)));
+    setGate("red","error");
+  }finally{
+    setBusy(false);
+  }
+}
+
+async function runAnalysisOnly(){
+  if(state.busy) return;
+  state.cancel.cancel = false;
+  setBusy(true); setBar(0); setGate(null,"running…");
+  try{
+    const p = getParams();
+    const obs = computeAll(p.encTokens, p.maxLag, p.tau, p.lam, p.circular, p.weights);
+    state.last = obs; state.lastHard=null;
+    renderResults(obs, null);
+    log(`analysis only: score=${fmt4(obs.score)} a=${fmt4(obs.a)} simEx=${fmt4(obs.simEx)} (h=${fmt4(obs.h)} h1=${fmt4(obs.h1)})`);
+    setBar(100);
+  }catch(e){
+    log("❌ error: "+(e && e.message ? e.message : String(e)));
+    setGate("red","error");
+  }finally{
+    setBusy(false);
+  }
+}
+
+async function runHardOnly(){
+  if(state.busy) return;
+  state.cancel.cancel = false;
+  setBusy(true); setBar(0); setGate(null,"running…");
+  try{
+    const p = getParams();
+    const {obs, hard} = await runHardNulls(p);
+    state.last = obs; state.lastHard = hard;
+    renderResults(obs, hard);
+    setBar(100);
+  }catch(e){
+    log("❌ error: "+(e && e.message ? e.message : String(e)));
+    setGate("red","error");
+  }finally{
+    setBusy(false);
+  }
+}
+
+async function runScanOnly(){
+  if(state.busy) return;
+  state.cancel.cancel = false;
+  setBusy(true); setBar(0); setGate(null,"running…");
+  try{
+    const p = getParams();
+    if(p.encTokens.length < 20){ log("❌ need more tokens (>=20)."); setGate("red","too short"); return; }
+    log(`phrase scan only: n=${p.nMin}..${p.nMax} topK=${p.topK} shufflesK=${p.scanK} …`);
+    const rows = await phraseScan(p.encTokens, p.encTokens, p.nMin, p.nMax, p.topK, p.scanK, p.seed, p.circular, state.cancel);
+    state.lastScan = rows;
+    renderPhrases(rows);
+    setBar(100);
+  }catch(e){
+    log("❌ error: "+(e && e.message ? e.message : String(e)));
+    setGate("red","error");
+  }finally{
+    setBusy(false);
+  }
+}
+
+/* ---------- Exports ---------- */
+function buildReadout(){
+  const obs = state.last;
+  const hard = state.lastHard;
+  const rows = state.lastScan || [];
+  if(!obs) return "No results yet.";
+  let s = "";
+  s += "QDS Message Survival Lab v2+ (NASA)\\n";
+  s += "offline • no calls • QDS_PROTO_DISCLAIMER_V1\\n\\n";
+  s += `tokens n=${obs.n} A=${obs.A}\\n`;
+  s += `score=${fmt4(obs.score)}  a=${fmt4(obs.a)}  simEx=${fmt4(obs.simEx)}\\n`;
+  s += `H=${fmt4(obs.H)} (h=${fmt4(obs.h)})  H1=${fmt4(obs.H1)} (h1=${fmt4(obs.h1)})  tauHat=${fmt2(obs.tauHat)}\\n\\n`;
+  if(hard && hard.ok){
+    s += `HARD-NULL gate minZ=${fmt3(hard.minZ)} over {block,markov1,markov2}\\n`;
+    for(const o of hard.out){
+      if(!o.ok){ s += `  ${o.fam}: (skipped) ${o.why}\\n`; continue; }
+      const pStr = o.pNote ? o.pNote : fmt4(o.pEmp);
+      s += `  ${o.fam}: z=${fmt2(o.z)} p=${pStr} runs=${o.runs}\\n`;
+    }
+    s += "\\n";
+  }
+  if(rows && rows.length){
+    s += "PHRASE SURVIVAL (top)\\n";
+    for(const r of rows.slice(0,20)){
+      s += `  z=${fmt2(r.z)}  count=${r.obs}  ${r.key}\\n`;
+    }
+  }
+  return s;
+}
+
+function download(name, text, mime){
+  const blob = new Blob([text], {type:mime||"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+
+/* ---------- Wire UI ---------- */
+$("run").onclick = runPipeline;
+$("analysisOnly").onclick = runAnalysisOnly;
+$("hardNulls").onclick = runHardOnly;
+$("scan").onclick = runScanOnly;
+$("cancel").onclick = ()=>{ state.cancel.cancel=true; log("⛔ cancel requested."); };
+
+$("demo").onclick = ()=>{
+  $("inp").value =
+`the quick brown fox jumps over the lazy dog
+the quick brown fox jumps over the lazy dog
+we test what phrases survive under null models
+structure survives meaning does not`;
+  log("demo feed loaded.");
+};
+
+$("clear").onclick = ()=>{ $("inp").value=""; log("cleared."); };
+
+$("copy").onclick = async ()=>{
+  const t = buildReadout();
+  try{ await navigator.clipboard.writeText(t); log("copied readout."); }
+  catch(e){ log("copy failed (clipboard blocked). Use Download TXT."); }
+};
+
+$("dlTxt").onclick = ()=>download("qds_message_survival_v2_readout.txt", buildReadout(), "text/plain");
+$("dlJson").onclick = ()=>{
+  const payload = {
+    meta:{app:"QDS Message Survival Lab v2+", mode:"instrument", offline:true, no_calls:true},
+    obs: state.last,
+    hard: state.lastHard,
+    phrases: (state.lastScan||[]).slice(0,50),
+    readout: buildReadout()
+  };
+  download("qds_message_survival_v2_readout.json", JSON.stringify(payload,null,2), "application/json");
+};
+
+log("ready: paste input → RUN SURVIVAL (hard-nulls → analysis → phrase scan).");
+</script>
+</body>
+</html>

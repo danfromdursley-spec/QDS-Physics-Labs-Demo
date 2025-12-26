@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QDS Genomics Coherence Lab v2+ (Entropy + Two-Scale λg + Traits)</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111826; --ink:#e7eef7; --muted:#9fb0c3;
+    --line:#213045; --hot:#ffcc66; --ok:#90ee90; --bad:#ff7b7b;
+    --radius:16px;
+  }
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
+  header{padding:16px 14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#0f1620,transparent);}
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.35}
+  .wrap{padding:14px;max-width:1100px;margin:0 auto;}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media (min-width:920px){ .grid{grid-template-columns:1.15fr .85fr;} }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px;box-shadow:0 12px 26px rgba(0,0,0,.25);}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  label{font-size:12px;color:var(--muted)}
+  input[type="file"]{width:100%;}
+  input[type="number"], input[type="text"], textarea{
+    background:#0c1320;border:1px solid var(--line);border-radius:12px;color:var(--ink);
+    padding:10px 10px;outline:none;width:100%;
+  }
+  textarea{min-height:110px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+  button{
+    background:#0c1320;border:1px solid var(--line);border-radius:12px;color:var(--ink);
+    padding:10px 12px;cursor:pointer
+  }
+  button:hover{border-color:#2d4666}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+  .pill strong{color:var(--ink)}
+  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .k{background:#0c1320;border:1px solid var(--line);border-radius:14px;padding:10px}
+  .k .t{color:var(--muted);font-size:12px}
+  .k .v{font-size:18px;margin-top:4px}
+  .k .s{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.25}
+  hr{border:none;border-top:1px solid var(--line);margin:10px 0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .small{font-size:12px;color:var(--muted);line-height:1.35}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;font-size:13px;text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  .good{color:var(--ok)} .warn{color:var(--hot)} .bad{color:var(--bad)}
+  canvas{width:100%;height:190px;background:#0c1320;border:1px solid var(--line);border-radius:14px}
+  .status{white-space:pre-wrap;font-size:12px;color:var(--muted);line-height:1.35}
+  .two{display:grid;grid-template-columns:1fr;gap:10px}
+  @media (min-width:920px){ .two{grid-template-columns:1fr 1fr;} }
+  .three{display:grid;grid-template-columns:1fr;gap:10px}
+  @media (min-width:920px){ .three{grid-template-columns:1fr 1fr 1fr;} }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>QDS Genomics Coherence Lab v2+</h1>
+  <div class="sub">
+    Mainstream counts SNP confetti. QDS measures <span class="mono">λ₍g₎</span> at two scales using
+    <b>windowed entropy</b> + <b>genotype-change density</b>, then estimates <span class="mono">D_eff</span>.
+    Optional trait weights panel: <span class="mono">rsID effect_allele beta</span>. Offline. Phone-safe. No mysticism. 🦺🎩
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <div class="card">
+      <div class="row">
+        <div class="pill">Mode: <strong>Mainstream vs QDS</strong></div>
+        <div class="pill">Signal: <strong>Entropy + Change Density</strong></div>
+        <div class="pill">Two-scale λ₍g₎: <strong>LD-ish + Haplotype-ish</strong></div>
+      </div>
+
+      <hr/>
+
+      <label>1) Load 23andMe raw data (.txt)</label>
+      <input id="file" type="file" accept=".txt,.tsv,.csv" />
+
+      <div class="three" style="margin-top:10px">
+        <div>
+          <label>Short window (bp) — LD-ish</label>
+          <input id="wShort" type="number" min="10000" max="500000" value="50000" />
+          <div class="small">Default 50kb. Smaller = noisier but sharper.</div>
+        </div>
+        <div>
+          <label>Long window (bp) — haplotype-ish</label>
+          <input id="wLong" type="number" min="200000" max="5000000" value="1000000" />
+          <div class="small">Default 1Mb. Captures longer-scale structure.</div>
+        </div>
+        <div>
+          <label>Max lag (windows)</label>
+          <input id="maxLag" type="number" min="20" max="240" value="120" />
+          <div class="small">Lag is in <i>windows</i>, not SNPs.</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>Optional: Watchlist rsIDs (lookup-only)</label>
+          <input id="watch" type="text" placeholder="rs4988235 rs762551 rs12913832" />
+          <div class="small">Outputs genotypes + positions found. No external databases.</div>
+        </div>
+        <div>
+          <label>Trait weights (rsID effect_allele beta)</label>
+          <textarea id="traits" spellcheck="false" placeholder=
+"# Example:
+rs4988235 T 0.40
+rs762551 A 0.25
+# format: rsID   EFFECT_ALLELE(A/C/G/T)   BETA(number)
+"></textarea>
+          <div class="small">You choose the effect allele + beta. We compute dosage × beta. Missing ignored.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="run">🦺 Build v2+ Metrics</button>
+        <button id="demo">Load tiny demo</button>
+        <button id="copy">Copy summary</button>
+      </div>
+
+      <div style="margin-top:10px" class="status" id="status">Waiting for file…</div>
+
+      <hr/>
+
+      <div class="kpi">
+        <div class="k">
+          <div class="t">Mainstream: D_raw (called SNPs)</div>
+          <div class="v mono" id="k_raw">—</div>
+          <div class="s">Counts called genotypes (non-missing)</div>
+        </div>
+        <div class="k">
+          <div class="t">Missing rate</div>
+          <div class="v mono" id="k_miss">—</div>
+          <div class="s">Missing genotype fraction</div>
+        </div>
+        <div class="k">
+          <div class="t">QDS λ₍g₎ short (LD-ish)</div>
+          <div class="v mono" id="k_lshort">—</div>
+          <div class="s">From windowed signal autocorrelation</div>
+        </div>
+        <div class="k">
+          <div class="t">QDS λ₍g₎ long (haplotype-ish)</div>
+          <div class="v mono" id="k_llong">—</div>
+          <div class="s">Longer-scale coherence estimate</div>
+        </div>
+        <div class="k">
+          <div class="t">QDS redundancy short</div>
+          <div class="v mono" id="k_rshort">—</div>
+          <div class="s">Redundancy factor from ρ(k)⁺</div>
+        </div>
+        <div class="k">
+          <div class="t">QDS D_eff (using short)</div>
+          <div class="v mono" id="k_deff">—</div>
+          <div class="s">Called SNPs / redundancy_short</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <div class="small">Autocorrelation ρ(k) — short window signal</div>
+          <canvas id="plotShort" width="900" height="260"></canvas>
+        </div>
+        <div>
+          <div class="small">Autocorrelation ρ(k) — long window signal</div>
+          <canvas id="plotLong" width="900" height="260"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 8px 0;font-size:16px">Comparison output</h2>
+      <div class="small">
+        v2+ builds a genome-space signal per window:
+        <span class="mono">X = 0.6·entropy + 0.4·change_density</span>.
+        Entropy captures genotype “mix”; change density captures local “flip rate”.
+        Then QDS extracts λ₍g₎ from when ρ(k) drops below <span class="mono">1/e</span>.
+      </div>
+
+      <hr/>
+
+      <table>
+        <thead><tr><th>Metric</th><th>Mainstream</th><th>QDS-style</th></tr></thead>
+        <tbody id="cmp">
+          <tr><td>D_raw</td><td class="mono">—</td><td class="mono">—</td></tr>
+          <tr><td>λ₍g₎ short / long</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>Redundancy short</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>D_eff</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>Coherence note</td><td>Counts + LD corrections</td><td>Structure-first field view</td></tr>
+        </tbody>
+      </table>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Trait-weight panel</h3>
+      <div id="traitOut" class="small">No trait weights yet.</div>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Watchlist</h3>
+      <div id="watchOut" class="small">No watchlist yet.</div>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Per-chromosome counts</h3>
+      <div id="chromOut" class="small mono">—</div>
+
+      <hr/>
+
+      <div class="small">
+        <b>Reality check:</b> This is not a clinical tool and not a PRS engine.
+        It’s a structure-aware summariser that quantifies your thesis: <i>genome variation is correlated</i>.
+        If you want stricter LD modelling, we’d need a reference panel or dense LD computation (heavier).
+      </div>
+
+      <div class="small" style="margin-top:8px">
+        <span class="pill">Bonus</span>
+        <span class="pill">Viking Confetti Index: <strong id="vci">—</strong></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/*
+  QDS Genomics Coherence Lab v2+
+  - Two window scales (short/long)
+  - Windowed entropy + genotype-change density signal
+  - Autocorrelation -> lambda_g short/long
+  - Redundancy -> D_eff
+  - Trait weights: rsID effect_allele beta -> trait score + QDS "effective" trait degrees (window-unique)
+*/
+
+const el = (id)=>document.getElementById(id);
+
+function fmtInt(x){
+  if (!isFinite(x)) return "—";
+  return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function fmtPct(x){
+  if (!isFinite(x)) return "—";
+  return (x*100).toFixed(2) + "%";
+}
+function fmtBp(x){
+  if (!isFinite(x) || x<=0) return "—";
+  if (x>=1e6) return (x/1e6).toFixed(2) + " Mb";
+  if (x>=1e3) return (x/1e3).toFixed(1) + " kb";
+  return Math.round(x) + " bp";
+}
+function status(msg){ el("status").textContent = msg; }
+
+function safeChrom(ch){
+  const c = (ch||"").toUpperCase();
+  if (c==="X"||c==="Y"||c==="MT"||c==="M") return c==="M"?"MT":c;
+  const n = parseInt(c,10);
+  if (isFinite(n) && n>=1 && n<=22) return String(n);
+  return null;
+}
+
+function parseWatchlist(txt){
+  const s = (txt||"").trim();
+  if (!s) return new Set();
+  const items = s.split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+  const set = new Set();
+  for (const it of items){
+    const t = it.toLowerCase();
+    if (t.startsWith("rs")) set.add(t);
+  }
+  return set;
+}
+
+function parseTraits(txt){
+  // lines: rsid effect_allele beta
+  const map = new Map();
+  const lines = (txt||"").split(/\r?\n/);
+  for (const raw of lines){
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const parts = line.split(/\s+/);
+    if (parts.length < 3) continue;
+    const rs = parts[0].toLowerCase();
+    const ea = parts[1].toUpperCase();
+    const beta = parseFloat(parts[2]);
+    if (!rs.startsWith("rs")) continue;
+    if (!"ACGT".includes(ea)) continue;
+    if (!isFinite(beta)) continue;
+    map.set(rs, {ea, beta});
+  }
+  return map;
+}
+
+function gtDosage(gt, effectAllele){
+  // gt like "AG", "TT". If non-standard (I/D etc) treat as missing.
+  if (!gt || gt.length < 2) return null;
+  const a = gt[0], b = gt[1];
+  if (!"ACGT".includes(a) || !"ACGT".includes(b)) return null;
+  let d = 0;
+  if (a === effectAllele) d++;
+  if (b === effectAllele) d++;
+  return d;
+}
+
+function shannonEntropy4(counts){
+  // counts for AA, AB, BB + other? We do genotype symbol counts in {AA,AB,BA,BB} collapsed
+  let n = 0;
+  for (const k in counts) n += counts[k];
+  if (n <= 0) return 0;
+  let H = 0;
+  for (const k in counts){
+    const c = counts[k];
+    if (c<=0) continue;
+    const p = c/n;
+    H -= p * Math.log2(p);
+  }
+  return H; // bits
+}
+
+function drawPlot(canvasId, rhos, lambdaLag){
+  const c = el(canvasId);
+  const ctx = c.getContext("2d");
+  const W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+
+  // grid
+  ctx.strokeStyle = "#213045";
+  ctx.lineWidth = 1;
+  for (let i=0;i<=8;i++){
+    const y = (H-20) - i*(H-40)/8;
+    ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W-10,y); ctx.stroke();
+  }
+  for (let i=0;i<=10;i++){
+    const x = 40 + i*(W-60)/10;
+    ctx.beginPath(); ctx.moveTo(x,10); ctx.lineTo(x,H-20); ctx.stroke();
+  }
+
+  ctx.fillStyle = "#9fb0c3";
+  ctx.font = "13px ui-monospace, Menlo, Consolas, monospace";
+  ctx.fillText("ρ(k)", 10, 22);
+  ctx.fillText("lag k (windows)", W-165, H-6);
+
+  if (!rhos || rhos.length < 2) return;
+
+  const maxK = rhos.length-1;
+  const minY = -0.2, maxY = 1.0;
+  const X = (k)=> 40 + (k/maxK)*(W-60);
+  const Y = (v)=> (H-20) - ((v-minY)/(maxY-minY))*(H-40);
+
+  // curve
+  ctx.strokeStyle = "#e7eef7";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let k=1;k<=maxK;k++){
+    const v = rhos[k];
+    const x = X(k), y = Y(v);
+    if (k===1) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // 1/e line
+  const thr = 1/Math.E;
+  ctx.strokeStyle = "#ffcc66";
+  ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(40, Y(thr)); ctx.lineTo(W-10, Y(thr)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // lambda marker
+  if (lambdaLag && lambdaLag > 0 && lambdaLag <= maxK){
+    ctx.strokeStyle = "#90ee90";
+    ctx.beginPath(); ctx.moveTo(X(lambdaLag),10); ctx.lineTo(X(lambdaLag),H-20); ctx.stroke();
+    ctx.fillStyle = "#90ee90";
+    ctx.fillText("λ≈"+lambdaLag, X(lambdaLag)+6, 22);
+  }
+}
+
+function autocorr(arr, maxLag){
+  // arr is numeric
+  const n = arr.length;
+  if (n < maxLag + 10) return null;
+
+  let mean = 0;
+  for (let i=0;i<n;i++) mean += arr[i];
+  mean /= n;
+
+  let var0 = 0;
+  for (let i=0;i<n;i++){
+    const d = arr[i] - mean;
+    var0 += d*d;
+  }
+  var0 /= n;
+  if (var0 <= 1e-12) return null;
+
+  const r = new Array(maxLag+1).fill(0);
+  r[0] = 1;
+
+  for (let k=1;k<=maxLag;k++){
+    let cov = 0;
+    const m = n - k;
+    for (let i=0;i<m;i++){
+      cov += (arr[i]-mean)*(arr[i+k]-mean);
+    }
+    cov /= m;
+    r[k] = cov/var0;
+  }
+  return r;
+}
+
+function combineAutocorr(perChrom, maxLag){
+  const r = new Array(maxLag+1).fill(0);
+  const w = new Array(maxLag+1).fill(0);
+  r[0]=1; w[0]=1;
+
+  for (const chr of Object.keys(perChrom)){
+    const a = perChrom[chr];
+    if (!a || a.length < maxLag + 12) continue;
+    const rr = autocorr(a, maxLag);
+    if (!rr) continue;
+    const n = a.length;
+    for (let k=1;k<=maxLag;k++){
+      const pairs = Math.max(0, n-k);
+      r[k] += rr[k]*pairs;
+      w[k] += pairs;
+    }
+  }
+  for (let k=1;k<=maxLag;k++){
+    r[k] = (w[k]>0) ? (r[k]/w[k]) : 0;
+  }
+  return r;
+}
+
+function estimateLambdaLag(rhos){
+  const thr = 1/Math.E;
+  for (let k=1;k<rhos.length;k++){
+    if (rhos[k] <= thr) return k;
+  }
+  return rhos.length-1;
+}
+
+function estimateNeff(N, rhos){
+  // N_eff ~ N / (1 + 2 Σ rho_k^+)
+  let s = 0;
+  for (let k=1;k<rhos.length;k++){
+    const rk = rhos[k];
+    if (rk > 0) s += rk;
+  }
+  const denom = 1 + 2*s;
+  return N / denom;
+}
+
+// Window accumulator per chromosome
+class WinAgg {
+  constructor(wbp){
+    this.wbp = wbp;
+    this.resetChr();
+  }
+  resetChr(){
+    this.curChr = null;
+    this.winIdx = null;
+    this.counts = {AA:0, AB:0, BB:0}; // genotype class counts (AA homo, AB het, BB homo alt) - we don't know ref/alt, but classing works
+    this.n = 0;
+    this.changes = 0;
+    this.prevGt = null;
+  }
+  startChr(chr){
+    this.resetChr();
+    this.curChr = chr;
+  }
+  _classGt(gt){
+    // return "AA" if homo, "AB" if het; treat non-standard as null
+    if (!gt || gt.length < 2) return null;
+    const a = gt[0], b = gt[1];
+    if (!"ACGT".includes(a) || !"ACGT".includes(b)) return null;
+    return (a===b) ? "AA" : "AB";
+  }
+  push(chr, pos, gt, outArrByChr){
+    if (this.curChr !== chr){
+      // flush old chr
+      if (this.curChr !== null) this.flush(outArrByChr);
+      this.startChr(chr);
+    }
+    const wi = Math.floor(pos / this.wbp);
+    if (this.winIdx === null) this.winIdx = wi;
+
+    if (wi !== this.winIdx){
+      this.flush(outArrByChr);
+      this.winIdx = wi;
+    }
+
+    const cls = this._classGt(gt);
+    if (cls === null) return;
+
+    // change density: compare exact gt string (order-insensitive)
+    const gtn = (gt[0] <= gt[1]) ? gt : (gt[1]+gt[0]); // sort letters for stability
+    if (this.prevGt !== null && gtn !== this.prevGt) this.changes++;
+    this.prevGt = gtn;
+
+    // counts
+    if (cls === "AB") this.counts.AB++;
+    else this.counts.AA++; // homo bucket
+    this.n++;
+  }
+  flush(outArrByChr){
+    if (this.curChr === null) return;
+    if (!outArrByChr[this.curChr]) outArrByChr[this.curChr] = [];
+
+    if (this.n > 0){
+      const H = shannonEntropy4(this.counts); // bits
+      const cd = (this.n > 1) ? (this.changes / (this.n - 1)) : 0; // 0..1
+      // Blend: entropy carries "mix", change density carries "local flip"
+      // weights chosen for stability; adjust if you fancy.
+      const X = 0.6*H + 0.4*cd;
+      outArrByChr[this.curChr].push(X);
+    }
+
+    // reset window state
+    this.counts = {AA:0, AB:0, BB:0};
+    this.n = 0;
+    this.changes = 0;
+    this.prevGt = null;
+  }
+}
+
+function tinyDemoText(){
+  return `# 23andMe raw data demo (tiny)
+# rsid\tchromosome\tposition\tgenotype
+rs1\t1\t1000\tAA
+rs2\t1\t2000\tAG
+rs3\t1\t3000\tGG
+rs4\t1\t4000\tCC
+rs5\t1\t5000\tCT
+rs6\t1\t6000\tTT
+rs7\t1\t70000\tAA
+rs8\t1\t120000\tAG
+rs9\t2\t1000\tAA
+rs10\t2\t2000\t--
+rs11\t2\t3000\tAG
+rs12\t2\t4000\tGG
+`;
+}
+
+async function runOnText(text){
+  const wShort = Math.max(10000, Math.min(500000, parseInt(el("wShort").value||"50000",10)));
+  const wLong  = Math.max(200000, Math.min(5000000, parseInt(el("wLong").value||"1000000",10)));
+  const maxLag = Math.max(20, Math.min(240, parseInt(el("maxLag").value||"120",10)));
+
+  const watch = parseWatchlist(el("watch").value);
+  const traits = parseTraits(el("traits").value);
+
+  // Main counts
+  let total=0, called=0, missing=0;
+  const chromCounts = {};
+  const chromMissing = {};
+
+  // Windowed signals
+  const perChrShort = {};
+  const perChrLong  = {};
+  const aggS = new WinAgg(wShort);
+  const aggL = new WinAgg(wLong);
+
+  // Watchlist hits
+  const watchHits = {};
+
+  // Trait hits
+  let traitFound = 0;
+  let traitScore = 0;
+  const traitDetails = [];
+  const traitWinShort = new Set(); // unique (chr:win)
+  const traitWinLong  = new Set();
+
+  const lines = text.split(/\r?\n/);
+  status(`Parsing lines… (${lines.length.toLocaleString()} lines)`);
+
+  // Parse streaming
+  for (let idx=0; idx<lines.length; idx++){
+    const line = lines[idx];
+    if (!line || line[0]==="#") continue;
+    const parts = line.split(/\t|,/);
+    if (parts.length < 4) continue;
+
+    const rsid = (parts[0]||"").trim().toLowerCase();
+    const chr = safeChrom((parts[1]||"").trim());
+    const pos = parseInt((parts[2]||"").trim(),10);
+    const gt  = (parts[3]||"").trim().toUpperCase();
+
+    if (!chr || !isFinite(pos)) continue;
+    total++;
+
+    const isMissing = (gt==="--" || gt.length<2);
+    if (isMissing){
+      missing++;
+      chromMissing[chr] = (chromMissing[chr]||0) + 1;
+      continue;
+    }
+    called++;
+    chromCounts[chr] = (chromCounts[chr]||0) + 1;
+
+    // window signals
+    aggS.push(chr, pos, gt, perChrShort);
+    aggL.push(chr, pos, gt, perChrLong);
+
+    // watchlist
+    if (watch.size && watch.has(rsid)){
+      watchHits[rsid] = {chr, pos, gt};
+    }
+
+    // traits
+    if (traits.size && traits.has(rsid)){
+      const {ea, beta} = traits.get(rsid);
+      const d = gtDosage(gt, ea);
+      if (d !== null){
+        traitFound++;
+        const contrib = beta * d;
+        traitScore += contrib;
+        const wS = Math.floor(pos / wShort);
+        const wL = Math.floor(pos / wLong);
+        traitWinShort.add(chr+":"+wS);
+        traitWinLong.add(chr+":"+wL);
+        traitDetails.push({rsid, chr, pos, gt, ea, beta, dosage:d, contrib});
+      }
+    }
+  }
+
+  // Flush window aggregators at end
+  aggS.flush(perChrShort);
+  aggL.flush(perChrLong);
+
+  const missRate = total>0 ? (missing/total) : NaN;
+
+  // Build autocorr
+  const rhosS = combineAutocorr(perChrShort, maxLag);
+  const rhosL = combineAutocorr(perChrLong,  Math.max(40, Math.min(maxLag, 160)));
+
+  const lamLagS = estimateLambdaLag(rhosS);
+  const lamLagL = estimateLambdaLag(rhosL);
+
+  const lambdaShortBp = lamLagS * wShort;
+  const lambdaLongBp  = lamLagL * wLong;
+
+  // N windows total
+  let NwS = 0, NwL = 0;
+  for (const chr of Object.keys(perChrShort)) NwS += perChrShort[chr].length;
+  for (const chr of Object.keys(perChrLong))  NwL += perChrLong[chr].length;
+
+  const NeffS = (NwS>0) ? estimateNeff(NwS, rhosS) : NaN;
+  const redS  = (isFinite(NeffS) && NeffS>0) ? (NwS/NeffS) : NaN;
+
+  const Deff = (isFinite(redS) && redS>0) ? (called/redS) : NaN;
+
+  // UI KPIs
+  el("k_raw").textContent = fmtInt(called);
+  el("k_miss").textContent = fmtPct(missRate);
+  el("k_lshort").textContent = fmtBp(lambdaShortBp) + ` (lag≈${lamLagS}, w=${fmtBp(wShort)})`;
+  el("k_llong").textContent  = fmtBp(lambdaLongBp)  + ` (lag≈${lamLagL}, w=${fmtBp(wLong)})`;
+  el("k_rshort").textContent = isFinite(redS) ? redS.toFixed(2)+"×" : "—";
+  el("k_deff").textContent = fmtInt(Deff);
+
+  // Comparison table
+  const cmp = el("cmp");
+  const note = (!isFinite(redS)) ? "Couldn’t estimate redundancy (try smaller windows or smaller max lag)." :
+    (redS < 1.35 ? "Low redundancy → less blockiness (rare-ish in dense SNP data)." :
+     redS < 2.20 ? "Moderate redundancy → typical blocky inheritance / LD structure." :
+     "High redundancy → very blocky / strongly correlated structure.");
+
+  cmp.innerHTML = `
+    <tr><td>D_raw</td><td class="mono">${fmtInt(called)}</td><td class="mono">${fmtInt(Deff)}</td></tr>
+    <tr><td>λ₍g₎ short / long</td><td>—</td><td class="mono">${fmtBp(lambdaShortBp)} / ${fmtBp(lambdaLongBp)}</td></tr>
+    <tr><td>Redundancy short</td><td>—</td><td class="mono">${isFinite(redS)?redS.toFixed(2)+"×":"—"}</td></tr>
+    <tr><td>D_eff</td><td>“as if independent”</td><td class="mono">${fmtInt(Deff)}</td></tr>
+    <tr><td>Coherence note</td><td>Counts + LD corrections</td><td>${note}</td></tr>
+  `;
+
+  // Plots
+  drawPlot("plotShort", rhosS, lamLagS);
+  drawPlot("plotLong",  rhosL, lamLagL);
+
+  // Per chromosome output
+  const keys = Object.keys(chromCounts).sort((a,b)=>{
+    const na=parseInt(a,10), nb=parseInt(b,10);
+    if (isFinite(na)&&isFinite(nb)) return na-nb;
+    return a.localeCompare(b);
+  });
+  let out = "";
+  for (const k of keys){
+    out += `chr${k}: called=${chromCounts[k]||0} missing=${chromMissing[k]||0}\n`;
+  }
+  el("chromOut").textContent = out || "—";
+
+  // Watch output
+  if (!watch.size){
+    el("watchOut").textContent = "No watchlist yet.";
+  } else {
+    const items = [...watch].sort();
+    const rows = items.map(rs=>{
+      const hit = watchHits[rs];
+      if (!hit) return `<div class="mono">${rs}: <span class="warn">not found</span></div>`;
+      return `<div class="mono">${rs}: ${hit.gt}  (chr${hit.chr}:${hit.pos})</div>`;
+    }).join("");
+    el("watchOut").innerHTML = rows || "—";
+  }
+
+  // Trait output
+  if (!traits.size){
+    el("traitOut").innerHTML = "No trait weights yet.";
+  } else {
+    const traitTotal = traits.size;
+    const cov = traitTotal>0 ? (traitFound/traitTotal) : 0;
+    const uniqS = traitWinShort.size;
+    const uniqL = traitWinLong.size;
+    const redTraitS = (uniqS>0) ? (traitFound/uniqS) : NaN;
+
+    // QDS-ish trait degrees: unique windows are the “independent-ish buckets”
+    const Dtrait_effS = uniqS;
+    const Dtrait_effL = uniqL;
+
+    // Keep it phone-safe: show top 12 by |contrib|
+    traitDetails.sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+    const top = traitDetails.slice(0, 12).map(d=>{
+      const c = d.contrib;
+      const cls = (Math.abs(c) < 0.05) ? "small" : (c>0 ? "good" : "bad");
+      return `<div class="mono">${d.rsid} chr${d.chr}:${d.pos} gt=${d.gt} ea=${d.ea} β=${d.beta} dose=${d.dosage} → <span class="${cls}">${c.toFixed(4)}</span></div>`;
+    }).join("");
+
+    el("traitOut").innerHTML = `
+      <div class="small">
+        <div><b>Trait SNPs provided:</b> <span class="mono">${traitTotal}</span></div>
+        <div><b>Trait SNPs found (non-missing):</b> <span class="mono">${traitFound}</span> (<span class="mono">${fmtPct(cov)}</span> coverage)</div>
+        <div><b>Trait score (Σ β·dosage):</b> <span class="mono">${isFinite(traitScore)?traitScore.toFixed(6):"—"}</span></div>
+        <div><b>QDS “effective trait degrees” (unique windows):</b>
+          <span class="mono">${Dtrait_effS}</span> (short) / <span class="mono">${Dtrait_effL}</span> (long)
+        </div>
+        <div><b>Trait redundancy (short):</b> <span class="mono">${isFinite(redTraitS)?redTraitS.toFixed(2)+"×":"—"}</span>
+          <span class="small"> (many SNPs can land in same correlated block)</span>
+        </div>
+        <hr/>
+        <div><b>Top contributions (by |β·dosage|):</b></div>
+        ${top || "<div class='small'>No usable trait hits found.</div>"}
+      </div>
+      <div class="small" style="margin-top:8px">
+        <b>Note:</b> Without an external reference for “effect allele,” you supply it. If effect allele is wrong, sign flips.
+      </div>
+    `;
+  }
+
+  // Bonus: Viking confetti index (fun, not science)
+  const vci = (isFinite(redS) ? (redS * (1 - missRate) * 10) : NaN);
+  el("vci").textContent = isFinite(vci) ? vci.toFixed(2) : "—";
+
+  // Status text
+  status(
+`Done v2+.
+Called SNPs (D_raw): ${fmtInt(called)}
+Missing: ${fmtInt(missing)} (${fmtPct(missRate)})
+
+Window signal: X = 0.6·entropy + 0.4·change_density
+Short window: ${fmtBp(wShort)} | λ₍g₎≈${fmtBp(lambdaShortBp)} | redundancy≈${isFinite(redS)?redS.toFixed(2)+"×":"—"}
+Long window : ${fmtBp(wLong)}  | λ₍g₎≈${fmtBp(lambdaLongBp)}
+
+D_eff (short): ${fmtInt(Deff)}
+`
+  );
+
+  // store summary for copy button
+  window.__QDS_SUMMARY__ = {
+    called_snp: called,
+    missing: missing,
+    missing_rate: missRate,
+    w_short_bp: wShort,
+    w_long_bp: wLong,
+    lambda_short_bp: lambdaShortBp,
+    lambda_long_bp: lambdaLongBp,
+    redundancy_short: redS,
+    d_eff: Deff,
+    viking_confetti_index: vci,
+    trait: traits.size ? {
+      provided: traits.size,
+      found: traitFound,
+      coverage: traitFound/traits.size,
+      score: traitScore,
+      unique_windows_short: traitWinShort.size,
+      unique_windows_long: traitWinLong.size
+    } : null
+  };
+}
+
+el("demo").addEventListener("click", async ()=>{
+  await runOnText(tinyDemoText());
+});
+
+el("run").addEventListener("click", async ()=>{
+  const f = el("file").files && el("file").files[0];
+  if (!f){
+    status("No file selected. Pick your 23andMe raw .txt first (or hit Demo).");
+    return;
+  }
+  status(`Loading file: ${f.name} (${Math.round(f.size/1024/1024)} MB)…`);
+  const reader = new FileReader();
+  reader.onload = async ()=> {
+    try{ await runOnText(String(reader.result||"")); }
+    catch(e){ status("Error: " + (e && e.message ? e.message : String(e))); }
+  };
+  reader.onerror = ()=> status("File read error. Try re-downloading the raw data file.");
+  reader.readAsText(f);
+});
+
+el("copy").addEventListener("click", async ()=>{
+  const s = window.__QDS_SUMMARY__ ? JSON.stringify(window.__QDS_SUMMARY__, null, 2) : "No summary yet. Run metrics first.";
+  try{
+    await navigator.clipboard.writeText(s);
+    status("Copied summary JSON to clipboard. 🎩");
+  }catch(e){
+    status("Clipboard blocked by browser. Here it is:\n\n" + s);
+  }
+});
+</script>
+</body>
+</html>

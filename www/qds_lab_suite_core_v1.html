@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QDS Lab Suite · Panel A · Core Physics</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="_os/qds_os.css">
+  <style>
+    .card-grid{max-width:980px;margin:16px auto 40px;display:grid;grid-template-columns:1fr;gap:14px;}
+    @media(min-width:720px){.card-grid{grid-template-columns:1fr 1fr;}}
+    .lab-card{
+      position:relative;padding:14px 16px 16px;border-radius:22px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:radial-gradient(circle at top left,#172642,#090615);
+      box-shadow:0 0 18px rgba(0,0,0,0.7);
+    }
+    .lab-pill{
+      position:absolute;top:10px;right:12px;
+      font-size:0.70rem;text-transform:uppercase;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.35);
+      background:rgba(5,5,20,0.9);letter-spacing:0.08em;
+    }
+    h1{max-width:960px;margin:14px auto 4px;font-size:1.2rem;letter-spacing:0.08em;text-transform:uppercase;}
+    .subtitle{max-width:960px;margin:0 auto 14px;font-size:0.85rem;opacity:0.85;}
+    .lab-card h2{margin:4px 0 4px;font-size:1.02rem;letter-spacing:0.05em;text-transform:uppercase;}
+    .lab-card p{margin:4px 0 6px;font-size:0.86rem;line-height:1.35;}
+    .lab-links a{
+      display:inline-block;margin-top:6px;margin-right:8px;
+      font-size:0.8rem;text-decoration:none;
+      padding:5px 10px;border-radius:999px;
+      border:1px solid rgba(140,200,255,0.7);
+      background:rgba(12,25,45,0.95);
+    }
+    .backlink{max-width:960px;margin:10px auto 0;font-size:0.82rem;}
+  </style>
+</head>
+<body>
+<div class="backlink">
+  ⬅ <a href="qds_lab_suite_frontdoor_v1.html">Back to Lab Suite Front Door</a>
+</div>
+<h1>Panel A · Core Physics Labs</h1>
+<p class="subtitle">
+  These four labs hit the kernel from the straight physics side:
+  H₀ scatter, galaxy rotation, and distance-tilt probes on real data.
+</p>
+
+<main class="card-grid">
+  <article class="lab-card">
+    <div class="lab-pill">H₀ / variance</div>
+    <h2>QDS Variance Lab</h2>
+    <p>
+      Hubble scatter and variance tests. Plugs the QDS variance law
+      into σ(H)/H vs R and compares against ΛCDM-style expectations.
+    </p>
+    <p><strong>File:</strong> qds_variance_lab.html</p>
+    <div class="lab-links">
+      <a href="qds_variance_lab.html">Open variance lab</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">galaxy curves</div>
+    <h2>QDS Rotation Lab</h2>
+    <p>
+      Galaxy rotation on real ROTMOD curves. Tweak the Yukawa-like
+      kernel, watch χ² move, and decide whether dark-matter-like
+      behaviour is captured.
+    </p>
+    <p><strong>File:</strong> qds_rotation_lab.html</p>
+    <div class="lab-links">
+      <a href="qds_rotation_lab.html">Open rotation lab</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">multi-galaxy</div>
+    <h2>RotMod Distance Lab · v2 PRO</h2>
+    <p>
+      Headline distance scan for DDO154, NGC2403, NGC3198, NGC6503,
+      NGC2841, NGC7331. Treats kernel as fixed and lets each galaxy
+      slide in distance factor s = D / D₀.
+    </p>
+    <p><strong>File:</strong> qds_rotmod_distance_lab_v2_pro.html</p>
+    <div class="lab-links">
+      <a href="qds_rotmod_distance_lab_v2_pro.html">Open distance lab PRO</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">single-galaxy toy</div>
+    <h2>NGC3198 Distance Probe v1</h2>
+    <p>
+      Focused sandbox for NGC3198 only. s-scan around catalog distance
+      with a fixed QDS kernel, built for walk-through screenshots and
+      teaching.
+    </p>
+    <p><strong>File:</strong> qds_ngc3198_distance_lab_v1.html</p>
+    <div class="lab-links">
+      <a href="qds_ngc3198_distance_lab_v1.html">Open NGC3198 toy</a>
+    </div>
+  </article>
+</main>
+</body>
+</html>

@@ -1,0 +1,776 @@
+cd "$HOME/OMEGA_EMPIRE/UV_QDS/www"
+
+cat <<'EOF' > qds_physics_omega_frontdoor_v3.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS Physics & Ω Labs • Front Door v3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #030515;
+      --bg-alt: #06091f;
+      --card: #0b1024;
+      --card-soft: rgba(11, 16, 36, 0.9);
+      --border-soft: rgba(120, 150, 255, 0.6);
+      --accent: #4af2ff;
+      --accent-warm: #ff4d6a;
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --pill-radius: 999px;
+      --radius-lg: 22px;
+      --shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.85);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(90, 255, 210, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(120, 140, 255, 0.22) 0, transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255, 77, 106, 0.24) 0, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 12px 32px;
+    }
+
+    @media (min-width: 720px) {
+      .shell {
+        padding: 22px 18px 36px;
+      }
+    }
+
+    /* Header + collapsible toolbar */
+
+    .fd-header {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      border-radius: 24px;
+      padding: 10px 10px 14px;
+      background:
+        linear-gradient(135deg,
+          rgba(255, 77, 106, 0.24),
+          rgba(74, 242, 255, 0.12)),
+        radial-gradient(circle at 0 0, rgba(255,255,255,0.07), transparent 60%),
+        var(--card-soft);
+      border: 1px solid rgba(145, 180, 255, 0.6);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .fd-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fd-toolbar-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .fd-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2ff);
+      box-shadow: 0 0 18px rgba(74, 242, 255, 0.9);
+      flex-shrink: 0;
+    }
+
+    .fd-toolbar-label {
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .fd-toolbar-label span {
+      color: var(--accent);
+    }
+
+    .fd-toggle-btn {
+      font-size: 0.75rem;
+      padding: 4px 9px;
+      border-radius: var(--pill-radius);
+      border: 1px solid rgba(200, 215, 255, 0.9);
+      background: rgba(5, 7, 30, 0.96);
+      color: var(--text-soft);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .fd-toggle-btn:hover {
+      background: rgba(18, 24, 80, 0.96);
+    }
+
+    .fd-main {
+      margin-top: 10px;
+    }
+
+    .fd-title {
+      font-size: 1.2rem;
+      margin: 0;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .fd-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin: 4px 0 0;
+      max-width: 700px;
+    }
+
+    .fd-subtitle strong {
+      color: var(--accent);
+    }
+
+    .fd-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .fd-pill {
+      font-size: 0.74rem;
+      padding: 3px 10px;
+      border-radius: var(--pill-radius);
+      border: 1px solid rgba(200, 210, 255, 0.7);
+      background: rgba(3, 4, 24, 0.9);
+      color: var(--text-soft);
+    }
+
+    .fd-pill strong {
+      color: var(--accent);
+    }
+
+    .fd-pill.hot strong {
+      color: var(--accent-warm);
+    }
+
+    .fd-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      border-top: 1px solid rgba(150, 180, 255, 0.7);
+      padding-top: 8px;
+    }
+
+    .fd-nav a {
+      font-size: 0.78rem;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: var(--pill-radius);
+      border: 1px solid rgba(120, 150, 255, 0.85);
+      background: rgba(4, 6, 30, 0.96);
+      color: var(--text-soft);
+      transition: background 0.14s ease, transform 0.1s ease;
+    }
+
+    .fd-nav a:hover {
+      background: rgba(74, 242, 255, 0.18);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    /* collapsed state */
+    .fd-header.collapsed {
+      padding: 8px 10px;
+    }
+
+    .fd-header.collapsed .fd-main {
+      display: none;
+    }
+
+    /* Sections & cards */
+
+    main {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    section {
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+        var(--bg-alt);
+      border-radius: var(--radius-lg);
+      padding: 14px 12px 14px;
+      border: 1px solid rgba(90, 118, 220, 0.8);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.88);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 720px) {
+      section { padding: 18px 18px 16px; }
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      inset: -100px;
+      opacity: 0.18;
+      background: radial-gradient(
+        circle at 10% 0%,
+        rgba(255, 126, 229, 0.26),
+        transparent 55%
+      );
+      pointer-events: none;
+    }
+
+    section h2 {
+      font-size: 0.98rem;
+      margin: 0 0 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    section h2 span {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 205, 255, 0.8);
+      background: rgba(3, 4, 24, 0.95);
+      color: var(--text-soft);
+    }
+
+    .section-body {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+      max-width: 780px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 820px) {
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .card {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      background: radial-gradient(
+          circle at 0 0,
+          rgba(74, 242, 255, 0.15),
+          transparent 60%
+        ),
+        rgba(3, 4, 24, 0.96);
+      border-radius: 16px;
+      padding: 10px 10px 11px;
+      border: 1px solid rgba(100, 130, 230, 0.9);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9);
+      transition: transform 0.12s ease, box-shadow 0.12s ease,
+        border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(120, 255, 215, 0.9);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95);
+      background: radial-gradient(
+          circle at 0 0,
+          rgba(74, 242, 255, 0.24),
+          transparent 60%
+        ),
+        rgba(2, 4, 24, 0.98);
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .card-tag {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 210, 255, 0.9);
+      color: var(--text-soft);
+      background: rgba(4, 6, 30, 0.96);
+      white-space: nowrap;
+    }
+
+    .card-body {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      opacity: 0.9;
+    }
+
+    .mono {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      padding-top: 9px;
+      border-top: 1px solid rgba(90, 118, 220, 0.7);
+    }
+
+    footer strong {
+      color: var(--accent);
+    }
+  
+  /* QDS_FRONTDOOR_RED_PATCH_V1 */
+  .card {
+    border-width: 1px;
+    border-style: solid;
+    border-image: linear-gradient(
+      135deg,
+      #4af2ff,
+      #ff4d6a,
+      #ffd94a
+    ) 1;
+  }
+
+  header {
+    border-width: 1px;
+    border-style: solid;
+    border-image: linear-gradient(
+      135deg,
+      #4af2ff,
+      #ff4d6a,
+      #ffd94a
+    ) 1;
+  }
+
+
+  /* PHYS_HDR_TOGGLE_V1 */
+  header[data-phys-hdr="1"] {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .phys-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 11;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    background: rgba(3, 5, 25, 0.92);
+    border-radius: 999px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border: 1px solid rgba(255, 120, 140, 0.6);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
+  }
+
+  .phys-hdr-toolbar-label {
+    opacity: 0.9;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .phys-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+  header[data-phys-hdr="1"].phys-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="fd-header" id="fdHeader">
+      <div class="fd-toolbar">
+        <div class="fd-toolbar-left">
+          <div class="fd-dot"></div>
+          <div class="fd-toolbar-label">
+            QDS <span>Physics & Ω Labs</span> · Front Door v3
+          </div>
+        </div>
+        <button class="fd-toggle-btn" id="fdToggle">
+          Collapse header ▲
+        </button>
+      </div>
+
+      <div class="fd-main">
+        <h1 class="fd-title">One phone, many doors into the same kernel.</h1>
+        <p class="fd-subtitle">
+          This page doesn’t invent new results, it just lines up the
+          <strong>labs & toys</strong> we already built: variance, rotation,
+          neon universes, Ω dashboards. All offline, falsification-first.
+        </p>
+        <div class="fd-pills">
+          <div class="fd-pill"><strong>Physics labs:</strong> variance, rotation, sensors, compression</div>
+          <div class="fd-pill"><strong>Ω / OS:</strong> dashboards, indices, “front doors”</div>
+          <div class="fd-pill hot"><strong>New:</strong> RotMod distance probes wired to real ROTMOD CSVs</div>
+        </div>
+        <nav class="fd-nav">
+          <a href="#physics-labs">Physics labs & toys</a>
+          <a href="#distance-probes">RotMod distance probes</a>
+          <a href="#omega-showcases">Ω / OS & showcases</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- Physics labs & toys -->
+      <section id="physics-labs">
+        <h2>
+          QDS Physics Labs & Toys
+          <span>variance · rotation · universe toys · sensors · compression</span>
+        </h2>
+        <div class="section-body">
+          Core physics playgrounds. H₀ variance, rotation curves on real data,
+          toy universes, sensor kernel sketches, and the QDS-SAVE compression demo.
+        </div>
+        <div class="cards">
+          <a class="card" href="qds_test_platform.html">
+            <div class="card-title">
+              <span>QDS Test Platform</span>
+              <span class="card-tag mono">multi-test harness</span>
+            </div>
+            <div class="card-body">
+              A general sandbox for running multiple QDS tests in one place.
+              Good for quick sanity checks and “does this blow up?” experiments.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_test_platform.html</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_variance_lab.html">
+            <div class="card-title">
+              <span>QDS Variance Lab</span>
+              <span class="card-tag mono">H₀ / variance</span>
+            </div>
+            <div class="card-body">
+              Hubble scatter and variance tests. Plugs the QDS kernel into
+              H₀ dispersion and lets you compare against ΛCDM-style baselines.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_variance_lab.html</span></span>
+              <span>Mode: cosmology-first</span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_rotation_lab.html">
+            <div class="card-title">
+              <span>QDS Rotation Lab</span>
+              <span class="card-tag mono">galaxy curves</span>
+            </div>
+            <div class="card-body">
+              Galaxy rotation on real ROTMOD curves. Tweak the kernel, see χ²
+              move, and decide whether dark-matter-like behaviour is captured.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_rotation_lab.html</span></span>
+              <span>Data: ROTMOD CSV set</span>
+            </div>
+          </a>
+<a class="card" href="qds_sensors_metrology_v1.html">
+            <div class="card-title">
+              <span>Sensors & Metrology Lab v1</span>
+              <span class="card-tag mono">sensor kernel ideas</span>
+            </div>
+            <div class="card-body">
+              Early sketches for turning QDS into a sensor/metrology design
+              knob: noise floors, correlation lengths, calibration thinking.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_sensors_metrology_v1.html</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_compression_lab_v1.html">
+            <div class="card-title">
+              <span>Compression Lab v1</span>
+              <span class="card-tag mono">QDS-SAVE demo</span>
+            </div>
+            <div class="card-body">
+              Demonstrator for QDS-SAVE: coherence-aware thinning / compression.
+              Built to show “not magic, just structure-aware”.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_compression_lab_v1.html</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- RotMod distance probes -->
+      <section id="distance-probes">
+        <h2>
+          RotMod Distance Probe Suite
+          <span>ROTMOD CSV · fixed kernel · s = D / D₀</span>
+        </h2>
+        <div class="section-body">
+          Distance-tilt sandboxes. Assume the kernel comes from cosmology,
+          then ask the galaxies where they’d like to sit. Use these as “what if”
+          probes before talking to any serious distance ladder.
+        </div>
+        <div class="cards">
+          <a class="card" href="qds_rotmod_distance_lab_v2_pro.html">
+            <div class="card-title">
+              <span>QDS RotMod Distance Probe Lab · v2 PRO</span>
+              <span class="card-tag mono">multi-galaxy</span>
+            </div>
+            <div class="card-body">
+              Headline distance scan for DDO154, NGC2403, NGC3198, NGC6503,
+              NGC2841, NGC7331. Single-galaxy mode + batch summary of who
+              loves / hates the kernel.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_rotmod_distance_lab_v2_pro.html</span></span>
+              <span>Inputs: <span class="mono">data/rotmod_public/rotmod_csv/*.csv</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_ngc3198_distance_lab_v1.html">
+            <div class="card-title">
+              <span>NGC3198 Distance Probe Lab v1</span>
+              <span class="card-tag mono">single-galaxy toy</span>
+            </div>
+            <div class="card-body">
+              Focused sandbox for NGC3198 only. s-scan around catalog distance
+              with a fixed QDS kernel, built for explainer screenshots.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_ngc3198_distance_lab_v1.html</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_science_frontdoor_v1.html">
+            <div class="card-title">
+              <span>QDS Science Test Labs • Front Door</span>
+              <span class="card-tag mono">multi-domain</span>
+            </div>
+            <div class="card-body">
+              Cross-domain front door: galaxy rotation, variance, batteries,
+              birds, genomics. Good “one slide” proof that it all runs on a phone.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_science_frontdoor_v1.html</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Ω / OS & Showcases -->
+      <section id="omega-showcases">
+        <h2>
+          Ω / OS & Showcases
+          <span>dashboards · indices · launchpads</span>
+        </h2>
+        <div class="section-body">
+          Higher-level doors: Ω dashboards, OS-style launchers, and general
+          showcase indices that pull the whole ecosystem together.
+        </div>
+        <div class="cards">
+          <a class="card" href="omega_qds_lab.html">
+            <div class="card-title">
+              <span>Ω–QDS Lab</span>
+              <span class="card-tag mono">combined lab dash</span>
+            </div>
+            <div class="card-body">
+              Aggregated view of multiple QDS tools. Think “mission control”
+              for physics side experiments.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">omega_qds_lab.html</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="omega_os_index_v2.html">
+            <div class="card-title">
+              <span>Ω–OS Index v2</span>
+              <span class="card-tag mono">OS-style launcher</span>
+            </div>
+            <div class="card-body">
+              OS-like index for your Ω engines and QDS tools. Good for
+              showing that this really behaves like a tiny local operating system.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">omega_os_index_v2.html</span></span>
+            </div>
+          </a>
+
+          <a class="card" href="qds_showcase_index_v1_1.html">
+            <div class="card-title">
+              <span>QDS Showcase Index v1.1</span>
+              <span class="card-tag mono">general door</span>
+            </div>
+            <div class="card-body">
+              A general-purpose index of polished QDS demos and pages.
+              Good first stop for people who don’t know where to click yet.
+            </div>
+            <div class="card-meta">
+              <span>File: <span class="mono">qds_showcase_index_v1_1.html</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+    
+    <section>
+      <h2>QDS evidence ledger</h2>
+      <p class="section-sub">
+        One place to log what actually happened in the labs: which galaxy / dataset,
+        which kernel, and whether QDS helped, hurt, or sat in the noise.
+      </p>
+      <div class="cards-grid">
+        <a class="card" href="qds_physics_evidence_log_v1.html">
+          <div class="card-header-row">
+            <div class="card-title">
+              <span>Physics Evidence Log v1</span>
+              <span class="badge">local-only · deduped</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <p>
+              Rotation, variance, pulsars, batteries, birds, genomics — all in one
+              ledger. Each card is a (category, label) pair with χ²/coherence summary
+              and a simple PASS / NEUTRAL / FAIL tag.
+            </p>
+          </div>
+          <div class="card-footer">
+            <span>File: qds_physics_evidence_log_v1.html</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+    <footer>
+      <strong>QDS Physics & Ω Labs • Front Door v3</strong> — one URL you can
+      open in a room and say, “These are the actual tools, running on a stupid
+      little phone. Pick a door and try to break the kernel.”
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        var header = document.getElementById("fdHeader");
+        var btn = document.getElementById("fdToggle");
+        if (!header || !btn) return;
+
+        btn.addEventListener("click", function() {
+          var collapsed = header.classList.toggle("collapsed");
+          btn.textContent = collapsed ? "Expand header ▼" : "Collapse header ▲";
+        });
+      } catch (e) {
+        console && console.warn && console.warn("FD v3 toolbar init failed", e);
+      }
+    })();
+  </script>
+
+  <!-- PHYS_HDR_TOGGLE_V1 -->
+  <script>
+  (function() {
+    try {
+      var header = document.querySelector('header');
+      if (!header) return;
+
+      header.setAttribute('data-phys-hdr', '1');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'phys-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'phys-hdr-toolbar-label';
+      label.textContent = 'QDS Physics / Ω front door header';
+      toolbar.appendChild(label);
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = header.classList.toggle('phys-collapsed');
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(btn);
+
+      var body = document.body;
+      if (body.firstChild) {
+        body.insertBefore(toolbar, body.firstChild);
+      } else {
+        body.appendChild(toolbar);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('PHYS_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+</body>
+</html>
+EOF

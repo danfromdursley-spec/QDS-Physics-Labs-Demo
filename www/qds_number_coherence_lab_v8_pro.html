@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>QDS Number Coherence Lab v8 PRO</title>
+<style>
+  :root{
+    --bg:#07110f; --panel:#0b1a16; --panel2:#0d201b;
+    --ink:#d7efe5; --muted:#89b5a7; --edge:#15352c;
+    --neon:#35f3b6; --neon2:#39c7ff; --warn:#ffc857; --bad:#ff4d4d; --ok:#3cff7f;
+    --radius:18px;
+    --shadow: 0 18px 50px rgba(0,0,0,.35);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  }
+  html,body{height:100%; background:radial-gradient(1200px 900px at 20% 0%, #0a2a21 0%, var(--bg) 55%, #040b09 100%); color:var(--ink); margin:0;}
+  *{box-sizing:border-box;}
+  .wrap{max-width:980px; margin:0 auto; padding:16px 14px 40px;}
+  .card{background:linear-gradient(180deg, rgba(12,35,29,.82), rgba(9,22,18,.82));
+    border:1px solid rgba(53,243,182,.18); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; margin:14px 0;
+    backdrop-filter: blur(8px);
+  }
+  h1{font:800 40px/1.06 var(--sans); letter-spacing:.3px; margin:6px 0 6px;}
+  .sub{font:500 14px/1.45 var(--mono); color:var(--muted);}
+  .pillrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;}
+  .pill{border:1px solid rgba(53,243,182,.22); color:var(--ink); background:rgba(6,16,13,.55);
+    padding:10px 12px; border-radius:999px; font:600 13px/1 var(--mono); display:inline-flex; align-items:center; gap:8px;
+  }
+  .dot{width:10px; height:10px; border-radius:99px; background:var(--neon); box-shadow:0 0 10px rgba(53,243,182,.45);}
+  .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} h1{font-size:34px;} }
+  textarea{width:100%; min-height:120px; resize:vertical; background:rgba(2,8,6,.7); color:var(--ink);
+    border:1px solid rgba(53,243,182,.20); border-radius:14px; padding:12px; font:500 14px/1.45 var(--mono);
+    outline:none;
+  }
+  textarea:focus{border-color:rgba(53,243,182,.55); box-shadow:0 0 0 3px rgba(53,243,182,.10);}
+  .controls{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px;}
+  @media (max-width:900px){ .controls{grid-template-columns:1fr;} }
+  label{display:block; font:700 12px/1.2 var(--mono); color:var(--muted); margin:0 0 6px;}
+  select,input[type="number"],input[type="text"]{
+    width:100%; padding:10px 10px; border-radius:14px;
+    border:1px solid rgba(53,243,182,.18); background:rgba(2,8,6,.65); color:var(--ink);
+    font:600 13px/1.2 var(--mono); outline:none;
+  }
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .btn{
+    padding:12px 14px; border-radius:16px;
+    border:1px solid rgba(53,243,182,.22);
+    background:rgba(5,18,14,.7);
+    color:var(--ink); font:800 13px/1 var(--mono);
+    cursor:pointer; user-select:none;
+  }
+  .btn.primary{background:linear-gradient(180deg, rgba(53,243,182,.14), rgba(5,18,14,.72)); border-color:rgba(53,243,182,.35);}
+  .btn.danger{border-color:rgba(255,77,77,.35);}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .toggle{display:flex; gap:10px; align-items:center; padding:10px 12px; border-radius:14px;
+    border:1px solid rgba(53,243,182,.16); background:rgba(2,8,6,.55);
+  }
+  .toggle input{transform:scale(1.2);}
+  .toggle span{font:700 12px/1.1 var(--mono); color:var(--ink);}
+  .note{background:rgba(255,200,87,.10); border:1px solid rgba(255,200,87,.25); padding:12px; border-radius:14px; color:#ffe8b6; font:700 13px/1.35 var(--sans);}
+  .console{background:rgba(0,0,0,.25); border:1px solid rgba(53,243,182,.14); border-radius:14px; padding:12px;
+    font:600 12px/1.35 var(--mono); color:#c9f7e8; max-height:240px; overflow:auto; white-space:pre-wrap;
+  }
+  .kpis{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px;}
+  @media (max-width:900px){ .kpis{grid-template-columns:1fr;} }
+  .kpi{background:rgba(2,8,6,.55); border:1px solid rgba(53,243,182,.16); border-radius:16px; padding:12px;}
+  .kpi .t{font:800 12px/1 var(--mono); color:var(--muted); margin-bottom:6px;}
+  .kpi .v{font:900 26px/1.1 var(--mono);}
+  .kpi .s{font:700 12px/1.25 var(--mono); color:var(--muted); margin-top:4px;}
+  .gate{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px; border-radius:16px; border:1px solid rgba(53,243,182,.16); background:rgba(2,8,6,.55);
+  }
+  .badge{padding:8px 10px; border-radius:999px; font:900 12px/1 var(--mono); letter-spacing:.6px;}
+  .g{background:rgba(60,255,127,.12); border:1px solid rgba(60,255,127,.35); color:var(--ok);}
+  .a{background:rgba(255,200,87,.10); border:1px solid rgba(255,200,87,.35); color:var(--warn);}
+  .r{background:rgba(255,77,77,.10); border:1px solid rgba(255,77,77,.35); color:var(--bad);}
+  .prog{height:10px; width:100%; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; border:1px solid rgba(53,243,182,.12);}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg, rgba(53,243,182,.35), rgba(57,199,255,.35));}
+  canvas{width:100%; height:240px; background:rgba(0,0,0,.18); border:1px solid rgba(53,243,182,.12); border-radius:16px;}
+  .small{font:700 12px/1.25 var(--mono); color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>QDS Number Coherence Lab</h1>
+    <div class="sub">Mode: <b>instrument</b> • kernel-weighted coherence in numeric strings • multi-null stress • reproducible MC • stability runner • <b>v8 PRO</b></div>
+    <div class="pillrow">
+      <div class="pill"><span class="dot"></span> offline • no calls</div>
+      <div class="pill"><span class="dot"></span> QDS_PROTO_DISCLAIMER_V1</div>
+      <div class="pill"><span class="dot"></span> Neon. No pink. ✅</div>
+    </div>
+  </div>
+
+  <div class="card grid">
+    <div>
+      <div class="note">
+        <b>Reality check:</b> structure/coherence instrument. It does <b>not</b> decode truth.
+        It will generate “meaning-looking” artefacts by chance. Use <b>ALL-NULLS</b> + <b>MC</b> + <b>Stability</b>.
+        Sweeps are multiple comparisons; treat “best z” as a search result, not a discovery.
+      </div>
+      <div style="margin-top:10px">
+        <label>Paste numeric string / tokens (spaces allowed)</label>
+        <textarea id="inp" placeholder="Paste digits here…"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnTest">Load test feed</button>
+          <button class="btn danger" id="btnClear">Clear</button>
+          <button class="btn" id="btnCopy">Copy readout</button>
+          <button class="btn" id="btnJSON">Download JSON</button>
+          <button class="btn" id="btnTXT">Download TXT</button>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="t small">Progress</div>
+        <div class="prog"><div class="bar" id="bar"></div></div>
+        <div class="console" id="log"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="controls">
+        <div>
+          <label>Tokenization</label>
+          <select id="tokMode">
+            <option value="digits">Digits (0–9)</option>
+            <option value="pairs">Pairs (00–99)</option>
+            <option value="triplets">Triplets (000–999)</option>
+            <option value="space">Space-separated tokens</option>
+            <option value="base26">Base-26 from whole integer (A=0..Z=25) (short inputs)</option>
+          </select>
+        </div>
+        <div>
+          <label>Max tokens (cap)</label>
+          <input id="cap" type="number" min="50" max="25000" step="1" value="5000" />
+        </div>
+
+        <div>
+          <label>Null family (single MC)</label>
+          <select id="nullFam">
+            <option value="shuffle">Shuffle tokens (freq preserved)</option>
+            <option value="block">Block-shuffle (preserve local order)</option>
+            <option value="shift">Cyclic shift (rotate sequence)</option>
+            <option value="markov1">Markov-1 null (preserve transitions)</option>
+            <option value="markov2">Markov-2 null (preserve 2-step transitions) (auto-limited)</option>
+          </select>
+        </div>
+        <div>
+          <label>Block size (block-shuffle)</label>
+          <input id="blockSize" type="number" min="2" max="500" step="1" value="20" />
+        </div>
+
+        <div>
+          <label>MC runs</label>
+          <input id="mcRuns" type="number" min="20" max="2000" step="1" value="200" />
+        </div>
+        <div>
+          <label>Stability repeats</label>
+          <input id="reps" type="number" min="3" max="25" step="1" value="7" />
+        </div>
+
+        <div>
+          <label>Seed (reproducible)</label>
+          <input id="seed" type="number" min="0" max="999999999" step="1" value="42" />
+        </div>
+        <div>
+          <label>Max lag</label>
+          <input id="maxLag" type="number" min="10" max="800" step="1" value="200" />
+        </div>
+
+        <div>
+          <label>τ (tokens)</label>
+          <input id="tau" type="number" min="1" max="2000" step="1" value="160" />
+        </div>
+        <div>
+          <label>λ (token units)</label>
+          <input id="lam" type="number" min="1" max="2000" step="1" value="50" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:grid; gap:10px;">
+        <div class="toggle"><input id="circular" type="checkbox" checked /><span>Circular mode (ACF + sim)</span></div>
+        <div class="toggle"><input id="circH1" type="checkbox" checked /><span>Circular transitions (last→first in H₁)</span></div>
+        <div class="toggle"><input id="lowfx" type="checkbox" /><span>Low-FX (faster UI)</span></div>
+        <div class="toggle"><input id="fastmc" type="checkbox" checked /><span>Fast MC (deterministic PRNG)</span></div>
+        <div class="toggle"><input id="earlyStop" type="checkbox" checked /><span>Early-stop MC if z is decisive</span></div>
+
+        <div>
+          <label>Edge trim (linear only, tokens)</label>
+          <input id="edgeDrop" type="number" min="0" max="1000" step="1" value="0" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="btnPro">RUN PRO+ (boardroom)</button>
+        <button class="btn" id="btnAnalysis">Run analysis</button>
+        <button class="btn" id="btnMC">MC Null</button>
+        <button class="btn" id="btnAll">ALL-NULLS stress</button>
+        <button class="btn" id="btnStab">Stability (median z)</button>
+        <button class="btn" id="btnAuto">Auto-tune τ/λ/maxLag</button>
+        <button class="btn" id="btnSweep">QuickSweep τ</button>
+        <button class="btn danger" id="btnReset">Reset</button>
+        <button class="btn danger" id="btnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="gate">
+      <div>
+        <div class="small">Evidence gate (min-z across evidence nulls)</div>
+        <div class="small" id="gateNote">ready</div>
+      </div>
+      <div class="badge a" id="gateBadge">AMBER</div>
+    </div>
+
+    <div class="kpis" style="margin-top:12px">
+      <div class="kpi"><div class="t">min-z • median-z (stability)</div><div class="v" id="k_minmed">—</div><div class="s">minZ from ALL-NULLS; medianZ from stability repeats.</div></div>
+      <div class="kpi"><div class="t">tokens n • alphabet A</div><div class="v" id="k_nA">—</div><div class="s" id="k_rep">—</div></div>
+      <div class="kpi"><div class="t">H (bits/token) • h • H₁ • h₁</div><div class="v" id="k_H">—</div><div class="s" id="k_H2">—</div></div>
+      <div class="kpi"><div class="t">ACF area • τ̂</div><div class="v" id="k_acf">—</div><div class="s" id="k_tauhat">—</div></div>
+      <div class="kpi"><div class="t">symbol similarity (weighted) • base</div><div class="v" id="k_sim">—</div><div class="s" id="k_sim2">—</div></div>
+      <div class="kpi"><div class="t">QDS coherence score (0–1)</div><div class="v" id="k_score">—</div><div class="s" id="k_score2">score = mean( a + simEx + (1−h) + (1−h₁) )</div></div>
+      <div class="kpi"><div class="t">Selected null: mean ± sd • z • Δ</div><div class="v" id="k_mc">—</div><div class="s" id="k_mc2">—</div></div>
+      <div class="kpi"><div class="t">Shift-sensitivity (debug)</div><div class="v" id="k_shift">—</div><div class="s" id="k_shift2">circular=true ⇒ shift excluded from evidence; used as invariance check.</div></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="small">Charts</div>
+      <canvas id="cvA"></canvas>
+      <div style="height:10px"></div>
+      <canvas id="cvB"></canvas>
+    </div>
+
+    <div class="small" style="margin-top:12px">
+      Kernel weights: w(d)=exp(-d/τ) • g(d)=exp(-(d/λ)²/2). Evidence nulls: shuffle/block/Markov-1/(Markov-2 limited).
+      Shift is debug only when circular=true. Early-stop marks p_emp as low-res + bounded.
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- DOM ----------
+  const $ = (id)=>document.getElementById(id);
+  const inp=$("inp"), tokMode=$("tokMode"), cap=$("cap"), nullFam=$("nullFam"),
+        blockSize=$("blockSize"), mcRuns=$("mcRuns"), reps=$("reps"), seed=$("seed"),
+        maxLag=$("maxLag"), tau=$("tau"), lam=$("lam"), circular=$("circular"), circH1=$("circH1"),
+        lowfx=$("lowfx"), fastmc=$("fastmc"), earlyStop=$("earlyStop"), edgeDrop=$("edgeDrop");
+
+  const btnPro=$("btnPro"), btnAnalysis=$("btnAnalysis"), btnMC=$("btnMC"), btnAll=$("btnAll"),
+        btnStab=$("btnStab"), btnAuto=$("btnAuto"), btnSweep=$("btnSweep"), btnReset=$("btnReset"),
+        btnCancel=$("btnCancel");
+
+  const logEl=$("log"), bar=$("bar");
+  const gateBadge=$("gateBadge"), gateNote=$("gateNote");
+
+  // ---------- state ----------
+  let BUSY=false, CANCEL=false, LAST=null, JOB=0;
+
+  function now(){ const d=new Date(); return d.toTimeString().slice(0,8); }
+  function log(s){
+    logEl.textContent = `[${now()}] ${s}\n` + logEl.textContent;
+  }
+  function setProg(p){ bar.style.width = Math.max(0, Math.min(100, p)) + "%"; }
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+  function fmt2(x){ return (Number.isFinite(x)? x.toFixed(2): "—"); }
+  function fmt3(x){ return (Number.isFinite(x)? x.toFixed(3): "—"); }
+  function fmt4(x){ return (Number.isFinite(x)? x.toFixed(4): "—"); }
+
+  function lockUI(on){
+    const allBtns=[btnPro,btnAnalysis,btnMC,btnAll,btnStab,btnAuto,btnSweep,btnReset];
+    allBtns.forEach(b=>b.disabled=on);
+    // Cancel stays enabled when busy
+    btnCancel.disabled = !on;
+  }
+
+  function busyGuard(){
+    if(BUSY){ log("⏳ busy: job already running."); return true; }
+    return false;
+  }
+
+  async function tick(){
+    // Cooperative yield to avoid Android UI freeze
+    return new Promise(r=>setTimeout(r,0));
+  }
+
+  // ---------- deterministic PRNG ----------
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+  }
+
+  // ---------- tokenization ----------
+  function tokenize(raw, mode, capN){
+    const s = (raw||"").trim();
+    if(!s) return {tokens:[], A:0, meta:"empty"};
+    let toks=[];
+    if(mode==="space"){
+      toks = s.split(/\s+/).filter(Boolean);
+    } else if(mode==="digits"){
+      const m = s.match(/\d/g);
+      toks = (m? m:[]);
+    } else if(mode==="pairs" || mode==="triplets"){
+      const digits = (s.match(/\d/g)||[]).join("");
+      const k = (mode==="pairs")?2:3;
+      for(let i=0;i+k<=digits.length;i+=k) toks.push(digits.slice(i,i+k));
+    } else if(mode==="base26"){
+      // short inputs only: interpret integer then base-26 digits (A=0..Z=25)
+      const digits = (s.match(/\d/g)||[]).join("");
+      if(!digits) return {tokens:[], A:0, meta:"no-digits"};
+      if(digits.length>1200) return {tokens:[], A:0, meta:"too-long-for-base26"};
+      let n = BigInt(digits);
+      if(n===0n){ toks=["0"]; }
+      else{
+        while(n>0n){
+          const r = n % 26n;
+          toks.push(String(r));
+          n = n / 26n;
+        }
+        toks.reverse();
+      }
+    } else {
+      toks = s.split(/\s+/).filter(Boolean);
+    }
+    if(capN && toks.length>capN) toks = toks.slice(0, capN);
+    // Alphabet size = number of unique tokens unless numeric-mode implies fixed
+    let A;
+    if(mode==="digits") A=10;
+    else if(mode==="pairs") A=100;
+    else if(mode==="triplets") A=1000;
+    else if(mode==="base26") A=26;
+    else{
+      const u=new Set(toks); A=u.size;
+    }
+    return {tokens:toks, A, meta:"ok"};
+  }
+
+  function edgeTrimTokens(toks, drop, isCircular){
+    if(isCircular) return toks;
+    const d = Math.max(0, drop|0);
+    if(d===0) return toks;
+    if(toks.length <= 2*d) return [];
+    return toks.slice(d, toks.length-d);
+  }
+
+  function mapTokensToInts(tokens){
+    const map=new Map();
+    let idx=0;
+    const x=new Array(tokens.length);
+    for(let i=0;i<tokens.length;i++){
+      const t=tokens[i];
+      let v=map.get(t);
+      if(v===undefined){ v=idx++; map.set(t,v); }
+      x[i]=v;
+    }
+    return {x, map};
+  }
+
+  // ---------- metrics ----------
+  function entropy(tokens, A){
+    if(tokens.length===0 || A<=1) return {H:0, h:0};
+    const freq = new Map();
+    for(const t of tokens) freq.set(t, (freq.get(t)||0)+1);
+    const n=tokens.length;
+    let H=0;
+    for(const c of freq.values()){
+      const p=c/n;
+      H -= p * Math.log2(p);
+    }
+    const Hmax = Math.log2(A);
+    const h = (Hmax>0)? (H/Hmax):0;
+    return {H, h};
+  }
+
+  function condEntropy1(tokens, A, circularTrans){
+    const n=tokens.length;
+    if(n<2 || A<=1) return {H1:0, h1:0};
+    const pair = new Map();
+    const prev = new Map();
+    const lim = circularTrans ? n : (n-1);
+    for(let i=0;i<lim;i++){
+      const a = tokens[i];
+      const b = tokens[(i+1)%n];
+      const key = a+"→"+b;
+      pair.set(key, (pair.get(key)||0)+1);
+      prev.set(a, (prev.get(a)||0)+1);
+    }
+    let H1=0;
+    const N = lim;
+    for(const [key,c] of pair.entries()){
+      const a = key.split("→")[0];
+      const p_ab = c/N;
+      const p_a = (prev.get(a)||1)/N;
+      const p = p_ab / p_a; // P(b|a)
+      H1 -= p_ab * Math.log2(p);
+    }
+    const Hmax = Math.log2(A);
+    const h1 = (Hmax>0)? (H1/Hmax):0;
+    return {H1, h1};
+  }
+
+  function acfArea(x, maxL, tauW, isCircular){
+    const n=x.length;
+    if(n<3) return {a:0, tauHat:0, acf:[]};
+    const mean = x.reduce((s,v)=>s+v,0)/n;
+    let v=0;
+    for(let i=0;i<n;i++){ const d=x[i]-mean; v+=d*d; }
+    v/=n; if(v<=1e-12) return {a:0, tauHat:0, acf:[]};
+    const L = Math.min(maxL, n-1);
+    const acf = new Array(L+1).fill(0);
+    for(let lag=1; lag<=L; lag++){
+      let s=0;
+      if(isCircular){
+        for(let i=0;i<n;i++){
+          const j=(i+lag)%n;
+          s += (x[i]-mean)*(x[j]-mean);
+        }
+        s/=n;
+      }else{
+        const nn = n-lag;
+        for(let i=0;i<nn;i++){
+          s += (x[i]-mean)*(x[i+lag]-mean);
+        }
+        s/=nn;
+      }
+      acf[lag]=s/(v);
+    }
+    // kernel-weighted area of |acf|
+    let wsum=0, asum=0, wlagSum=0, magSum=0;
+    for(let lag=1; lag<=L; lag++){
+      const w = Math.exp(-lag/Math.max(1e-9,tauW));
+      const mag = Math.abs(acf[lag]);
+      wsum += w;
+      asum += w * mag;
+      wlagSum += lag * mag;
+      magSum += mag;
+    }
+    const a = (wsum>0)? (asum/wsum):0;
+    const tauHat = (magSum>1e-12)? (wlagSum/magSum):0;
+    return {a: clamp01(a), tauHat, acf};
+  }
+
+  function symbolSimilarity(x, maxL, lamW, isCircular){
+    const n=x.length;
+    if(n<3) return {sim:0, base:0, simEx:0, simByLag:[]};
+    const L = Math.min(maxL, n-1);
+    let wsum=0, ssum=0;
+    const simByLag = new Array(L+1).fill(0);
+    for(let lag=1; lag<=L; lag++){
+      const g = Math.exp(-0.5*Math.pow(lag/Math.max(1e-9,lamW),2));
+      let eq=0, denom=0;
+      if(isCircular){
+        denom=n;
+        for(let i=0;i<n;i++) if(x[i]===x[(i+lag)%n]) eq++;
+      }else{
+        denom=n-lag;
+        for(let i=0;i<denom;i++) if(x[i]===x[i+lag]) eq++;
+      }
+      const p = (denom>0)? (eq/denom):0;
+      simByLag[lag]=p;
+      wsum += g;
+      ssum += g*p;
+    }
+    const sim = (wsum>0)? (ssum/wsum):0;
+    return {sim, simByLag};
+  }
+
+  function computeScore(tokens, A, opts){
+    const {isCircular, circTrans, maxL, tauW, lamW} = opts;
+
+    const {H,h} = entropy(tokens, A);
+    const {H1,h1} = condEntropy1(tokens, A, circTrans);
+
+    const trimmed = edgeTrimTokens(tokens, opts.edgeDrop, isCircular);
+    const {x} = mapTokensToInts(trimmed);
+    const acfRes = acfArea(x, maxL, tauW, isCircular);
+    const simRes = symbolSimilarity(x, maxL, lamW, isCircular);
+
+    const base = (A>0)? (1/A):0;
+    const simEx = simRes.sim - base;
+
+    // Boardroom-grade explicit score:
+    const s = 0.25*(acfRes.a) + 0.25*(simEx) + 0.25*(1-h) + 0.25*(1-h1);
+    const score = clamp01(s);
+
+    return {
+      tokensN: tokens.length, A,
+      H, h, H1, h1,
+      a: acfRes.a, tauHat: acfRes.tauHat, acf: acfRes.acf,
+      sim: simRes.sim, simEx, base, simByLag: simRes.simByLag,
+      score
+    };
+  }
+
+  // ---------- null generators ----------
+  function shuffleCopy(arr, rnd){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = (rnd()* (i+1))|0;
+      const t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function blockShuffle(arr, bsz, rnd){
+    const n=arr.length;
+    const b=Math.max(2, Math.min(bsz|0, n));
+    const blocks=[];
+    for(let i=0;i<n;i+=b) blocks.push(arr.slice(i, Math.min(n, i+b)));
+    // shuffle blocks
+    for(let i=blocks.length-1;i>0;i--){
+      const j=(rnd()*(i+1))|0;
+      const t=blocks[i]; blocks[i]=blocks[j]; blocks[j]=t;
+    }
+    return blocks.flat();
+  }
+  function cyclicShift(arr, k){
+    const n=arr.length;
+    if(n===0) return [];
+    const s=((k%n)+n)%n;
+    if(s===0) return arr.slice();
+    return arr.slice(s).concat(arr.slice(0,s));
+  }
+
+  function markov1Null(tokens, rnd){
+    const n=tokens.length;
+    if(n<3) return tokens.slice();
+    // build adjacency lists weighted by counts
+    const nexts = new Map();
+    for(let i=0;i<n-1;i++){
+      const a=tokens[i], b=tokens[i+1];
+      const key=a;
+      if(!nexts.has(key)) nexts.set(key, []);
+      nexts.get(key).push(b);
+    }
+    // start from a random token
+    const out=new Array(n);
+    out[0]=tokens[(rnd()*n)|0];
+    for(let i=1;i<n;i++){
+      const prev=out[i-1];
+      const list=nexts.get(prev);
+      if(list && list.length){
+        out[i]=list[(rnd()*list.length)|0];
+      }else{
+        out[i]=tokens[(rnd()*n)|0];
+      }
+    }
+    return out;
+  }
+
+  function markov2Null(tokens, rnd){
+    const n=tokens.length;
+    if(n<4) return markov1Null(tokens, rnd);
+    // Build map from bigram -> list of next symbols
+    const nexts = new Map();
+    for(let i=0;i<n-2;i++){
+      const a=tokens[i], b=tokens[i+1], c=tokens[i+2];
+      const key=a+"→"+b;
+      if(!nexts.has(key)) nexts.set(key, []);
+      nexts.get(key).push(c);
+    }
+    const out=new Array(n);
+    out[0]=tokens[(rnd()*n)|0];
+    out[1]=tokens[(rnd()*n)|0];
+    for(let i=2;i<n;i++){
+      const key=out[i-2]+"→"+out[i-1];
+      const list=nexts.get(key);
+      if(list && list.length){
+        out[i]=list[(rnd()*list.length)|0];
+      }else{
+        out[i]=tokens[(rnd()*n)|0];
+      }
+    }
+    return out;
+  }
+
+  // ---------- MC ----------
+  async function mcTest(tokens, A, opts, fam, runs, decisiveZ){
+    const rnd = mulberry32((opts.seed>>>0) ^ 0x9e3779b9);
+    const obs = computeScore(tokens, A, opts);
+    let nullScores=[];
+    let used=0;
+    let extreme=0;
+
+    // Pre-check: if shift family in circular evidence mode, treat as debug only
+    for(let r=0;r<runs;r++){
+      if(CANCEL) break;
+      let t2;
+      if(fam==="shuffle") t2=shuffleCopy(tokens, rnd);
+      else if(fam==="block") t2=blockShuffle(tokens, opts.blockSize, rnd);
+      else if(fam==="shift") t2=cyclicShift(tokens, 1+((rnd()*(tokens.length-1))|0));
+      else if(fam==="markov1") t2=markov1Null(tokens, rnd);
+      else if(fam==="markov2") t2=markov2Null(tokens, rnd);
+      else t2=shuffleCopy(tokens, rnd);
+
+      const s2 = computeScore(t2, A, opts).score;
+      nullScores.push(s2);
+      used++;
+
+      // yield every few runs
+      if(!lowfx.checked && (r%4===3)) await tick();
+      if(lowfx.checked && (r%10===9)) await tick();
+
+      // early stop based on z once we have some variance
+      if(opts.earlyStop && used>=Math.min(30, runs)){
+        const mu = mean(nullScores);
+        const sd = stdev(nullScores, mu);
+        if(sd>1e-12){
+          const z = (obs.score - mu)/sd;
+          if(Math.abs(z) > decisiveZ){
+            log(`MC early-stop: |z|>${decisiveZ} at r=${used}/${runs}`);
+            break;
+          }
+        }
+      }
+    }
+
+    const mu=mean(nullScores);
+    const sd=stdev(nullScores, mu);
+    const z = (sd>1e-12)? (obs.score-mu)/sd : 0;
+    // empirical p (two-sided-ish by absolute deviation)
+    let pEmp=null, pNote="", pBound=null;
+    if(used===runs){
+      const zAbs=Math.abs(z);
+      for(let i=0;i<nullScores.length;i++){
+        const z_i = (sd>1e-12)? Math.abs((nullScores[i]-mu)/sd) : 0;
+        if(z_i >= zAbs) extreme++;
+      }
+      pEmp = (extreme+1)/(used+1);
+    }else{
+      // early-stop -> low-res label + bound
+      // Bound: best you can claim with full planned runs is ≤ 1/(used+1) (if none extreme seen, optimistic).
+      pBound = 1/(used+1);
+      pNote = `(early-stop; low-res; ≤${pBound.toFixed(4)})`;
+      // keep a low-res p estimate (optional)
+      // Here we leave pEmp as null to avoid fake precision:
+      pEmp = null;
+    }
+
+    return {fam, runsPlanned:runs, runsUsed:used, mu, sd, z, obs, pEmp, pNote, pBound, nullScores};
+  }
+
+  function mean(a){ if(!a.length) return 0; return a.reduce((s,v)=>s+v,0)/a.length; }
+  function stdev(a, mu){
+    if(a.length<2) return 0;
+    let v=0; for(const x of a){ const d=x-mu; v+=d*d; }
+    v/=(a.length-1);
+    return Math.sqrt(v);
+  }
+
+  // ---------- evidence gate ----------
+  function gateFromMinZ(minZ){
+    // Upgraded boardroom gate:
+    // GREEN: minZ >= 3 (robust against nulls)
+    // AMBER: 0 < minZ < 3
+    // RED: minZ <= 0
+    if(!Number.isFinite(minZ)) return {lab:"AMBER", cls:"a", note:"ready"};
+    if(minZ >= 3) return {lab:"GREEN", cls:"g", note:`Robust: minZ=${fmt2(minZ)} across evidence nulls.`};
+    if(minZ > 0) return {lab:"AMBER", cls:"a", note:`Fragile: minZ=${fmt2(minZ)} (some nulls nearly explain it).`};
+    return {lab:"RED", cls:"r", note:`RED: minZ=${fmt2(minZ)}. Likely explainable by null/transition effects — bin the hype.`};
+  }
+
+  function setGate(minZ){
+    const g = gateFromMinZ(minZ);
+    gateBadge.textContent=g.lab;
+    gateBadge.classList.remove("g","a","r");
+    gateBadge.classList.add(g.cls);
+    gateNote.textContent=g.note;
+  }
+
+  // ---------- charts ----------
+  function drawLine(canvas, ys, colorA="rgba(53,243,182,.9)"){
+    const ctx=canvas.getContext("2d");
+    const w=canvas.width=canvas.clientWidth*devicePixelRatio;
+    const h=canvas.height=canvas.clientHeight*devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    ctx.lineWidth=2*devicePixelRatio;
+    ctx.strokeStyle=colorA;
+    ctx.fillStyle="rgba(255,255,255,.06)";
+    ctx.fillRect(0,0,w,h);
+    // axes
+    ctx.strokeStyle="rgba(255,255,255,.12)";
+    ctx.lineWidth=1*devicePixelRatio;
+    ctx.beginPath();
+    ctx.moveTo(0,h/2); ctx.lineTo(w,h/2);
+    ctx.stroke();
+    if(!ys || ys.length<2) return;
+    let min=Infinity,max=-Infinity;
+    for(let i=1;i<ys.length;i++){ const v=ys[i]; if(Number.isFinite(v)){ min=Math.min(min,v); max=Math.max(max,v); } }
+    if(!Number.isFinite(min) || !Number.isFinite(max) || Math.abs(max-min)<1e-9){ min=-1; max=1; }
+    const pad=16*devicePixelRatio;
+    const sx=(w-2*pad)/Math.max(1, ys.length-2);
+    const mapY=(v)=> pad + (max-v)*(h-2*pad)/Math.max(1e-9,(max-min));
+    ctx.strokeStyle="rgba(53,243,182,.9)";
+    ctx.lineWidth=2*devicePixelRatio;
+    ctx.beginPath();
+    for(let i=1;i<ys.length;i++){
+      const x=pad + (i-1)*sx;
+      const y=mapY(ys[i]);
+      if(i===1) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  function drawBars(canvas, vals){
+    const ctx=canvas.getContext("2d");
+    const w=canvas.width=canvas.clientWidth*devicePixelRatio;
+    const h=canvas.height=canvas.clientHeight*devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle="rgba(255,255,255,.06)";
+    ctx.fillRect(0,0,w,h);
+    if(!vals || !vals.length) return;
+    const pad=16*devicePixelRatio;
+    const n=vals.length;
+    let max=0; for(const v of vals) max=Math.max(max, v);
+    max=Math.max(max, 1e-9);
+    const bw=(w-2*pad)/n;
+    ctx.fillStyle="rgba(53,243,182,.45)";
+    for(let i=0;i<n;i++){
+      const x=pad + i*bw + 2;
+      const hh=(vals[i]/max)*(h-2*pad);
+      ctx.fillRect(x, h-pad-hh, bw-4, hh);
+    }
+  }
+
+  // ---------- UI update ----------
+  function render(res, mc=null, all=null, stab=null, shiftDbg=null){
+    $("k_nA").textContent = res ? `${res.tokensN} • ${res.A}` : "—";
+    if(res){
+      $("k_rep").textContent = `unique ${res.A} • repeats ${(100*(1 - (new Set(edgeTrimTokens(tokenize(inp.value,tokMode.value, cap.value|0).tokens, edgeDrop.value|0, circular.checked)).size / Math.max(1,res.tokensN)))).toFixed(2)}%`;
+      $("k_H").textContent = `${fmt4(res.H)} (h=${fmt4(res.h)})`;
+      $("k_H2").textContent = `H₁=${fmt4(res.H1)} (h₁=${fmt4(res.h1)})`;
+      $("k_acf").textContent = `${fmt4(res.a)} (w-lag)`;
+      $("k_tauhat").textContent = `τ̂ ${fmt2(res.tauHat)} • fit ok`;
+      $("k_sim").textContent = `${fmt6(res.sim)}`
+      function fmt6(x){ return (Number.isFinite(x)? x.toFixed(6): "—"); }
+      $("k_sim2").textContent = `base=${fmt6(res.base)} • (excess ${fmt6(res.simEx)})`;
+      $("k_score").textContent = fmt4(res.score);
+    }else{
+      $("k_rep").textContent="—";
+      $("k_H").textContent="—"; $("k_H2").textContent="—";
+      $("k_acf").textContent="—"; $("k_tauhat").textContent="—";
+      $("k_sim").textContent="—"; $("k_sim2").textContent="—";
+      $("k_score").textContent="—";
+    }
+
+    if(mc){
+      const p = (mc.pEmp!==null)? fmt4(mc.pEmp) : "—";
+      const note = mc.pNote ? ` ${mc.pNote}` : "";
+      $("k_mc").textContent = `${fmt4(mc.mu)} ± ${fmt4(mc.sd)} | z=${fmt3(mc.z)}`;
+      $("k_mc2").textContent = `Δ=${fmt4(mc.obs.score - mc.mu)} | null=${mc.fam} | runs=${mc.runsUsed}/${mc.runsPlanned} | p_emp=${p}${note}`;
+    }else{
+      $("k_mc").textContent="—"; $("k_mc2").textContent="Selected null=—";
+    }
+
+    if(all){
+      $("k_minmed").textContent = `${fmt3(all.minZ)} • ${stab? fmt3(stab.medianZ): "—"}`;
+      setGate(all.minZ);
+    }else{
+      $("k_minmed").textContent="—";
+      setGate(NaN);
+    }
+
+    if(shiftDbg){
+      $("k_shift").textContent = `${fmt4(shiftDbg.baseScore)} • ${fmt4(shiftDbg.baseScore)}`;
+      $("k_shift2").textContent = `span=${fmt4(shiftDbg.span)} flat=${fmt2(shiftDbg.flat)} sd=${fmt4(shiftDbg.sd)} → ${shiftDbg.ok?"OK":"CHECK"}`;
+    }else{
+      $("k_shift").textContent="—"; $("k_shift2").textContent="—";
+    }
+
+    // charts
+    if(res){
+      drawLine($("cvA"), res.acf || []);
+      // small histogram of nulls (if available)
+      if(mc && mc.nullScores && mc.nullScores.length){
+        const bins=18;
+        const a=mc.nullScores.slice();
+        const mn=Math.min(...a), mx=Math.max(...a);
+        const hist=new Array(bins).fill(0);
+        const den=Math.max(1e-9, mx-mn);
+        for(const v of a){
+          const b=Math.min(bins-1, Math.max(0, ((v-mn)/den*bins)|0));
+          hist[b]++;
+        }
+        drawBars($("cvB"), hist);
+      }else{
+        drawBars($("cvB"), []);
+      }
+    }else{
+      drawLine($("cvA"), []);
+      drawBars($("cvB"), []);
+    }
+  }
+
+  function getOpts(){
+    const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+    const isCirc = !!circular.checked;
+    const eDrop = Math.max(0, edgeDrop.value|0);
+    if(isCirc && eDrop>0){
+      log("note: circular=true => edgeTrim ignored.");
+    }
+    return {
+      seed: seed.value|0,
+      maxL: Math.max(10, maxLag.value|0),
+      tauW: Math.max(1, tau.value|0),
+      lamW: Math.max(1, lam.value|0),
+      isCircular: isCirc,
+      circTrans: !!circH1.checked,
+      edgeDrop: eDrop,
+      blockSize: Math.max(2, blockSize.value|0),
+      earlyStop: !!earlyStop.checked
+    };
+  }
+
+  async function runAnalysis(){
+    const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+    if(tok.tokens.length<20){ log("need more input tokens."); return null; }
+    const opts=getOpts();
+    const trimmed = edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+    if(trimmed.length<20){ log("edgeTrim removed too much — lower edge trim."); return null; }
+    const res = computeScore(trimmed, tok.A, opts);
+    log(`analysis: score=${fmt4(res.score)} a=${fmt4(res.a)} simEx=${fmt6(res.simEx)} (h=${fmt4(res.h)} h1=${fmt4(res.h1)})`);
+    function fmt6(x){ return (Number.isFinite(x)? x.toFixed(6): "—"); }
+    return {tok, trimmed, opts, res};
+  }
+
+  async function runShiftDebug(trimmed, A, opts){
+    // Only meaningful for circular mode: invariance check
+    if(!opts.isCircular) return null;
+    const base = computeScore(trimmed, A, opts).score;
+    // sample a few shifts deterministically
+    const rnd = mulberry32((opts.seed>>>0) ^ 0xA5A5A5A5);
+    const k = Math.min(9, Math.max(3, Math.floor(trimmed.length/777)));
+    const vals=[];
+    for(let i=0;i<k;i++){
+      const sh = 1+((rnd()*(trimmed.length-1))|0);
+      vals.push(computeScore(cyclicShift(trimmed, sh), A, opts).score);
+      if(!lowfx.checked) await tick();
+    }
+    const mu=mean(vals), sd=stdev(vals, mu);
+    const mn=Math.min(...vals), mx=Math.max(...vals);
+    const span=mx-mn;
+    const flat = (mu>1e-9)? (span/mu):0;
+    return {baseScore:base, span, flat, sd, ok:(flat<0.10)};
+  }
+
+  async function runAllNulls(trimmed, A, opts){
+    // Evidence null set:
+    // - circular=true: exclude shift from evidence set (debug only)
+    // - circular=false: include shift as evidence null
+    const fams = opts.isCircular ? ["shuffle","block","markov1","markov2"] : ["shuffle","block","shift","markov1","markov2"];
+    const out=[];
+    let minZ=Infinity;
+    setProg(10);
+    for(let i=0;i<fams.length;i++){
+      if(CANCEL) break;
+      setProg(10 + (i/fams.length)*55);
+      const mc = await mcTest(trimmed, A, opts, fams[i], Math.min(200, mcRuns.value|0), 12);
+      out.push({fam:mc.fam, z:mc.z, p_emp:mc.pEmp, p_note:mc.pNote, runsUsed:mc.runsUsed, runsPlanned:mc.runsPlanned});
+      if(Number.isFinite(mc.z) && mc.z < minZ) minZ = mc.z;
+      log(`ALL-NULLS: ${mc.fam} z=${fmt2(mc.z)} p=${mc.pEmp!==null?fmt3(mc.pEmp):"—"} ${mc.pNote||""}`);
+      await tick();
+    }
+    if(minZ===Infinity) minZ=NaN;
+    log(`ALL-NULLS: minZ=${fmt3(minZ)} :: ` + out.map(o=>`${o.fam} z=${fmt2(o.z)}`).join(" | "));
+    return {minZ, details:out, evidenceFams:fams};
+  }
+
+  async function runStability(trimmed, A, opts){
+    const R = Math.max(3, reps.value|0);
+    const zs=[];
+    setProg(70);
+    for(let i=0;i<R;i++){
+      if(CANCEL) break;
+      const mc = await mcTest(trimmed, A, opts, nullFam.value, Math.min(200, mcRuns.value|0), 12);
+      zs.push(mc.z);
+      log(`stability ${i+1}/${R}: z=${fmt3(mc.z)} ${mc.pNote||""}`);
+      setProg(70 + (i/R)*25);
+      await tick();
+    }
+    zs.sort((a,b)=>a-b);
+    const medianZ = zs.length? zs[(zs.length/2)|0] : NaN;
+    const q1 = zs.length? zs[(zs.length*0.25)|0] : NaN;
+    const q3 = zs.length? zs[(zs.length*0.75)|0] : NaN;
+    log(`stability: median z=${fmt3(medianZ)} IQR=[${fmt3(q1)}, ${fmt3(q3)}] repeats=${zs.length}`);
+    return {medianZ, q1, q3, zs};
+  }
+
+  async function runSingleMC(trimmed, A, opts){
+    setProg(45);
+    const mc = await mcTest(trimmed, A, opts, nullFam.value, mcRuns.value|0, 12);
+    log(`MC: ${mc.fam} mean=${fmt4(mc.mu)} sd=${fmt4(mc.sd)} z=${fmt3(mc.z)} p_emp=${mc.pEmp!==null?fmt4(mc.pEmp):"—"} ${mc.pNote||""}`);
+    return mc;
+  }
+
+  // ---------- RUN PRO+ (boardroom pipeline) ----------
+  async function runPro(){
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      log("RUN PRO+: starting (boardroom pipeline: ALL-NULLS → analysis → stability) …");
+
+      // Always compute tokens first
+      const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+      if(tok.tokens.length<20){ log("need more input tokens."); return; }
+      const opts=getOpts();
+
+      // IMPORTANT: edge trim applies only to linear
+      const trimmed = edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+      if(trimmed.length<20){ log("edgeTrim removed too much — lower edge trim."); return; }
+
+      // 1) ALL-NULLS FIRST (forced)
+      const all = await runAllNulls(trimmed, tok.A, opts);
+      if(jobId!==JOB) return; // superseded
+      setProg(60);
+
+      // 2) Analysis (deterministic)
+      const res = computeScore(trimmed, tok.A, opts);
+      log(`analysis: score=${fmt4(res.score)} a=${fmt4(res.a)} simEx=${res.simEx.toFixed(6)}`);
+      setProg(65);
+
+      // shift debug invariance (only if circular)
+      const shiftDbg = await runShiftDebug(trimmed, tok.A, opts);
+
+      // 3) Stability
+      const stab = await runStability(trimmed, tok.A, opts);
+      setProg(96);
+
+      // Selected MC display = run single MC quickly for report line (uses chosen nullFam)
+      const mc = await runSingleMC(trimmed, tok.A, opts);
+
+      LAST = {tok, opts, res, all, stab, mc, shiftDbg, when:Date.now()};
+      render(res, mc, all, stab, shiftDbg);
+
+      setProg(100);
+      log("RUN PRO+: done.");
+    } catch(e){
+      console.error(e);
+      log("❌ error: " + (e && e.message ? e.message : String(e)));
+    } finally {
+      if(jobId===JOB){
+        BUSY=false;
+        lockUI(false);
+        // keep bar full a moment then release a touch
+        setTimeout(()=>{ if(!BUSY) setProg(0); }, 700);
+      }
+    }
+  }
+
+  // ---------- quick sweep τ ----------
+  async function quickSweepTau(){
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      log("QuickSweep τ: parameter search (multiple comparisons — treat as search).");
+      const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+      if(tok.tokens.length<20){ log("need more input tokens."); return; }
+      const opts=getOpts();
+      const trimmed = edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+
+      const candidates=[7,11,17,29,47,83,131,211,337].filter(x=>x<2000);
+      let best=null;
+
+      for(let i=0;i<candidates.length;i++){
+        if(CANCEL) break;
+        const o2 = {...opts, tauW:candidates[i]};
+        const res = computeScore(trimmed, tok.A, o2);
+        // MC with small planned runs; early stop likely triggers
+        const mc = await mcTest(trimmed, tok.A, o2, "shuffle", Math.min(200, mcRuns.value|0), 12);
+        log(`τ=${candidates[i]} → z=${fmt2(mc.z)} ${mc.pNote||""}`);
+        if(!best || mc.z>best.z) best={tau:candidates[i], z:mc.z, p:mc.pEmp, pNote:mc.pNote};
+        setProg(5 + (i/candidates.length)*90);
+        await tick();
+      }
+      if(best){
+        tau.value = best.tau;
+        log(`QuickSweep τ: best z=${fmt2(best.z)} at τ=${best.tau} ${best.pNote||""}`);
+      }
+    } catch(e){
+      console.error(e);
+      log("❌ error: " + (e && e.message ? e.message : String(e)));
+    } finally {
+      if(jobId===JOB){
+        BUSY=false;
+        lockUI(false);
+        setTimeout(()=>{ if(!BUSY) setProg(0); }, 700);
+      }
+    }
+  }
+
+  // ---------- simple helpers ----------
+  function download(name, text){
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  }
+  async function buildReadout(){
+    const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+    const opts=getOpts();
+    const trimmed = edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+    const res = computeScore(trimmed, tok.A, opts);
+    let s = "";
+    s += `QDS Number Coherence Lab v8 PRO\\n`;
+    s += `offline • no calls • QDS_PROTO_DISCLAIMER_V1\\n\\n`;
+    s += `tokens n=${res.tokensN} • A=${res.A} • tokMode=${tokMode.value}\\n`;
+    s += `circular=${opts.isCircular} edgeDrop=${opts.edgeDrop} maxLag=${opts.maxL} τ=${opts.tauW} λ=${opts.lamW}\\n\\n`;
+    s += `score=${fmt4(res.score)}  a=${fmt4(res.a)}  sim=${res.sim.toFixed(6)} (base=${(1/res.A).toFixed(6)} ex=${res.simEx.toFixed(6)})\\n`;
+    s += `H=${fmt4(res.H)} (h=${fmt4(res.h)})  H1=${fmt4(res.H1)} (h1=${fmt4(res.h1)})  tauHat=${fmt2(res.tauHat)}\\n\\n`;
+    if(LAST && LAST.all){
+      s += `ALL-NULLS minZ=${fmt3(LAST.all.minZ)}\\n`;
+      for(const o of LAST.all.details){
+        s += `  ${o.fam}: z=${fmt2(o.z)} p_emp=${o.p_emp===null?"—":fmt4(o.p_emp)} ${o.p_note||""}\\n`;
+      }
+      s += `\\n`;
+    }else{
+      s += `ALL-NULLS minZ=— (run PRO+ for boardroom pipeline)\\n\\n`;
+    }
+    if(LAST && LAST.stab){
+      s += `stability medianZ=${fmt3(LAST.stab.medianZ)} IQR=[${fmt3(LAST.stab.q1)}, ${fmt3(LAST.stab.q3)}] reps=${LAST.stab.zs.length}\\n\\n`;
+    }
+    if(LAST && LAST.mc){
+      const mc=LAST.mc;
+      s += `MC null=${mc.fam} runs=${mc.runsUsed}/${mc.runsPlanned} mean=${fmt4(mc.mu)} sd=${fmt4(mc.sd)} z=${fmt3(mc.z)} p_emp=${mc.pEmp===null?"—":fmt4(mc.pEmp)} ${mc.pNote||""}\\n\\n`;
+    }
+    return s;
+  }
+
+  // ---------- events ----------
+  $("btnTest").onclick = () => {
+    // short-ish “vigenum-ish” testfeed (safe)
+    const feed = "0070571071572072573073574074575074144645145646146647147648148649148218719219710210711211712212713212282783283784284785285786286787286356857357858358859359850350851350420921421922422923423924424925424494955495996496997497998498999498569069560060561061562062563063562633133634134635";
+    inp.value = feed;
+    log(`testfeed: loaded vigenum-ish (len~${feed.length} digits)`);
+  };
+  $("btnClear").onclick = ()=>{ inp.value=""; log("cleared."); };
+  $("btnReset").onclick = ()=>{
+    if(BUSY){ log("busy: cancel first."); return; }
+    inp.value=""; setProg(0); logEl.textContent=""; LAST=null; render(null);
+    setGate(NaN);
+    log("reset.");
+  };
+  $("btnCancel").onclick = ()=>{ if(BUSY){ CANCEL=true; log("cancel requested."); } };
+
+  btnPro.onclick = runPro;
+
+  btnAnalysis.onclick = async ()=> {
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      const run = await runAnalysis();
+      if(!run) return;
+      const shiftDbg = await runShiftDebug(run.trimmed, run.tok.A, run.opts);
+      LAST = {...(LAST||{}), tok:run.tok, opts:run.opts, res:run.res, shiftDbg, when:Date.now()};
+      render(run.res, LAST.mc||null, LAST.all||null, LAST.stab||null, shiftDbg||null);
+    } finally {
+      if(jobId===JOB){ BUSY=false; lockUI(false); setProg(0); }
+    }
+  };
+
+  btnMC.onclick = async ()=> {
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+      if(tok.tokens.length<20){ log("need more input tokens."); return; }
+      const opts=getOpts();
+      const trimmed=edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+      const mc = await mcTest(trimmed, tok.A, opts, nullFam.value, mcRuns.value|0, 12);
+      LAST = {...(LAST||{}), tok, opts, mc, res:mc.obs, when:Date.now()};
+      const shiftDbg = await runShiftDebug(trimmed, tok.A, opts);
+      render(mc.obs, mc, LAST.all||null, LAST.stab||null, shiftDbg||null);
+    } finally {
+      if(jobId===JOB){ BUSY=false; lockUI(false); setProg(0); }
+    }
+  };
+
+  btnAll.onclick = async ()=> {
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+      if(tok.tokens.length<20){ log("need more input tokens."); return; }
+      const opts=getOpts();
+      const trimmed=edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+      const all = await runAllNulls(trimmed, tok.A, opts);
+      const res = computeScore(trimmed, tok.A, opts);
+      LAST = {...(LAST||{}), tok, opts, all, res, when:Date.now()};
+      const shiftDbg = await runShiftDebug(trimmed, tok.A, opts);
+      render(res, LAST.mc||null, all, LAST.stab||null, shiftDbg||null);
+    } finally {
+      if(jobId===JOB){ BUSY=false; lockUI(false); setProg(0); }
+    }
+  };
+
+  btnStab.onclick = async ()=> {
+    if(busyGuard()) return;
+    BUSY=true; CANCEL=false; const jobId=++JOB;
+    lockUI(true); setProg(2);
+    try{
+      const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+      if(tok.tokens.length<20){ log("need more input tokens."); return; }
+      const opts=getOpts();
+      const trimmed=edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+      const stab = await runStability(trimmed, tok.A, opts);
+      const res = computeScore(trimmed, tok.A, opts);
+      LAST = {...(LAST||{}), tok, opts, stab, res, when:Date.now()};
+      const shiftDbg = await runShiftDebug(trimmed, tok.A, opts);
+      render(res, LAST.mc||null, LAST.all||null, stab, shiftDbg||null);
+    } finally {
+      if(jobId===JOB){ BUSY=false; lockUI(false); setProg(0); }
+    }
+  };
+
+  btnAuto.onclick = async ()=> {
+    if(busyGuard()) return;
+    // very conservative: use tauHat as hint, and set λ ~ sqrt(n) capped
+    const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+    if(tok.tokens.length<50){ log("need more tokens for auto-tune."); return; }
+    const opts=getOpts();
+    const trimmed=edgeTrimTokens(tok.tokens, opts.edgeDrop, opts.isCircular);
+    const {x} = mapTokensToInts(trimmed);
+    const a = acfArea(x, Math.min(300, trimmed.length-1), Math.max(10, opts.tauW), opts.isCircular);
+    maxLag.value = Math.min(300, Math.max(50, Math.floor(trimmed.length/10)));
+    tau.value = Math.max(7, Math.min(400, Math.round(a.tauHat || 11)));
+    lam.value = Math.max(10, Math.min(400, Math.round(Math.sqrt(trimmed.length)*1.2)));
+    log(`auto-tune: maxLag=${maxLag.value} τ≈${tau.value} λ≈${lam.value}`);
+  };
+
+  btnSweep.onclick = quickSweepTau;
+
+  $("btnCopy").onclick = async ()=>{
+    const txt = await buildReadout();
+    await navigator.clipboard.writeText(txt);
+    log("copied readout.");
+  };
+  $("btnJSON").onclick = async ()=>{
+    const tok = tokenize(inp.value, tokMode.value, cap.value|0);
+    const opts=getOpts();
+    const payload = {version:"v8-pro", when:new Date().toISOString(), tokMode:tokMode.value, opts, last:LAST||null, inputLen:inp.value.length, A:tok.A, n:tok.tokens.length};
+    download("qds_num_coherence_v8.json", JSON.stringify(payload,null,2));
+    log("download JSON.");
+  };
+  $("btnTXT").onclick = async ()=>{
+    const txt = await buildReadout();
+    download("qds_num_coherence_v8.txt", txt);
+    log("download TXT.");
+  };
+
+  // init
+  lockUI(false);
+  btnCancel.disabled=true;
+  setGate(NaN);
+  log("ready: paste input → RUN PRO+ (ALL-NULLS → analysis → stability).");
+})();
+</script>
+</body>
+</html>

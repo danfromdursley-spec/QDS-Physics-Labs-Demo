@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=qds_avian_lab_v4_pro.html">
+  <title>QDS Avian Lab (Latest)</title>
+<style>
+
+:root{--qdsP:#8b5cf6;--qdsP2:#a78bfa;}
+header, .topbar, .hdr, .top-menu{
+  background:
+    radial-gradient(700px 220px at 10% -30%, rgba(139,92,246,.35), transparent 60%),
+    radial-gradient(700px 220px at 90% -20%, rgba(167,139,250,.25), transparent 60%),
+    linear-gradient(180deg, rgba(15,22,38,.92), rgba(11,18,32,.86));
+  border-bottom:1px solid rgba(139,92,246,.25);
+}
+#menuPanel{display:block;}
+body.menu-collapsed #menuPanel{display:none;}
+#menuBtn{
+  border:1px solid rgba(139,92,246,.35);
+  background: rgba(11,18,32,.75);
+  color:#eaf2ff;
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:14px;
+}
+#menuBtn:active{transform:scale(.98);}
+
+</style>
+<link rel="stylesheet" href="_os/qds_os.css">
+</head>
+<body style="background:#070b16;color:#d7e7ff;font-family:system-ui;padding:20px">
+  <h2>Redirecting to QDS Avian Magnetoreception Lab v4 PRO+…</h2>
+  <p>If it doesn’t jump, tap:</p>
+  <p><a href="qds_avian_lab_v4_pro.html" style="color:#7ad7ff">Open v4 PRO+</a></p>
+  <p><a href="qds_test_platformV3.html" style="color:#8cffc6">Back to Test Platform</a></p>
+
+<script>
+(() => {
+  const btn = document.getElementById("menuBtn");
+  const key = "qds_menu_collapsed_v1";
+  if(!btn) return;
+  const saved = localStorage.getItem(key);
+    if(saved===null && window.matchMedia && window.matchMedia("(max-width: 520px)").matches){ localStorage.setItem(key,"1"); }
+if(saved === "1") document.body.classList.add("menu-collapsed");
+  btn.addEventListener("click", () => {
+    document.body.classList.toggle("menu-collapsed");
+    localStorage.setItem(key, document.body.classList.contains("menu-collapsed") ? "1" : "0");
+  });
+})();
+</script>
+
+<script src="_os/qds_os.js"></script>
+</body>
+</html>

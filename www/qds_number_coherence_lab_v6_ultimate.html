@@ -1,0 +1,1539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- QDS_PATCH_V6_PROPLUS_LOCK_ALLNULLS_FIRST_V1 -->
+<!-- QDS_PATCH_V6_PROPLUS_FREEZE_FIX_V1 -->
+
+<!-- QDS_PATCH_V6_CORE_SHIFT_PEMP_V1 -->
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>QDS Number Coherence Lab v6 ULTIMATE</title>
+<style>
+  :root{
+    --bg:#07110e;
+    --card:#0c1a15;
+    --card2:#0a1411;
+    --ink:#d9f7ea;
+    --muted:#8fb7a8;
+    --line:rgba(130,255,210,.12);
+    --teal:#39f5c2;
+    --teal2:#1fd2a6;
+    --warn:#ffcc66;
+    --bad:#ff5c6c;
+    --good:#4dff9a;
+    --shadow: 0 14px 40px rgba(0,0,0,.45);
+    --radius:20px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background: radial-gradient(900px 500px at 20% 0%, rgba(57,245,194,.16), transparent 60%),
+                          radial-gradient(900px 500px at 80% 20%, rgba(31,210,166,.12), transparent 55%),
+                          linear-gradient(180deg, #050b09, var(--bg));
+    color:var(--ink);
+    font-family:var(--sans);
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:18px 14px 60px;}
+  .hero{
+    padding:22px 18px; border:1px solid var(--line); border-radius:var(--radius);
+    background: linear-gradient(180deg, rgba(15,30,24,.88), rgba(8,18,14,.88));
+    box-shadow: var(--shadow);
+  }
+  h1{margin:0; font-size:44px; letter-spacing:.3px;}
+  .sub{margin-top:10px; color:var(--muted); font-family:var(--mono); font-size:14px; line-height:1.35;}
+  .pillrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+  .pill{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:999px;
+    border:1px solid var(--line); background:rgba(0,0,0,.14);
+    font-family:var(--mono); font-size:13px; color:var(--ink);
+  }
+  .dot{width:10px; height:10px; border-radius:50%; background:var(--teal);}
+  .grid{display:grid; grid-template-columns: 1.25fr .95fr; gap:14px; margin-top:14px;}
+  @media(max-width:900px){ .grid{grid-template-columns:1fr;} h1{font-size:38px;} }
+  .card{
+    border:1px solid var(--line); border-radius:var(--radius);
+    background: linear-gradient(180deg, rgba(12,26,21,.9), rgba(8,18,14,.9));
+    box-shadow: var(--shadow);
+    padding:16px 14px;
+  }
+  .card h2{margin:0 0 10px 0; font-size:18px; color:#c9fff0; letter-spacing:.2px;}
+  .note{
+    padding:12px 12px; border-radius:16px;
+    background: rgba(255,204,102,.08);
+    border:1px solid rgba(255,204,102,.18);
+    color:#ffe3b0;
+    font-size:14px; line-height:1.35;
+  }
+  textarea{
+    width:100%; min-height:120px; resize:vertical;
+    background: rgba(0,0,0,.18);
+    border:1px solid var(--line);
+    border-radius:16px;
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:14px;
+    padding:12px;
+    outline:none;
+  }
+  textarea:focus{border-color: rgba(57,245,194,.35);}
+  .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+  @media(max-width:600px){ .row{grid-template-columns:1fr;} }
+  label{display:block; font-family:var(--mono); font-size:12px; color:var(--muted); margin:8px 0 6px;}
+  select,input[type="number"],input[type="text"]{
+    width:100%;
+    background: rgba(0,0,0,.16);
+    border:1px solid var(--line);
+    border-radius:14px;
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:14px;
+    padding:10px 10px;
+    outline:none;
+  }
+  input[type="checkbox"]{transform:scale(1.15)}
+  .tog{display:flex; align-items:center; gap:10px; padding:10px 10px; border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.12);}
+  .btnrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+  button{
+    border:1px solid rgba(57,245,194,.26);
+    background: rgba(0,0,0,.18);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:16px;
+    font-family:var(--mono);
+    font-size:14px;
+    cursor:pointer;
+  }
+  button:hover{border-color: rgba(57,245,194,.45);}
+  .btnbig{padding:14px 16px; border-radius:18px; background: rgba(57,245,194,.10);}
+  .danger{border-color: rgba(255,92,108,.32) !important;}
+  .progress{height:10px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid var(--line); overflow:hidden;}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg, rgba(57,245,194,.75), rgba(31,210,166,.75)); transition: width .15s ease;}
+  .console{
+    margin-top:10px;
+    background: rgba(0,0,0,.22);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:10px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#bfe9da;
+    max-height:220px; overflow:auto;
+    white-space:pre-wrap;
+  }
+  .statgrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+  @media(max-width:700px){ .statgrid{grid-template-columns:1fr;} }
+  .stat{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:12px;
+    background: rgba(0,0,0,.14);
+  }
+  .stat .k{font-family:var(--mono); color:var(--muted); font-size:12px;}
+  .stat .v{font-family:var(--mono); font-size:28px; margin-top:6px;}
+  .stat .s{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:6px; line-height:1.25;}
+  .gate{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px; border-radius:20px; border:1px solid var(--line); background:rgba(0,0,0,.14);
+  }
+  .badge{font-family:var(--mono); font-size:28px; font-weight:800; padding:10px 14px; border-radius:18px; letter-spacing:.6px;}
+  .bGREEN{background:rgba(77,255,154,.14); color:var(--good); border:1px solid rgba(77,255,154,.22);}
+  .bAMBER{background:rgba(255,204,102,.14); color:var(--warn); border:1px solid rgba(255,204,102,.22);}
+  .bRED{background:rgba(255,92,108,.14); color:var(--bad); border:1px solid rgba(255,92,108,.22);}
+  canvas{
+    width:100%; height:220px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(0,0,0,.16);
+  }
+  .foot{margin-top:10px; color:var(--muted); font-family:var(--mono); font-size:12px; line-height:1.35;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>QDS Number Coherence Lab</h1>
+    <div class="sub">Mode: instrument • kernel-weighted coherence in numeric strings • multi-null stress • reproducible MC • stability runner • <span style="color:var(--teal)">v6 ULTIMATE</span></div>
+    <div class="pillrow">
+      <div class="pill"><span class="dot"></span> offline • no calls</div>
+      <div class="pill"><span class="dot"></span> QDS_PROTO_DISCLAIMER_V1</div>
+      <div class="pill"><span class="dot"></span> Neon. No pink. ✅</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Input</h2>
+      <div class="note">
+        <b>Reality check:</b> this is a <b>structure/coherence instrument</b>. It does <b>not</b> decode truth.
+        It will generate “meaning-looking” artefacts by chance. Use <b>ALL-NULLS</b> + <b>MC</b> + <b>Stability</b>.
+        Sweeps are <b>multiple comparisons</b>; treat “best z” as a search result, not a discovery.
+      </div>
+
+      <label>Paste numeric string / tokens (spaces allowed)</label>
+      <textarea id="inp" placeholder="Paste digits here…"></textarea>
+
+      <div class="btnrow">
+        <button id="btnTest">Load test feed</button>
+        <button id="btnClear" class="danger">Clear</button>
+      </div>
+
+      <h2 style="margin-top:14px;">Controls</h2>
+      <div class="row">
+        <div>
+          <label>Tokenization</label>
+          <select id="tokMode">
+            <option value="digits">Digits (0–9)</option>
+            <option value="pairs">Pairs (00–99)</option>
+            <option value="triplets">Triplets (000–999)</option>
+            <option value="space">Space-separated tokens</option>
+            <option value="base26">Base-26 from whole integer (A=0..Z=25) (short inputs)</option>
+          </select>
+        </div>
+        <div>
+          <label>Max tokens (cap)</label>
+          <input type="number" id="cap" value="5000" min="50" step="50"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Null family (for MC)</label>
+          <select id="nullFam">
+            <option value="shuffle">Shuffle tokens (freq preserved)</option>
+            <option value="block">Block-shuffle (preserve local order)</option>
+            <option value="shift">Cyclic shift (rotate sequence)</option>
+            <option value="markov1">Markov-1 null (preserve transitions)</option>
+            <option value="markov2">Markov-2 null (preserve 2-step transitions) (auto-limited)</option>
+          </select>
+        </div>
+        <div>
+          <label>Block size (block-shuffle)</label>
+          <input type="number" id="blockSize" value="20" min="2" step="1"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>MC Null (runs)</label>
+          <input type="number" id="mcRuns" value="200" min="10" step="10"/>
+        </div>
+        <div>
+          <label>Stability repeats</label>
+          <input type="number" id="stabReps" value="7" min="1" step="1"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Seed (reproducible)</label>
+          <input type="number" id="seed" value="42" min="0" step="1"/>
+        </div>
+        <div>
+          <label>Max lag</label>
+          <input type="number" id="maxLag" value="200" min="5" step="5"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>τ (tokens)</label>
+          <input type="number" id="tau" value="160" min="1" step="1"/>
+        </div>
+        <div>
+          <label>λ (token units)</label>
+          <input type="number" id="lam" value="50" min="1" step="1"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="tog"><input type="checkbox" id="circular" checked><label style="margin:0">Circular mode (ACF + sim)</label></div>
+        <div class="tog"><input type="checkbox" id="circTrans" checked><label style="margin:0">Circular transitions (last→first in H₁)</label></div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Edge trim (linear only, tokens)</label>
+          <input type="number" id="edgeDrop" value="0" min="0" step="1"/>
+        </div>
+        <div class="tog"><input type="checkbox" id="lowFx"><label style="margin:0">Low-FX (faster UI)</label></div>
+      </div>
+
+      <div class="row">
+        <div class="tog"><input type="checkbox" id="fastMc" checked><label style="margin:0">Fast MC (deterministic PRNG)</label></div>
+        <div class="tog"><input type="checkbox" id="earlyStop" checked><label style="margin:0">Early-stop MC if z is decisive</label></div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btnbig" id="btnPro">RUN PRO+ (1-button)</button>
+        <button id="btnRun">Run analysis</button>
+        <button id="btnMC">MC Null</button>
+        <button id="btnAll">ALL-NULLS stress</button>
+        <button id="btnStab">Stability (median z)</button>
+        <button id="btnAuto">Auto-tune τ/λ/maxLag</button>
+        <button id="btnSweep">QuickSweep τ</button>
+        <button class="danger" id="btnReset">Reset</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="progress"><div class="bar" id="bar"></div></div>
+      </div>
+
+      <div class="console" id="log"></div>
+    </div>
+
+    <div class="card">
+      <h2>Results (v6 ULTIMATE)</h2>
+
+      <div class="gate" id="gateBox">
+        <div>
+          <div class="k" style="font-family:var(--mono); color:var(--muted);">Evidence gate (min-z across nulls)</div>
+          <div class="s" id="gateWhy" style="font-family:var(--mono); margin-top:8px; color:var(--muted);">ready</div>
+        </div>
+        <div class="badge bAMBER" id="gateBadge">AMBER</div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="statgrid">
+        <div class="stat">
+          <div class="k">min-z • median-z (stability)</div>
+          <div class="v" id="minMed">—</div>
+          <div class="s">minZ comes from ALL-NULLS. medianZ from stability repeats.</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">tokens n • alphabet A</div>
+          <div class="v" id="nA">—</div>
+          <div class="s" id="uniqRep">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">H (bits/token) • h • H₁ • h₁</div>
+          <div class="v" id="ent">—</div>
+          <div class="s" id="ent2">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">ACF area • τ̂</div>
+          <div class="v" id="acfTau">—</div>
+          <div class="s" id="fitMsg">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">symbol similarity (weighted) • base</div>
+          <div class="v" id="sim">—</div>
+          <div class="s" id="sim2">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">QDS coherence score (0–1)</div>
+          <div class="v" id="score">—</div>
+          <div class="s" id="score2">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">Selected null: mean ± sd • z • Δ</div>
+          <div class="v" id="zLine">—</div>
+          <div class="s" id="zLine2">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">Shift-sensitivity (debug)</div>
+          <div class="v" id="shiftDbg">—</div>
+          <div class="s" id="shiftDbg2">—</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:14px;">Charts</h2>
+      <canvas id="cACF" width="900" height="220"></canvas>
+      <div style="height:10px"></div>
+      <canvas id="cNull" width="900" height="220"></canvas>
+      <div style="height:10px"></div>
+      <canvas id="cStab" width="900" height="220"></canvas>
+
+      <div class="btnrow" style="margin-top:12px;">
+        <button id="btnCopy">Copy readout</button>
+        <button id="btnJson">Download JSON</button>
+        <button id="btnTxt">Download TXT</button>
+      </div>
+
+      <div class="foot">
+        Kernel weights: w(d)=exp(-d/τ) • g(d)=exp(-(d/λ)²/2).<br/>
+        Nulls: shuffle/block/shift/Markov-1/(Markov-2 limited). Reproducible seed. Early-stop optional.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+/* QDS_PATCH_V6_PROPLUS_LOCK_ALLNULLS_FIRST_V1 */
+window.__QDS_BUSY = window.__QDS_BUSY || false;
+
+function __qdsSetUIBusy(on){
+  // boardroom lock: block *human* input while allowing internal/programmatic calls
+  try{
+    document.documentElement.dataset.qdsBusy = on ? "1" : "0";
+  }catch(e){ /* no-op */ }
+}
+
+// hard block clicks while busy (even if some control slips through)
+document.addEventListener("click", (e)=>{
+  if(!window.__QDS_BUSY) return;
+  if(e && e.isTrusted===false) return; // allow internal/programmatic events
+  const t = e.target;
+  if(!t) return;
+  if(t.closest && t.closest("button,select,input,textarea")){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
+
+
+/* ===========================
+   V6 ULTIMATE CORE
+   =========================== */
+
+const $ = (id)=>document.getElementById(id);
+const logEl = $("log");
+const barEl = $("bar");
+
+function now(){ const d=new Date(); return d.toTimeString().slice(0,8); }
+function log(msg){
+  logEl.textContent = `[${now()}] ${msg}\n` + logEl.textContent;
+}
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function fmt(x, n=4){ if(!isFinite(x)) return "—"; return (+x).toFixed(n); }
+function fmt2(x){ if(!isFinite(x)) return "—"; return (+x).toFixed(2); }
+function fmt3(x){ if(!isFinite(x)) return "—"; return (+x).toFixed(3); }
+
+function setBar(p){ barEl.style.width = `${Math.max(0,Math.min(100,p))}%`; }
+
+/* ---- deterministic PRNG (mulberry32-ish) ---- */
+function makeRng(seed){
+  let a = (seed>>>0) + 0x6D2B79F5;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function randInt(rng, n){ return (rng()*n)|0; }
+
+/* ---- tokenization ---- */
+function stripToDigits(s){ return (s||"").replace(/[^0-9]/g,""); }
+
+function tokenize(input, mode, cap){
+  let raw = input||"";
+  cap = Math.max(1, cap|0);
+
+  if(mode==="space"){
+    const toks = raw.trim().split(/\s+/).filter(Boolean);
+    const out = toks.slice(0,cap).map(t=>t);
+    // map to integers via stable dictionary
+    const map = new Map();
+    let next=0;
+    const seq = out.map(t=>{
+      if(!map.has(t)){ map.set(t,next++); }
+      return map.get(t);
+    });
+    return {seq, A: next, note:`space tokens (${next} unique)`};
+  }
+
+  const digits = stripToDigits(raw);
+  if(mode==="digits"){
+    const seq = digits.slice(0,cap).split("").map(ch=>ch.charCodeAt(0)-48);
+    return {seq, A: 10, note:"digits"};
+  }
+
+  if(mode==="pairs"){
+    const need = cap*2;
+    const d = digits.slice(0,need);
+    const seq=[];
+    for(let i=0;i+1<d.length;i+=2) seq.push((d.charCodeAt(i)-48)*10 + (d.charCodeAt(i+1)-48));
+    return {seq, A: 100, note:"pairs"};
+  }
+
+  if(mode==="triplets"){
+    const need = cap*3;
+    const d = digits.slice(0,need);
+    const seq=[];
+    for(let i=0;i+2<d.length;i+=3){
+      seq.push((d.charCodeAt(i)-48)*100 + (d.charCodeAt(i+1)-48)*10 + (d.charCodeAt(i+2)-48));
+    }
+    return {seq, A: 1000, note:"triplets"};
+  }
+
+  if(mode==="base26"){
+    // Safe mode: only for short-ish decimal strings.
+    const d = digits.replace(/^0+/,"") || "0";
+    if(d.length>1200){
+      return {seq:[], A:0, note:"base26 blocked: input too long (use digits/pairs/triplets)"};
+    }
+    // decimal string division to base26 digits (most significant first)
+    let arr = d.split("").map(c=>c.charCodeAt(0)-48);
+    const out=[];
+    while(arr.length>0 && !(arr.length===1 && arr[0]===0) && out.length<cap){
+      let carry=0;
+      const next=[];
+      for(let i=0;i<arr.length;i++){
+        const v = carry*10 + arr[i];
+        const q = (v/26)|0;
+        carry = v - q*26;
+        if(next.length>0 || q!==0) next.push(q);
+      }
+      out.push(carry); // remainder
+      arr = next.length? next : [0];
+      if(arr.length===1 && arr[0]===0) break;
+    }
+    out.reverse();
+    return {seq: out, A: 26, note:"base26 (short)"};
+  }
+
+  return {seq:[], A:0, note:"unknown tokenization"};
+}
+
+/* ---- entropy + markov entropy ---- */
+function entropy(seq, A){
+  const n=seq.length;
+  if(n<=0 || A<=1) return {H:0,h:0};
+  const c = new Array(A).fill(0);
+  for(const x of seq) c[x] = (c[x]||0)+1;
+  let H=0;
+  for(let i=0;i<A;i++){
+    const p = c[i]/n;
+    if(p>0) H -= p*Math.log2(p);
+  }
+  const h = H / Math.log2(A);
+  return {H,h, counts:c};
+}
+
+function markov1Entropy(seq, A, circularTrans){
+  const n=seq.length;
+  if(n<2 || A<=1) return {H1:0,h1:0};
+  const T = Array.from({length:A}, ()=>new Array(A).fill(0));
+  const steps = circularTrans ? n : (n-1);
+  for(let i=0;i<steps;i++){
+    const a = seq[i];
+    const b = seq[(i+1)%n];
+    T[a][b] += 1;
+  }
+  let H1=0;
+  for(let i=0;i<A;i++){
+    let rowSum=0;
+    for(let j=0;j<A;j++) rowSum += T[i][j];
+    if(rowSum<=0) continue;
+    for(let j=0;j<A;j++){
+      const pij = T[i][j]/steps;
+      if(pij<=0) continue;
+      const pcond = T[i][j]/rowSum;
+      H1 -= pij*Math.log2(pcond);
+    }
+  }
+  const h1 = H1 / Math.log2(A);
+  return {H1,h1, T};
+}
+
+/* ---- kernel weights ---- */
+function wExp(d, tau){ return Math.exp(-d/Math.max(1e-9,tau)); }
+function gGauss(d, lam){ const x=d/Math.max(1e-9,lam); return Math.exp(-0.5*x*x); }
+
+/* ---- circular/linear distance for sim kernel ---- */
+function dist(d, n, circular){
+  if(!circular) return d;
+  return Math.min(d, n-d);
+}
+
+/* ---- ACF + sim by lag (O(n*maxLag)) ---- */
+function acfAndSim(seq, A, maxLag, tau, lam, circular, edgeDrop){
+  const n = seq.length;
+  const L = Math.min(maxLag|0, Math.max(1, n-1));
+  const ed = Math.max(0, edgeDrop|0);
+  let start = 0, end = n;
+  if(!circular && ed>0){
+    start = Math.min(n-1, ed);
+    end   = Math.max(start+2, n-ed);
+  }
+  const m = end-start;
+  if(m<3) return {acf:[], acfArea:0, tauHat:0, sim:0, simBase:1/Math.max(1,A), fitOK:false};
+
+  // mean/var over trimmed
+  let mean=0;
+  for(let i=start;i<end;i++) mean += seq[i];
+  mean /= m;
+  let v=0;
+  for(let i=start;i<end;i++){ const z=seq[i]-mean; v += z*z; }
+  v /= (m-1);
+  if(v<=1e-12) v = 1e-12;
+
+  const acf = new Array(L+1).fill(0);
+  const simLag = new Array(L+1).fill(0);
+
+  // compute lag stats
+  for(let d=1; d<=L; d++){
+    let cov=0, cnt=0, matches=0;
+    if(circular){
+      // full wraparound, use m points but mapped to original indices
+      for(let k=0;k<m;k++){
+        const i = (start + k) % n;
+        const j = (i + d) % n;
+        cov += (seq[i]-mean)*(seq[j]-mean);
+        matches += (seq[i]===seq[j]) ? 1 : 0;
+        cnt++;
+      }
+    } else {
+      // linear: ensure j inside [start,end)
+      for(let i=start; i<end; i++){
+        const j = i + d;
+        if(j>=end) break;
+        cov += (seq[i]-mean)*(seq[j]-mean);
+        matches += (seq[i]===seq[j]) ? 1 : 0;
+        cnt++;
+      }
+    }
+    if(cnt>1){
+      acf[d] = (cov/(cnt-1)) / v;
+      simLag[d] = matches / cnt;
+    }
+  }
+
+  // weighted ACF area
+  let wsum=0, asum=0;
+  for(let d=1; d<=L; d++){
+    const w = wExp(d, tau);
+    wsum += w;
+    asum += w * Math.abs(acf[d]);
+  }
+  const acfArea = (wsum>0)? (asum/wsum) : 0;
+
+  // tauHat: rough e-fold estimate from ACF envelope
+  // find first lag where |acf| drops below e^-1 of |acf[1]|, else fallback L
+  let tauHat = 0;
+  const a1 = Math.abs(acf[1]) || 1e-9;
+  const target = a1/Math.E;
+  let hit = -1;
+  for(let d=2; d<=L; d++){
+    if(Math.abs(acf[d])<=target){ hit=d; break; }
+  }
+  tauHat = (hit>0)? hit : Math.min(L, Math.round(tau||L));
+
+  // weighted similarity using Gaussian kernel on lag distance
+  let gsum=0, ssum=0;
+  for(let d=1; d<=L; d++){
+    const dd = dist(d, n, circular);
+    const g = gGauss(dd, lam);
+    gsum += g;
+    ssum += g * simLag[d];
+  }
+  const sim = (gsum>0)? (ssum/gsum) : 0;
+  const simBase = 1/Math.max(1, A);
+
+  // fitOK: crude sanity if ACF at small lags has structure
+  const fitOK = isFinite(acfArea) && acfArea>=0 && acfArea<=1;
+
+  return {acf, acfArea, tauHat, sim, simBase, simLag, fitOK, start, end, m};
+}
+
+/* ---- score ---- */
+function scoreAll(seq, A, cfg){
+  const n=seq.length;
+  const {H,h} = entropy(seq, A);
+  const {H1,h1} = markov1Entropy(seq, A, cfg.circularTransitions);
+  const acfSim = acfAndSim(seq, A, cfg.maxLag, cfg.tau, cfg.lam, cfg.circular, cfg.edgeDrop);
+
+  const a = acfSim.acfArea;
+  const sim = acfSim.sim;
+  const base = acfSim.simBase;
+  const simEx = sim - base;
+
+  const one_h  = 1 - h;
+  const one_h1 = 1 - h1;
+
+  // weights tuned to roughly match your v5 readout behaviour
+  const wA = 0.40;
+  const wS = 0.15;
+  const wH = 0.05;
+  const wH1= 0.10;
+
+  const raw = (wA*a) + (wS*Math.max(0,simEx)) + (wH*Math.max(0,one_h)) + (wH1*Math.max(0,one_h1));
+  const score = clamp01(raw);
+
+  return {
+    n,A,H,h,H1,h1,
+    a, tauHat: acfSim.tauHat, fitOK: acfSim.fitOK,
+    sim, base, simEx,
+    score,
+    acf: acfSim.acf,
+    simLag: acfSim.simLag,
+    trim: {start: acfSim.start, end: acfSim.end, m: acfSim.m}
+  };
+}
+
+/* ---- null generators ---- */
+function shuffleNull(seq, rng){
+  const a = seq.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = randInt(rng, i+1);
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function blockShuffleNull(seq, blockSize, rng){
+  const n=seq.length;
+  const B=Math.max(1, blockSize|0);
+  const blocks=[];
+  for(let i=0;i<n;i+=B) blocks.push(seq.slice(i, Math.min(n,i+B)));
+  // shuffle blocks
+  for(let i=blocks.length-1;i>0;i--){
+    const j=randInt(rng, i+1);
+    const t=blocks[i]; blocks[i]=blocks[j]; blocks[j]=t;
+  }
+  return blocks.flat();
+}
+
+function shiftNull(seq, rng){
+  const n=seq.length;
+  const k = randInt(rng, n);
+  if(k===0) return seq.slice();
+  return seq.slice(k).concat(seq.slice(0,k));
+}
+
+function markov1Null(seq, A, rng, circularTrans){
+  const n=seq.length;
+  if(n<2) return seq.slice();
+  // build transition counts
+  const T = Array.from({length:A}, ()=>new Array(A).fill(0));
+  const steps = circularTrans ? n : (n-1);
+  for(let i=0;i<steps;i++){
+    const a = seq[i];
+    const b = seq[(i+1)%n];
+    T[a][b] += 1;
+  }
+  // precompute row cumulative
+  const cum = [];
+  const rowSum = new Array(A).fill(0);
+  for(let i=0;i<A;i++){
+    let s=0;
+    for(let j=0;j<A;j++) s += T[i][j];
+    rowSum[i]=s;
+    const c=[];
+    let acc=0;
+    for(let j=0;j<A;j++){
+      acc += T[i][j];
+      c.push(acc);
+    }
+    cum.push(c);
+  }
+  // initial distribution from marginals
+  const c0 = new Array(A).fill(0);
+  for(const x of seq) c0[x] += 1;
+  let tot = seq.length;
+  let acc=0;
+  const cum0=[];
+  for(let i=0;i<A;i++){ acc += c0[i]; cum0.push(acc); }
+
+  function drawFromCum(cumArr, total){
+    if(total<=0) return randInt(rng,A);
+    const r = rng()*total;
+    // linear scan ok for A<=1000
+    for(let i=0;i<cumArr.length;i++) if(r<cumArr[i]) return i;
+    return cumArr.length-1;
+  }
+
+  const out=new Array(n);
+  out[0]=drawFromCum(cum0, tot);
+
+  for(let t=1;t<n;t++){
+    const prev = out[t-1];
+    const totalRow = rowSum[prev];
+    if(totalRow<=0){
+      out[t]=drawFromCum(cum0, tot);
+    } else {
+      const r = rng()*totalRow;
+      const c = cum[prev];
+      let j=0;
+      while(j<c.length && r>=c[j]) j++;
+      out[t] = Math.min(A-1, j);
+    }
+  }
+  return out;
+}
+
+function markov2Null(seq, A, rng){
+  // Limited Markov-2: only if A small enough and n manageable
+  const n=seq.length;
+  if(n<3) return seq.slice();
+  if(A>100) return null; // auto block
+  // map pairs (a,b) -> distribution over c
+  const map = new Map();
+  function key(a,b){ return a*1000 + b; }
+  for(let i=0;i<n-2;i++){
+    const a=seq[i], b=seq[i+1], c=seq[i+2];
+    const k=key(a,b);
+    if(!map.has(k)) map.set(k, new Array(A).fill(0));
+    map.get(k)[c] += 1;
+  }
+  // seed with first two from original
+  const out=new Array(n);
+  out[0]=seq[0]; out[1]=seq[1];
+  for(let t=2;t<n;t++){
+    const k=key(out[t-2], out[t-1]);
+    const dist = map.get(k);
+    if(!dist){
+      // fallback: uniform-ish
+      out[t]=randInt(rng,A);
+      continue;
+    }
+    let total=0;
+    for(let j=0;j<A;j++) total += dist[j];
+    if(total<=0){ out[t]=randInt(rng,A); continue; }
+    let r=rng()*total;
+    let acc=0, pick=A-1;
+    for(let j=0;j<A;j++){
+      acc += dist[j];
+      if(r<acc){ pick=j; break; }
+    }
+    out[t]=pick;
+  }
+  return out;
+}
+
+function genNull(seq, A, cfg, rng, fam){
+  if(fam==="shuffle") return shuffleNull(seq, rng);
+  if(fam==="block") return blockShuffleNull(seq, cfg.blockSize, rng);
+  if(fam==="shift") return shiftNull(seq, rng);
+  if(fam==="markov1") return markov1Null(seq, A, rng, cfg.circularTransitions);
+  if(fam==="markov2"){
+    const m2 = markov2Null(seq, A, rng);
+    if(m2===null) return markov1Null(seq, A, rng, cfg.circularTransitions);
+    return m2;
+  }
+  return shuffleNull(seq, rng);
+}
+
+/* ---- MC + stats ---- */
+function meanSd(arr){
+  const n=arr.length;
+  if(n<=1) return {mu:arr[0]||0, sd:0};
+  let m=0; for(const x of arr) m+=x; m/=n;
+  let v=0; for(const x of arr){ const d=x-m; v+=d*d; } v/=(n-1);
+  return {mu:m, sd:Math.sqrt(Math.max(1e-12,v))};
+}
+
+function zFrom(mu, sd, x){ return (sd>0)? ((x-mu)/sd) : 0; }
+
+function empiricalP(nullScores, obs){
+  // one-sided: P(null >= obs)
+  let c=0;
+  for(const x of nullScores) if(x>=obs) c++;
+  return (c+1)/(nullScores.length+1);
+}
+
+/* ---- BH-FDR + Bonferroni helpers ---- */
+function bhFdr(pvals){
+  // returns q-values in original order
+  const m=pvals.length;
+  const items=pvals.map((p,i)=>({p,i})).sort((a,b)=>a.p-b.p);
+  const q=new Array(m).fill(1);
+  let prev=1;
+  for(let k=m;k>=1;k--){
+    const idx=k-1;
+    const val = Math.min(prev, (items[idx].p*m)/k);
+    prev=val;
+    q[items[idx].i]=val;
+  }
+  return q;
+}
+function bonf(p, m){ return Math.min(1, p*m); }
+
+/* ---- drawing ---- */
+function clearCanvas(c){
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="rgba(0,0,0,0)";
+  ctx.fillRect(0,0,c.width,c.height);
+}
+function drawLinePlot(c, ys, yMin, yMax){
+  const ctx=c.getContext("2d");
+  clearCanvas(c);
+  const W=c.width, H=c.height;
+  ctx.lineWidth=2;
+  ctx.strokeStyle="rgba(57,245,194,.85)";
+  ctx.beginPath();
+  const n=ys.length;
+  for(let i=0;i<n;i++){
+    const x = (i/(n-1))* (W-24) + 12;
+    const yv = ys[i];
+    const t = (yv - yMin)/Math.max(1e-9,(yMax-yMin));
+    const y = (1-t)*(H-24) + 12;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // axes
+  ctx.strokeStyle="rgba(255,255,255,.10)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(12,12); ctx.lineTo(12,H-12); ctx.lineTo(W-12,H-12);
+  ctx.stroke();
+}
+
+function drawHist(c, arr, bins=18){
+  const ctx=c.getContext("2d");
+  clearCanvas(c);
+  const W=c.width, H=c.height;
+  if(arr.length===0) return;
+  let mn=Infinity,mx=-Infinity;
+  for(const x of arr){ if(x<mn) mn=x; if(x>mx) mx=x; }
+  if(mn===mx){ mn-=1; mx+=1; }
+  const counts=new Array(bins).fill(0);
+  for(const x of arr){
+    const t=(x-mn)/(mx-mn);
+    let b=Math.floor(t*bins);
+    if(b<0) b=0; if(b>=bins) b=bins-1;
+    counts[b]++;
+  }
+  const maxC=Math.max(...counts);
+  const pad=12;
+  const bw=(W-2*pad)/bins;
+  for(let i=0;i<bins;i++){
+    const h=(counts[i]/maxC)*(H-2*pad);
+    const x=pad+i*bw;
+    const y=H-pad-h;
+    ctx.fillStyle="rgba(77,255,154,.55)";
+    ctx.fillRect(x+2,y,bw-4,h);
+  }
+  ctx.strokeStyle="rgba(255,255,255,.10)";
+  ctx.strokeRect(pad,pad,W-2*pad,H-2*pad);
+}
+
+function drawDots(c, arr){
+  const ctx=c.getContext("2d");
+  clearCanvas(c);
+  const W=c.width,H=c.height;
+  if(arr.length===0) return;
+  let mn=Math.min(...arr), mx=Math.max(...arr);
+  if(mn===mx){ mn-=1; mx+=1; }
+  const pad=12;
+  ctx.fillStyle="rgba(57,245,194,.85)";
+  for(let i=0;i<arr.length;i++){
+    const x=pad + (i/(Math.max(1,arr.length-1)))*(W-2*pad);
+    const t=(arr[i]-mn)/(mx-mn);
+    const y=(1-t)*(H-2*pad)+pad;
+    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+  }
+  ctx.strokeStyle="rgba(255,255,255,.10)";
+  ctx.strokeRect(pad,pad,W-2*pad,H-2*pad);
+}
+
+/* ---- UI state ---- */
+function readCfg(){
+  return {
+    tokMode: $("tokMode").value,
+    cap: +$("cap").value,
+    nullFam: $("nullFam").value,
+    blockSize: +$("blockSize").value,
+    mcRuns: +$("mcRuns").value,
+    stabReps: +$("stabReps").value,
+    seed: +$("seed").value,
+    maxLag: +$("maxLag").value,
+    tau: +$("tau").value,
+    lam: +$("lam").value,
+    circular: $("circular").checked,
+    circularTransitions: $("circTrans").checked,
+    edgeDrop: +$("edgeDrop").value,
+    lowFx: $("lowFx").checked,
+    fastMc: $("fastMc").checked,
+    earlyStop: $("earlyStop").checked
+  };
+}
+
+let LAST = {
+  cfg:null,
+  seq:null, A:0,
+  obs:null,
+  mc:null,
+  allNulls:null,
+  stability:null,
+  sweep:null
+};
+
+function updateGate(minZ, note){
+  const badge = $("gateBadge");
+  const why = $("gateWhy");
+  let level="AMBER";
+  if(minZ>3) level="GREEN";
+  else if(minZ<=0) level="RED";
+  badge.textContent=level;
+  badge.className = "badge " + (level==="GREEN"?"bGREEN": level==="RED"?"bRED":"bAMBER");
+  why.textContent = note || (level==="GREEN"?"Robust across null families.":"Fragile vs at least one null family.");
+}
+
+/* ---- shift sensitivity debug ---- */
+function shiftSensitivity(seq, A, cfg){
+  const n=seq.length;
+  if(n<20) return {flat:0,best:0,worst:0,span:0,flag:"n too small"};
+  const K = Math.min(64, n);
+  const step = Math.max(1, Math.floor(n/K));
+  const scores=[];
+  for(let k=0;k<K;k++){
+    const off = (k*step)%n;
+    const shifted = seq.slice(off).concat(seq.slice(0,off));
+    scores.push(scoreAll(shifted, A, cfg).score);
+  }
+  let best=-Infinity,worst=Infinity, sum=0;
+  for(const s of scores){ if(s>best) best=s; if(s<worst) worst=s; sum+=s; }
+  const mu=sum/scores.length;
+  const {sd} = meanSd(scores);
+  const span = best-worst;
+  // flatness: span / (sd+eps)
+  const flat = span / Math.max(1e-9, sd);
+  let flag = "OK";
+  if(!cfg.circular && cfg.edgeDrop===0 && flat>6) flag="LIKELY EDGE/BOUNDARY BIAS (try edgeTrim or circular)";
+  if(cfg.circular && flat>6) flag="SURPRISING: circular still shift-sensitive (check bugs / maxLag too big)";
+  return {best,worst,mu,sd,span,flat,flag};
+}
+
+/* ---- main analysis ---- */
+function prep(){
+  const cfg=readCfg();
+  const t = tokenize($("inp").value, cfg.tokMode, cfg.cap);
+  if(t.seq.length<20){
+    log(`tokenize: ${t.note} (len=${t.seq.length}) — need more input`);
+    return null;
+  }
+  LAST.cfg = cfg;
+  LAST.seq = t.seq;
+  LAST.A = t.A;
+  log(`main: ${t.note} n=${t.seq.length} A=${t.A} circular=${cfg.circular} edgeDrop=${cfg.edgeDrop}`);
+  return {cfg, seq:t.seq, A:t.A};
+}
+
+function renderObs(obs){
+  $("nA").textContent = `${obs.n} • ${obs.A}`;
+  const uniq = new Set(LAST.seq).size;
+  $("uniqRep").textContent = `unique ${uniq} • repeats ${fmt2(100*(1-uniq/obs.n))}%`;
+  $("ent").textContent = `${fmt4(obs.H)} (h=${fmt4(obs.h)})`;
+  $("ent2").textContent = `H₁=${fmt4(obs.H1)} (h₁=${fmt4(obs.h1)})`;
+  $("acfTau").textContent = `${fmt4(obs.a)} (w-lag)`;
+  $("fitMsg").textContent = `τ̂ ${fmt2(obs.tauHat)} • fit ${obs.fitOK?"ok":"check"}`;
+  $("sim").textContent = `${fmt6(obs.sim)}`
+  $("sim2").textContent = `base=${fmt6(obs.base)} • (excess ${fmt6(obs.simEx)})`;
+  $("score").textContent = fmt4(obs.score);
+  $("score2").textContent = `(1-h=${obs.one_h?obs.one_h:""} 1-h1=${obs.one_h1?obs.one_h1:""} a=${fmt4(obs.a)} simEx=${fmt6(obs.simEx)})`;
+
+  // charts
+  if(!LAST.cfg.lowFx){
+    const acf = obs.acf.slice(1, Math.min(obs.acf.length, LAST.cfg.maxLag+1));
+    drawLinePlot($("cACF"), acf, -1, 1);
+  } else {
+    clearCanvas($("cACF"));
+  }
+}
+
+function fmt4(x){ return fmt(x,4); }
+function fmt6(x){ return fmt(x,6); }
+
+async function runAnalysis(){
+  const P=prep(); if(!P) return;
+  setBar(10);
+  const obs = scoreAll(P.seq, P.A, P.cfg);
+  LAST.obs = obs;
+
+  // shift sensitivity (debug)
+  const sh = shiftSensitivity(P.seq, P.A, P.cfg);
+  $("shiftDbg").textContent = `${fmt4(sh.worst)} • ${fmt4(sh.best)}`;
+  $("shiftDbg2").textContent = `span=${fmt4(sh.span)} flat=${fmt2(sh.flat)} sd=${fmt4(sh.sd)} → ${sh.flag}`;
+
+  // render obs
+  renderObs(obs);
+  $("zLine").textContent="—";
+  $("zLine2").textContent=`Selected null=${P.cfg.nullFam} • runs=${P.cfg.mcRuns}`;
+  updateGate(NaN, "ready");
+  $("minMed").textContent="—";
+
+  setBar(100);
+  log(`analysis: score=${fmt4(obs.score)} a=${fmt4(obs.a)} simEx=${fmt6(obs.simEx)}`);
+}
+
+async function runMC(fam){
+  const P=prep(); if(!P) return;
+  fam = fam || P.cfg.nullFam;
+
+  const obs = LAST.obs || scoreAll(P.seq, P.A, P.cfg);
+  LAST.obs = obs;
+
+  const rng = makeRng(P.cfg.seed ^ 0xA5A5A5A5);
+  const R = Math.max(5, P.cfg.mcRuns|0);
+  const nullScores = new Array(R);
+
+  setBar(0);
+  let mu=0, sd=0;
+
+  const decisive = 12; // z threshold for early-stop
+  for(let r=0;r<R;r++){
+    const nseq = genNull(P.seq, P.A, P.cfg, rng, fam);
+    const sc = scoreAll(nseq, P.A, P.cfg).score;
+    nullScores[r]=sc;
+
+    if((r+1)%10===0){
+      setBar(100*(r+1)/R);
+      await new Promise(res=>setTimeout(res, P.cfg.lowFx? 0 : 5));
+    }
+
+    if(P.cfg.earlyStop && r>=40){
+      const ms = meanSd(nullScores.slice(0,r+1));
+      mu=ms.mu; sd=ms.sd;
+      const z = zFrom(mu, sd, obs.score);
+      if(Math.abs(z)>decisive){
+        log(`MC early-stop: |z|>${decisive} at r=${r+1}/${R}`);
+        nullScores.length = r+1;
+        break;
+      }
+    }
+  }
+
+  const ms = meanSd(nullScores);
+  mu=ms.mu; sd=ms.sd;
+  const z = zFrom(mu, sd, obs.score);
+  const pEmp = empiricalP(nullScores, obs.score);
+
+  LAST.mc = {fam, nullScores, mu, sd, z, pEmp, runs: nullScores.length};
+
+  $("zLine").textContent = `${fmt4(mu)} ± ${fmt3(sd)} | z=${fmt3(z)}`;
+  $("zLine2").textContent = `Δ=${fmt4(obs.score-mu)} | null=${fam} | runs=${nullScores.length} | p_emp=${fmt4(pEmp)}${((typeof R!=="undefined") && (nullScores.length<R))?(" (≤"+fmt4(1/(nullScores.length+1))+" early-stop)"):""}`;
+  log(`MC: ${fam} mean=${fmt4(mu)} sd=${fmt4(sd)} z=${fmt3(z)} p_emp=${fmt4(pEmp)}${((typeof R!=="undefined") && (nullScores.length<R))?(" (≤"+fmt4(1/(nullScores.length+1))+" early-stop)"):""}`);
+
+  if(!P.cfg.lowFx) drawHist($("cNull"), nullScores, 18); else clearCanvas($("cNull"));
+  setBar(100);
+}
+
+async function runAllNulls(){
+  const P=prep(); if(!P) return;
+  const obs = LAST.obs || scoreAll(P.seq, P.A, P.cfg);
+  LAST.obs = obs;
+
+  const fams = ["shuffle","block","shift","markov1","markov2"];
+  const out = [];
+  let minZ = Infinity;        // raw min across all families (kept for debug)
+let minZ_e = Infinity;      // evidence min (gate uses this)
+let shiftZ = null;          // debug only when circular=true
+let circularOn=false; try{ circularOn = !!(params && params.circular); }catch(e){ circularOn=false; }
+
+for(const fam of fams){
+  const mc = await mcNull(obs, fam, R, seedBase+hashStr(fam), opts);
+  out.push({fam, z: mc.z, p_emp: mc.pEmp, runs: mc.runs});
+
+  // raw min always updates
+  if(mc.z < minZ) minZ = mc.z;
+
+  // evidence min: if circular=true, ignore shift for gate
+  if(circularOn && fam==="shift"){
+    shiftZ = mc.z;
+  } else {
+    if(mc.z < minZ_e) minZ_e = mc.z;
+  }
+}
+
+// gate uses evidence minZ (but keep raw for debugging)
+minZ = (Number.isFinite(minZ_e) ? minZ_e : minZ);
+
+let note = "";
+const why = (circularOn ? " (circular=true: shift excluded from gate; debug only)." : "");
+if(minZ>3) note=`Robust: minZ=${fmt2(minZ)} across null families.${why}`;
+if(minZ>0 && minZ<=3) note=`Fragile: minZ=${fmt2(minZ)} (some nulls nearly explain it).${why}`;
+if(minZ<=0) note=`RED: minZ=${fmt2(minZ)}. ${why} Bin the hype.`;
+
+log(`ALL-NULLS: minZ=${fmt3(minZ)} :: ` + out.map(o=>{
+  const tag = (circularOn && o.fam==="shift") ? " (debug)" : "";
+  return `${o.fam}${tag} z=${fmt2(o.z)} p=${fmt3(o.p_emp)}`;
+}).join(" | "));
+}
+
+async function runStability(){
+  const P=prep(); if(!P) return;
+  const obs = LAST.obs || scoreAll(P.seq, P.A, P.cfg);
+  LAST.obs = obs;
+
+  const reps = Math.max(1, P.cfg.stabReps|0);
+  const zs=[];
+  setBar(0);
+
+  for(let k=0;k<reps;k++){
+    // jitter seed per repeat
+    $("seed").value = (P.cfg.seed + k*9973) | 0;
+    await runMC(P.cfg.nullFam);
+    zs.push(LAST.mc.z);
+    setBar(100*(k+1)/reps);
+    await new Promise(res=>setTimeout(res, P.cfg.lowFx? 0 : 10));
+  }
+
+  // restore seed
+  $("seed").value = P.cfg.seed;
+
+  zs.sort((a,b)=>a-b);
+  const med = zs[(zs.length/2)|0];
+  const q1 = zs[(zs.length*0.25)|0];
+  const q3 = zs[(zs.length*0.75)|0];
+
+  LAST.stability = {zs, med, q1, q3};
+
+  $("minMed").textContent = `${LAST.allNulls?fmt3(LAST.allNulls.minZ):"—"} • ${fmt3(med)}`;
+  log(`stability: median z=${fmt3(med)} IQR=[${fmt3(q1)}, ${fmt3(q3)}] repeats=${reps}`);
+
+  if(!P.cfg.lowFx) drawDots($("cStab"), zs); else clearCanvas($("cStab"));
+}
+
+async function runPro(){
+  // QDS_BUSYLOCK_V1
+window.__QDS_BUSY = window.__QDS_BUSY || false;
+if(window.__QDS_BUSY){ log('⏳ busy: another run is still executing.'); return; }
+window.__QDS_BUSY = true;
+if(window.__QDS_BUSY){ log('⏳ busy: RUN PRO+ already running.'); return; }
+window.__QDS_BUSY = true;
+__qdsSetUIBusy(true);
+try{
+  if(window.__QDS_BUSY_WD) clearTimeout(window.__QDS_BUSY_WD);
+  window.__QDS_BUSY_WD = setTimeout(()=>{
+    if(window.__QDS_BUSY){
+      window.__QDS_BUSY = false;
+      __qdsSetUIBusy(false);
+      try{ if(typeof log==='function') log('⚠️ busy watchdog: auto-unlocked (run hung)'); }catch(_){ }
+    }
+  }, 90000);
+}catch(_){ }
+
+log(`RUN PRO+: starting (analysis → ALL-NULLS → stability) …`);
+try{
+  await runAnalysis();
+  await runAllNulls();
+  await runStability();
+  log(`RUN PRO+: done.`);
+} catch(e){
+  log('❌ RUN PRO+ error: ' + (e && e.message ? e.message : String(e)));
+  try{ console.error(e); }catch(_){ }
+} finally {
+  window.__QDS_BUSY = false;
+  try{ if(window.__QDS_BUSY_WD) clearTimeout(window.__QDS_BUSY_WD); window.__QDS_BUSY_WD=null; }catch(_){ }
+  __qdsSetUIBusy(false);
+}
+window.__QDS_BUSY = false;
+}
+
+/* ---- auto tune ---- */
+function autoTune(){
+  const P=prep(); if(!P) return;
+  const n=P.seq.length;
+  const maxLag = Math.min(300, Math.max(20, Math.floor(n/10)));
+  $("maxLag").value = maxLag;
+
+  // tau guess from first pass
+  const cfg=readCfg();
+  const obs = scoreAll(P.seq, P.A, cfg);
+  $("tau").value = Math.max(5, Math.min(400, Math.round(obs.tauHat)));
+  // lambda guess: scale with alphabet size (bigger A → rarer matches → shorter effective lambda)
+  const lam = Math.max(5, Math.min(200, Math.round(20 + 200/Math.sqrt(Math.max(1,P.A)))));
+  $("lam").value = lam;
+
+  log(`auto-tune: maxLag=${maxLag} τ≈${$("tau").value} λ≈${$("lam").value}`);
+  runAnalysis();
+}
+
+/* ---- QuickSweep τ with BH-FDR + Bonferroni ---- */
+async function quickSweepTau(){
+  const P=prep(); if(!P) return;
+  const baseTau = +$("tau").value;
+  const grid = [];
+  // sweep around baseTau
+  const deltas = [-120,-80,-50,-30,-20,-10,0,10,20,30,50,80,120];
+  for(const d of deltas){
+    const t = Math.max(2, baseTau + d);
+    grid.push(t);
+  }
+  const results=[];
+  const pvals=[];
+  setBar(0);
+
+  for(let i=0;i<grid.length;i++){
+    $("tau").value = grid[i];
+    await runMC(P.cfg.nullFam);
+    const mc = LAST.mc;
+    results.push({tau:grid[i], z:mc.z, p:mc.pEmp, runs:mc.runs});
+    pvals.push(mc.pEmp);
+    setBar(100*(i+1)/grid.length);
+  }
+
+  // restore tau
+  $("tau").value = baseTau;
+
+  const q = bhFdr(pvals);
+  const m = pvals.length;
+  for(let i=0;i<m;i++){
+    results[i].q = q[i];
+    results[i].p_bonf = bonf(pvals[i], m);
+  }
+
+  // pick best z, but report corrected p too
+  results.sort((a,b)=>b.z-a.z);
+  const best = results[0];
+
+  LAST.sweep = {grid, results, baseTau};
+
+  log(`QuickSweep τ: best z=${fmt2(best.z)} at τ=${best.tau} (p=${fmt3(best.p)} q(BH)=${fmt3(best.q)} p_bonf=${fmt3(best.p_bonf)})`);
+  // don’t pretend this is discovery:
+  log(`Sweep note: multiple comparisons corrected. Treat as parameter search.`);
+
+  // restore display tau
+  $("tau").value = baseTau;
+}
+
+/* ---- exports ---- */
+function buildReadout(){
+  const cfg = LAST.cfg || readCfg();
+  const obs = LAST.obs;
+  const mc = LAST.mc;
+  const all = LAST.allNulls;
+  const stab = LAST.stability;
+
+  let s="";
+  s += `QDS Number Coherence Lab v6 ULTIMATE\n`;
+  s += `offline • no calls • QDS_PROTO_DISCLAIMER_V1\n\n`;
+  if(!obs){ s += `No analysis yet.\n`; return s; }
+
+  s += `tokens n=${obs.n} • A=${obs.A} • tokMode=${cfg.tokMode}\n`;
+  s += `circular=${cfg.circular} edgeDrop=${cfg.edgeDrop} maxLag=${cfg.maxLag} τ=${cfg.tau} λ=${cfg.lam}\n\n`;
+  s += `score=${fmt4(obs.score)}  a=${fmt4(obs.a)}  sim=${fmt6(obs.sim)} (base=${fmt6(obs.base)} ex=${fmt6(obs.simEx)})\n`;
+  s += `H=${fmt4(obs.H)} (h=${fmt4(obs.h)})  H1=${fmt4(obs.H1)} (h1=${fmt4(obs.h1)})  tauHat=${fmt2(obs.tauHat)}\n\n`;
+
+  if(mc){
+    s += `MC null=${mc.fam} runs=${mc.runs} mean=${fmt4(mc.mu)} sd=${fmt4(mc.sd)} z=${fmt3(mc.z)} p_emp=${fmt4(mc.pEmp)}${(mc.runs && mc.runs<R)?(" (≤"+fmt4(1/(mc.runs+1))+" early-stop)"):""}\n\n`;
+  }
+  if(all){
+    s += `ALL-NULLS minZ=${fmt3(all.minZ)}${(()=>{try{return (params && params.circular)?(" (shift debug-only)"):""}catch(e){return ""}})()}\n`;
+    for(const o of all.out){
+      s += `  ${o.fam}${((params && params.circular) && o.fam==="shift")?" (debug)":""}: z=${fmt2(o.z)} p_emp=${fmt4(o.p_emp)}\n`;
+    }
+    s += `\n`;
+  }
+  if(stab){
+    s += `stability medianZ=${fmt3(stab.med)} IQR=[${fmt3(stab.q1)}, ${fmt3(stab.q3)}] reps=${stab.zs.length}\n\n`;
+  }
+  return s;
+}
+
+function download(name, text){
+  const blob = new Blob([text], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 200);
+}
+
+function downloadJSON(){
+  const obj = {
+    meta:{tool:"qds_number_coherence_lab_v6_ultimate", ts:new Date().toISOString()},
+    cfg: LAST.cfg || readCfg(),
+    obs: LAST.obs,
+    mc: LAST.mc,
+    allNulls: LAST.allNulls,
+    stability: LAST.stability,
+    sweep: LAST.sweep
+  };
+  download("qds_number_coherence_v6_ultimate.json", JSON.stringify(obj,null,2));
+  log("download JSON.");
+}
+
+function downloadTXT(){
+  download("qds_number_coherence_v6_ultimate.txt", buildReadout());
+  log("download TXT.");
+}
+
+async function copyReadout(){
+  const txt = buildReadout();
+  try{
+    await navigator.clipboard.writeText(txt);
+    log("copied readout.");
+  }catch(e){
+    log("copy failed (clipboard permissions). Use Download TXT instead.");
+  }
+}
+
+/* ---- bindings ---- */
+$("btnTest").onclick = ()=>{
+  // “vigenum-ish”: a structured-but-not-magical test string
+  const s = ("00705710715720725730735740745750741"+
+             "44645145646146647147648148649148218"+
+             "71921971021071121171221271321228278"+
+             "32837842847852857862867872863568573"+
+             "57858358859359850350851350420921421"+
+             "92242292342392442492542449499549599"+
+             "64969974979984989994985690695600605"+
+             "61061562062563063562633133634134635").repeat(20);
+  $("inp").value = s;
+  log(`testfeed: loaded vigenum-ish (len~${s.length} digits)`);
+};
+$("btnClear").onclick = ()=>{ $("inp").value=""; log("cleared input."); };
+
+$("btnRun").onclick = runAnalysis;
+$("btnMC").onclick = ()=>runMC();
+$("btnAll").onclick = runAllNulls;
+$("btnStab").onclick = runStability;
+$("btnPro").onclick = runPro;
+$("btnAuto").onclick = autoTune;
+$("btnSweep").onclick = quickSweepTau;
+
+$("btnReset").onclick = ()=>{
+  LAST={cfg:null,seq:null,A:0,obs:null,mc:null,allNulls:null,stability:null,sweep:null};
+  logEl.textContent="";
+  setBar(0);
+  updateGate(NaN,"ready");
+  ["minMed","nA","uniqRep","ent","ent2","acfTau","fitMsg","sim","sim2","score","score2","zLine","zLine2","shiftDbg","shiftDbg2"].forEach(id=>$(id).textContent="—");
+  clearCanvas($("cACF")); clearCanvas($("cNull")); clearCanvas($("cStab"));
+  log("reset.");
+};
+
+$("btnCopy").onclick = copyReadout;
+$("btnJson").onclick = downloadJSON;
+$("btnTxt").onclick = downloadTXT;
+
+// initial
+updateGate(NaN, "ready: paste input → RUN PRO+ (ALL-NULLS + Stability).");
+log("ready: paste input → RUN PRO+ (ALL-NULLS + Stability).");
+</script>
+
+<!-- QDS_PATCH_V6_SHIFT_EVIDENCE_V3 -->
+<script>
+(function(){
+  var TAG = "[PATCH v6]";
+  function log(){ try{ console.log.apply(console, [TAG].concat([].slice.call(arguments))); }catch(e){} }
+
+  function isCircular(){
+    var el = document.getElementById("circular")
+          || document.querySelector('input[name="circular"]')
+          || document.querySelector('[data-key="circular"]')
+          || document.querySelector('#optCircular');
+    if(el){
+      if(el.type === "checkbox") return !!el.checked;
+      var v = String(el.value).toLowerCase();
+      return (v==="true" || v==="1" || v==="on" || v==="yes");
+    }
+    try{
+      if(window.QDS_STATE && typeof window.QDS_STATE.circular !== "undefined") return !!window.QDS_STATE.circular;
+      if(window.state && typeof window.state.circular !== "undefined") return !!window.state.circular;
+      if(window.APP && window.APP.state && typeof window.APP.state.circular !== "undefined") return !!window.APP.state.circular;
+    }catch(e){}
+    return false;
+  }
+
+  function markPEmpLowRes(obj){
+    try{
+      if(!obj || typeof obj !== "object") return;
+      var runsUsed = (obj.runsUsed ?? obj.runs_done ?? obj.runsDone ?? obj.runs ?? null);
+      var runsReq  = (obj.runsReq  ?? obj.runs_requested ?? obj.runsRequested ?? null);
+      var early = !!obj.earlyStop || (runsUsed!=null && runsReq!=null && Number(runsUsed) < Number(runsReq));
+      if(!early) return;
+
+      if(runsUsed!=null){
+        var bound = 1.0/(Number(runsUsed)+1.0);
+        obj.p_emp_bound = bound;
+        obj.p_emp_note = "≤" + bound.toFixed(4) + " (early-stop; low-res)";
+      } else {
+        obj.p_emp_note = "(early-stop; low-res)";
+      }
+    }catch(e){}
+  }
+
+  function excludeShiftFromEvidence(result){
+    try{
+      if(!result || typeof result !== "object") return;
+      if(!isCircular()) return;
+
+      var candidates = [result.allNulls, result.ALL_NULLS, result.all_nulls, result.allNullsResult, result].filter(Boolean);
+      for(var i=0;i<candidates.length;i++){
+        var c = candidates[i];
+        var per = c && (c.perNull || c.per_null || c.byNull || c.nulls || c.per);
+        if(!per || typeof per !== "object") continue;
+
+        var keys = Object.keys(per);
+        if(!keys.length) continue;
+
+        // evidence keys exclude shift
+        var evid = keys.filter(function(k){ return String(k).toLowerCase() !== "shift"; });
+        if(!evid.length) continue;
+
+        var minZ = Infinity, minK = null;
+        for(var j=0;j<evid.length;j++){
+          var k = evid[j];
+          var v = per[k];
+          var z = (v && (v.z ?? v.Z ?? v.zScore)) ?? v;
+          var zn = Number(z);
+          if(Number.isFinite(zn) && zn < minZ){ minZ = zn; minK = k; }
+        }
+        if(Number.isFinite(minZ)){
+          c.minZ_evidence = minZ;
+          c.minZ_key = minK;
+
+          // overwrite generic minZ if present (so gate uses evidence not shift)
+          if(typeof c.minZ !== "undefined") c.minZ = minZ;
+          if(typeof c.min_z !== "undefined") c.min_z = minZ;
+
+          // keep shift as debug only
+          if(per.shift) c.shift_debug = per.shift;
+          c.shift_excluded_from_gate = true;
+
+          log("circular=true => shift excluded from evidence minZ/gate", {minZ:minZ, minK:minK});
+          break;
+        }
+      }
+    }catch(e){}
+  }
+
+  function postProcess(res){
+    excludeShiftFromEvidence(res);
+    try{
+      if(res && res.mc) markPEmpLowRes(res.mc);
+      if(res && res.MC) markPEmpLowRes(res.MC);
+      if(res && res.selectedNull) markPEmpLowRes(res.selectedNull);
+    }catch(e){}
+  }
+
+  // Hook common renderer names
+  var hooks = ["renderResults","updateResults","paintResults","showResults","emitResults","setResults"];
+  for(var h=0; h<hooks.length; h++){
+    var fn = hooks[h];
+    if(typeof window[fn] === "function"){
+      (function(name, orig){
+        window[name] = function(res){
+          try{ postProcess(res); }catch(e){}
+          return orig.apply(this, arguments);
+        };
+        log("hooked:", name);
+      })(fn, window[fn]);
+      return;
+    }
+  }
+
+  // fallback: after any click, try lastResult-ish
+  document.addEventListener("click", function(){
+    setTimeout(function(){
+      try{
+        var r = window.__QDS_LAST__ || window.lastResult || window.LAST || null;
+        if(r) postProcess(r);
+      }catch(e){}
+    }, 50);
+  }, true);
+
+  log("installed (fallback click hook)");
+})();
+</script>
+
+</body>
+</html>

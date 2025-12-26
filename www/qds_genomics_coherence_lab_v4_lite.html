@@ -1,0 +1,540 @@
+<!doctype html><html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QDS Genomics Coherence Lab v4 LITE</title>
+<style>
+:root{--bg:#0b0f14;--p:#111826;--ink:#e7eef7;--m:#9fb0c3;--l:#213045;--r:14px}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
+header{padding:14px 12px;border-bottom:1px solid var(--l);background:#0f1620}
+h1{margin:0;font-size:17px}
+.sub{margin-top:6px;color:var(--m);font-size:12.5px;line-height:1.35}
+.wrap{padding:12px;max-width:980px;margin:0 auto}
+.card{background:var(--p);border:1px solid var(--l);border-radius:var(--r);padding:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label{font-size:12px;color:var(--m)}
+input,select,textarea,button{width:100%;box-sizing:border-box;background:#0c1320;border:1px solid var(--l);border-radius:12px;color:var(--ink);padding:10px}
+textarea{min-height:110px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;resize:vertical}
+button{cursor:pointer}
+button:hover{border-color:#2d4666}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.k{background:#0c1320;border:1px solid var(--l);border-radius:12px;padding:10px}
+.t{color:var(--m);font-size:12px}
+.v{margin-top:4px;font-size:16px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.s{margin-top:4px;color:var(--m);font-size:12px;line-height:1.25}
+hr{border:none;border-top:1px solid var(--l);margin:10px 0}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.small{color:var(--m);font-size:12px;line-height:1.35}
+pre{white-space:pre-wrap}
+</style></head><body>
+<header>
+  <h1>QDS Genomics Coherence Lab v4 LITE</h1>
+  <div class="sub">Two-scale λ₍g₎ via windowed entropy+change+het. Robust redundancy: abs-ρ with cutoff. SNP sanity lane + per-chr stability. Offline. Phone-safe. 🦺🎩</div>
+</header>
+<div class="wrap">
+<div class="card">
+  <label>1) Load 23andMe raw data (.txt)</label>
+  <input id="file" type="file" accept=".txt,.tsv,.csv">
+
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>Short window (bp) — LD-ish</label>
+      <input id="wShort" type="number" min="10000" max="200000" value="50000">
+    </div>
+    <div>
+      <label>Long window (bp) — haplotype-ish</label>
+      <input id="wLong" type="number" min="200000" max="5000000" value="1000000">
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>Detrend (recommended)</label>
+      <select id="detrend">
+        <option value="hp" selected>High-pass (recommended)</option>
+        <option value="diff">ΔX (edge detector)</option>
+        <option value="both">HP then ΔX (aggressive)</option>
+        <option value="none">None (may inflate)</option>
+      </select>
+    </div>
+    <div>
+      <label>High-pass window (windows)</label>
+      <input id="hpWin" type="number" min="5" max="51" value="13">
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>Autocorr max lag (windows)</label>
+      <input id="maxLag" type="number" min="40" max="260" value="200">
+    </div>
+    <div>
+      <label>ρ cutoff for redundancy sum (abs-ρ)</label>
+      <input id="rhoCut" type="number" min="0" max="0.2" step="0.01" value="0.02">
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>SNP sanity lane: sampling step</label>
+      <input id="snpStep" type="number" min="1" max="30" value="8">
+    </div>
+    <div>
+      <label>Per-chrom stability lag (windows)</label>
+      <input id="chrLag" type="number" min="20" max="120" value="60">
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:10px">
+    <div>
+      <label>Trait weights (rsID effect_allele beta)</label>
+      <textarea id="traits" spellcheck="false" placeholder="rs4988235 T 0.40&#10;rs762551 A 0.25"></textarea>
+    </div>
+    <div>
+      <label>Watchlist rsIDs (lookup-only)</label>
+      <input id="watch" type="text" placeholder="rs4988235 rs762551 rs12913832">
+      <div class="small" style="margin-top:8px">Tip: Use presets if results feel weird.</div>
+      <div class="row" style="margin-top:8px">
+        <button id="preset_bal">Preset: Balanced</button>
+        <button id="preset_cons">Preset: Conservative</button>
+        <button id="preset_raw">Preset: Raw/Loose</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:10px">
+    <button id="run">🦺 Build v4 LITE</button>
+    <button id="demo">Load tiny demo</button>
+    <button id="copy">Copy summary JSON</button>
+  </div>
+
+  <pre id="status" class="small" style="margin-top:10px">Waiting for file…</pre>
+
+  <div class="kpi">
+    <div class="k"><div class="t">D_raw</div><div class="v" id="k_raw">—</div><div class="s">called SNPs (non-missing)</div></div>
+    <div class="k"><div class="t">Missing</div><div class="v" id="k_miss">—</div><div class="s">missing rate</div></div>
+    <div class="k"><div class="t">λ short</div><div class="v" id="k_ls">—</div><div class="s">interp 1/e crossing</div></div>
+    <div class="k"><div class="t">λ long</div><div class="v" id="k_ll">—</div><div class="s">interp 1/e crossing</div></div>
+    <div class="k"><div class="t">Redundancy (win / SNP)</div><div class="v" id="k_red">—</div><div class="s">abs-ρ cutoff (win) + SNP sanity</div></div>
+    <div class="k"><div class="t">D_eff</div><div class="v" id="k_deff">—</div><div class="s">called / redundancy(win)</div></div>
+    <div class="k"><div class="t">Stability short</div><div class="v" id="k_sts">—</div><div class="s">per-chr median + IQR</div></div>
+    <div class="k"><div class="t">Stability long</div><div class="v" id="k_stl">—</div><div class="s">per-chr median + IQR</div></div>
+  </div>
+
+  <hr>
+  <div class="small"><b>Trait panel</b></div>
+  <pre id="traitOut" class="small">No traits yet.</pre>
+
+  <div class="small"><b>Watchlist</b></div>
+  <pre id="watchOut" class="small">No watchlist yet.</pre>
+
+  <div class="small"><b>Per-chrom counts</b></div>
+  <pre id="chromOut" class="small mono">—</pre>
+</div>
+</div>
+
+<script>
+const el=id=>document.getElementById(id);
+const status=t=>el("status").textContent=t;
+const fmtInt=x=>isFinite(x)?Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,","):"—";
+const fmtPct=x=>isFinite(x)?(x*100).toFixed(2)+"%":"—";
+function fmtBp(x){
+  if(!isFinite(x)||x<=0) return "—";
+  if(x>=1e6) return (x/1e6).toFixed(2)+" Mb";
+  if(x>=1e3) return (x/1e3).toFixed(1)+" kb";
+  return Math.round(x)+" bp";
+}
+function safeChrom(ch){
+  const c=(ch||"").toUpperCase();
+  if(c==="X"||c==="Y"||c==="MT"||c==="M") return c==="M"?"MT":c;
+  const n=parseInt(c,10);
+  if(isFinite(n)&&n>=1&&n<=22) return String(n);
+  return null;
+}
+function sortGt(gt){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0],b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a<=b)?gt:(b+a);
+}
+function gtDosage(gt, ea){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0],b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a===ea)+(b===ea);
+}
+function entropyFromCounts(counts){
+  let n=0; for(const k in counts) n+=counts[k];
+  if(n<=0) return 0;
+  let H=0;
+  for(const k in counts){
+    const c=counts[k]; if(c<=0) continue;
+    const p=c/n; H -= p*Math.log2(p);
+  }
+  return H;
+}
+function zscore(a){
+  const n=a.length; if(n<2) return a.slice();
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  const s=Math.sqrt(v)||1;
+  const out=new Array(n);
+  for(let i=0;i<n;i++) out[i]=(a[i]-m)/s;
+  return out;
+}
+function highPass(a, win){
+  const n=a.length, w=Math.max(1, Math.floor(win));
+  const out=new Array(n).fill(0);
+  let sum=0; const q=[];
+  for(let i=0;i<n;i++){
+    sum+=a[i]; q.push(a[i]);
+    if(q.length>w) sum-=q.shift();
+    out[i]=a[i]-(sum/q.length);
+  }
+  return out;
+}
+function diff(a){
+  const n=a.length; if(n<2) return [];
+  const out=new Array(n-1);
+  for(let i=1;i<n;i++) out[i-1]=a[i]-a[i-1];
+  return out;
+}
+function autocorr(a, maxLag){
+  const n=a.length;
+  if(n<maxLag+10) return null;
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  if(v<=1e-12) return null;
+  const r=new Array(maxLag+1).fill(0); r[0]=1;
+  for(let k=1;k<=maxLag;k++){
+    const m2=n-k;
+    let cov=0;
+    for(let i=0;i<m2;i++) cov+=(a[i]-m)*(a[i+k]-m);
+    r[k]=(cov/m2)/v;
+  }
+  return r;
+}
+function combineAutocorr(perChr, maxLag){
+  const r=new Array(maxLag+1).fill(0), w=new Array(maxLag+1).fill(0);
+  r[0]=1; w[0]=1;
+  for(const chr of Object.keys(perChr)){
+    const a=perChr[chr];
+    if(!a||a.length<maxLag+12) continue;
+    const rr=autocorr(a,maxLag); if(!rr) continue;
+    const n=a.length;
+    for(let k=1;k<=maxLag;k++){
+      const pairs=Math.max(0,n-k);
+      r[k]+=rr[k]*pairs; w[k]+=pairs;
+    }
+  }
+  for(let k=1;k<=maxLag;k++) r[k]=(w[k]>0)?(r[k]/w[k]):0;
+  return r;
+}
+function estimateLambdaInterp(rhos){
+  const thr=1/Math.E;
+  for(let k=1;k<rhos.length;k++){
+    const a=rhos[k-1], b=rhos[k];
+    if(a>=thr && b<=thr){
+      const t=(thr-a)/(b-a);
+      return (k-1)+t;
+    }
+  }
+  if(rhos.length>1 && rhos[1]>0 && rhos[1]<1){
+    const kstar=-1/Math.log(rhos[1]);
+    if(isFinite(kstar)&&kstar>0) return kstar;
+  }
+  return rhos.length-1;
+}
+function redundancyAbs(rhos, rhoCut){
+  let s=0;
+  for(let k=1;k<rhos.length;k++){
+    const rk=Math.abs(rhos[k]);
+    if(rk<=rhoCut) break;
+    s += rk;
+  }
+  return 1 + 2*s;
+}
+function quantiles(arr){
+  const a=arr.filter(x=>isFinite(x)).slice().sort((x,y)=>x-y);
+  if(!a.length) return null;
+  const q=p=>{
+    const i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
+    if(lo===hi) return a[lo];
+    const t=i-lo;
+    return a[lo]*(1-t)+a[hi]*t;
+  };
+  return {n:a.length, p25:q(0.25), p50:q(0.5), p75:q(0.75)};
+}
+function parseWatchlist(txt){
+  const s=(txt||"").trim(); if(!s) return new Set();
+  return new Set(s.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(x=>x.startsWith("rs")));
+}
+function parseTraits(txt){
+  const map=new Map();
+  for(const raw of (txt||"").split(/\r?\n/)){
+    const line=raw.trim();
+    if(!line||line.startsWith("#")) continue;
+    const p=line.split(/\s+/); if(p.length<3) continue;
+    const rs=p[0].toLowerCase(), ea=p[1].toUpperCase(), beta=parseFloat(p[2]);
+    if(!rs.startsWith("rs")) continue;
+    if(!"ACGT".includes(ea)) continue;
+    if(!isFinite(beta)) continue;
+    map.set(rs,{ea,beta});
+  }
+  return map;
+}
+class WinAgg{
+  constructor(wbp){this.wbp=wbp; this.cur=null; this.wi=null; this.reset();}
+  reset(){this.counts={}; this.n=0; this.ch=0; this.het=0; this.prev=null;}
+  flush(out){
+    if(this.cur===null) return;
+    if(!out[this.cur]) out[this.cur]=[];
+    if(this.n>0){
+      const H=entropyFromCounts(this.counts);
+      const cd=(this.n>1)?(this.ch/(this.n-1)):0;
+      const hr=this.het/this.n;
+      out[this.cur].push(0.45*H + 0.35*cd + 0.20*hr);
+    }
+    this.reset();
+  }
+  push(chr,pos,gt,out){
+    if(this.cur!==chr){ if(this.cur!==null) this.flush(out); this.cur=chr; this.wi=null; this.reset(); }
+    const wi=Math.floor(pos/this.wbp);
+    if(this.wi===null) this.wi=wi;
+    if(wi!==this.wi){ this.flush(out); this.wi=wi; }
+    const g=sortGt(gt); if(!g) return;
+    this.counts[g]=(this.counts[g]||0)+1;
+    if(g[0]!==g[1]) this.het++;
+    if(this.prev!==null && g!==this.prev) this.ch++;
+    this.prev=g; this.n++;
+  }
+  finish(out){ this.flush(out); this.cur=null; }
+}
+function applyDetrend(series, mode, hpWin){
+  let a=zscore(series);
+  if(mode==="hp") a=highPass(a,hpWin);
+  else if(mode==="diff") a=diff(a);
+  else if(mode==="both"){ a=highPass(a,hpWin); a=diff(a); }
+  else if(mode==="none"){}
+  if(a.length>=2) a=zscore(a);
+  return a;
+}
+function tinyDemo(){
+return `# rsid\\tchromosome\\tposition\\tgenotype
+rs1\\t1\\t1000\\tAA
+rs2\\t1\\t2000\\tAG
+rs3\\t1\\t3000\\tGG
+rs4\\t1\\t4000\\tCC
+rs5\\t1\\t5000\\tCT
+rs6\\t1\\t6000\\tTT
+rs7\\t1\\t70000\\tAA
+rs8\\t1\\t120000\\tAG
+rs9\\t2\\t1000\\tAA
+rs10\\t2\\t2000\\t--
+rs11\\t2\\t3000\\tAG
+rs12\\t2\\t4000\\tGG
+`;
+}
+
+async function runText(text){
+  const wS=+el("wShort").value||50000, wL=+el("wLong").value||1000000;
+  const detr=el("detrend").value||"hp";
+  const hpWin=+el("hpWin").value||13;
+  const maxLag=+el("maxLag").value||200;
+  const rhoCut=+el("rhoCut").value||0.02;
+  const snpStep=+el("snpStep").value||8;
+  const chrLag=+el("chrLag").value||60;
+
+  const watch=parseWatchlist(el("watch").value);
+  const traits=parseTraits(el("traits").value);
+
+  let total=0, called=0, missing=0;
+  const chromC={}, chromM={};
+
+  const perS={}, perL={};
+  const aggS=new WinAgg(wS), aggL=new WinAgg(wL);
+
+  const hetByChr={}, snpSeen={};
+
+  const watchHits={};
+  let traitFound=0, traitScore=0; const traitDetails=[];
+  const traitWinS=new Set(), traitWinL=new Set();
+
+  const lines=text.split(/\r?\n/);
+  status("Parsing… "+lines.length.toLocaleString()+" lines");
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    if(!line||line[0]==="#") continue;
+    const p=line.split(/\t|,/);
+    if(p.length<4) continue;
+    const rs=(p[0]||"").trim().toLowerCase();
+    const chr=safeChrom((p[1]||"").trim());
+    const pos=parseInt((p[2]||"").trim(),10);
+    const gt=(p[3]||"").trim().toUpperCase();
+    if(!chr||!isFinite(pos)) continue;
+    total++;
+    if(gt==="--"||gt.length<2){ missing++; chromM[chr]=(chromM[chr]||0)+1; continue; }
+    called++; chromC[chr]=(chromC[chr]||0)+1;
+
+    aggS.push(chr,pos,gt,perS); aggL.push(chr,pos,gt,perL);
+
+    snpSeen[chr]=(snpSeen[chr]||0)+1;
+    if((snpSeen[chr]%snpStep)===0){
+      const g=sortGt(gt);
+      if(g){
+        if(!hetByChr[chr]) hetByChr[chr]=[];
+        hetByChr[chr].push(g[0]!==g[1]?1:0);
+      }
+    }
+
+    if(watch.size && watch.has(rs)) watchHits[rs]={chr,pos,gt};
+
+    if(traits.size && traits.has(rs)){
+      const {ea,beta}=traits.get(rs);
+      const d=gtDosage(gt,ea);
+      if(d!==null){
+        traitFound++; const contrib=beta*d; traitScore+=contrib;
+        traitDetails.push({rs,chr,pos,gt,ea,beta,d,contrib});
+        traitWinS.add(chr+":"+Math.floor(pos/wS));
+        traitWinL.add(chr+":"+Math.floor(pos/wL));
+      }
+    }
+
+    if(i%150000===0 && i>0) status("Parsing… line "+i.toLocaleString());
+  }
+  aggS.finish(perS); aggL.finish(perL);
+  const missRate=total?missing/total:NaN;
+
+  const perSd={}, perLd={};
+  for(const chr of Object.keys(perS)){
+    const a=perS[chr]; if(!a||a.length<15) continue;
+    const d=applyDetrend(a,detr,hpWin); if(d.length<15) continue;
+    perSd[chr]=d;
+  }
+  for(const chr of Object.keys(perL)){
+    const a=perL[chr]; if(!a||a.length<15) continue;
+    const d=applyDetrend(a,detr,hpWin); if(d.length<15) continue;
+    perLd[chr]=d;
+  }
+
+  const rS=combineAutocorr(perSd,Math.min(260,Math.max(40,maxLag)));
+  const rL=combineAutocorr(perLd,Math.min(160,Math.max(40,maxLag)));
+
+  const lagS=estimateLambdaInterp(rS), lagL=estimateLambdaInterp(rL);
+  const lamS=lagS*wS, lamL=lagL*wL;
+
+  const redWin=redundancyAbs(rS,rhoCut);
+  const deff=isFinite(redWin)&&redWin>0?called/redWin:NaN;
+
+  const rSnp=combineAutocorr(hetByChr,Math.min(220,Math.max(60,maxLag)));
+  const redSnp=redundancyAbs(rSnp,rhoCut);
+
+  // per-chr λ stability
+  const lamShortChr=[], lamLongChr=[];
+  for(const chr of Object.keys(perSd)){
+    const rr=autocorr(perSd[chr],Math.min(120,chrLag));
+    if(!rr) continue;
+    lamShortChr.push(estimateLambdaInterp(rr)*wS);
+  }
+  for(const chr of Object.keys(perLd)){
+    const rr=autocorr(perLd[chr],Math.min(120,chrLag));
+    if(!rr) continue;
+    lamLongChr.push(estimateLambdaInterp(rr)*wL);
+  }
+  const qs=quantiles(lamShortChr), ql=quantiles(lamLongChr);
+
+  el("k_raw").textContent=fmtInt(called);
+  el("k_miss").textContent=fmtPct(missRate);
+  el("k_ls").textContent=fmtBp(lamS)+" (lag≈"+lagS.toFixed(2)+")";
+  el("k_ll").textContent=fmtBp(lamL)+" (lag≈"+lagL.toFixed(2)+")";
+  el("k_red").textContent=(isFinite(redWin)?redWin.toFixed(2):"—")+"× / "+(isFinite(redSnp)?redSnp.toFixed(2):"—")+"×";
+  el("k_deff").textContent=fmtInt(deff);
+  el("k_sts").textContent=qs?("med "+fmtBp(qs.p50)+" | IQR "+fmtBp(qs.p25)+"–"+fmtBp(qs.p75)+" | n="+qs.n):"—";
+  el("k_stl").textContent=ql?("med "+fmtBp(ql.p50)+" | IQR "+fmtBp(ql.p25)+"–"+fmtBp(ql.p75)+" | n="+ql.n):"—";
+
+  // watchlist output
+  if(!watch.size) el("watchOut").textContent="No watchlist.";
+  else{
+    const items=[...watch].sort();
+    el("watchOut").textContent=items.map(rs=>{
+      const hit=watchHits[rs];
+      return hit?`${rs}: ${hit.gt} (chr${hit.chr}:${hit.pos})`:`${rs}: not found`;
+    }).join("\n");
+  }
+
+  // trait output
+  if(!traits.size) el("traitOut").textContent="No traits.";
+  else{
+    traitDetails.sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+    const top=traitDetails.slice(0,12).map(d=>
+      `${d.rs} chr${d.chr}:${d.pos} gt=${d.gt} ea=${d.ea} β=${d.beta} dose=${d.d} → ${d.contrib.toFixed(4)}`
+    ).join("\n");
+    const cov=traits.size?traitFound/traits.size:0;
+    const uniqS=traitWinS.size, uniqL=traitWinL.size;
+    const redTrait=(uniqS>0)?(traitFound/uniqS):NaN;
+    el("traitOut").textContent=
+`provided: ${traits.size}
+found: ${traitFound} (${fmtPct(cov)})
+score: ${traitScore.toFixed(6)}
+unique windows: ${uniqS} (short) / ${uniqL} (long)
+trait redundancy(short): ${isFinite(redTrait)?redTrait.toFixed(2)+"×":"—"}
+
+top:
+${top||"(none)"}
+`;
+  }
+
+  // per chrom counts
+  const keys=Object.keys(chromC).sort((a,b)=>+a-+b);
+  el("chromOut").textContent=keys.map(k=>`chr${k}: called=${chromC[k]||0} missing=${chromM[k]||0}`).join("\n");
+
+  status(
+`Done v4 LITE.
+Called: ${fmtInt(called)} | Missing: ${fmtInt(missing)} (${fmtPct(missRate)})
+
+Detrend: ${detr}${(detr==="hp"||detr==="both")?(" (hpWin="+hpWin+")"):""} | rhoCut=${rhoCut} | maxLag=${maxLag}
+Short: w=${fmtBp(wS)} λ≈${fmtBp(lamS)} red(win)≈${isFinite(redWin)?redWin.toFixed(2)+"×":"—"} D_eff≈${fmtInt(deff)}
+Long : w=${fmtBp(wL)} λ≈${fmtBp(lamL)} red(SNP)≈${isFinite(redSnp)?redSnp.toFixed(2)+"×":"—"}
+
+Stability short: ${qs?("med "+fmtBp(qs.p50)+" IQR "+fmtBp(qs.p25)+"–"+fmtBp(qs.p75)+" (n="+qs.n+")"):"—"}
+Stability long : ${ql?("med "+fmtBp(ql.p50)+" IQR "+fmtBp(ql.p25)+"–"+fmtBp(ql.p75)+" (n="+ql.n+")"):"—"}
+`
+  );
+
+  window.__QDS_SUMMARY__={
+    called_snp:called, missing, missing_rate:missRate,
+    w_short_bp:wS, w_long_bp:wL, detrend:detr, hpWin, maxLag, rhoCut, snpStep, chrLag,
+    lambda_short_bp:lamS, lambda_long_bp:lamL,
+    redundancy_window: redWin, redundancy_snp: redSnp, d_eff: deff,
+    per_chr_short_bp: lamShortChr, per_chr_long_bp: lamLongChr,
+    per_chr_short_q: qs, per_chr_long_q: ql,
+    trait: traits.size?{provided:traits.size, found:traitFound, coverage:cov, score:traitScore, uniqueS:uniqS, uniqueL:uniqL}:null
+  };
+}
+
+function setPreset(kind){
+  if(kind==="bal"){ el("detrend").value="hp"; el("hpWin").value=13; el("rhoCut").value=0.02; el("maxLag").value=200; el("snpStep").value=8; el("chrLag").value=60; }
+  if(kind==="cons"){ el("detrend").value="hp"; el("hpWin").value=17; el("rhoCut").value=0.03; el("maxLag").value=180; el("snpStep").value=10; el("chrLag").value=50; }
+  if(kind==="raw"){ el("detrend").value="none"; el("hpWin").value=13; el("rhoCut").value=0.02; el("maxLag").value=240; el("snpStep").value=6; el("chrLag").value=70; }
+  status("Preset applied. Run Build.");
+}
+el("preset_bal").onclick=()=>setPreset("bal");
+el("preset_cons").onclick=()=>setPreset("cons");
+el("preset_raw").onclick=()=>setPreset("raw");
+
+el("demo").onclick=()=>runText(tinyDemo());
+el("run").onclick=()=>{
+  const f=el("file").files && el("file").files[0];
+  if(!f){ status("No file selected. Pick your 23andMe raw .txt (or hit Demo)."); return; }
+  status("Loading "+f.name+" …");
+  const r=new FileReader();
+  r.onload=()=>runText(String(r.result||""));
+  r.onerror=()=>status("File read error.");
+  r.readAsText(f);
+};
+el("copy").onclick=async()=>{
+  const s=window.__QDS_SUMMARY__?JSON.stringify(window.__QDS_SUMMARY__,null,2):"No summary yet.";
+  try{ await navigator.clipboard.writeText(s); status("Copied summary JSON. 🎩"); }
+  catch(e){ status("Clipboard blocked. Summary:\n\n"+s); }
+};
+</script></body></html>

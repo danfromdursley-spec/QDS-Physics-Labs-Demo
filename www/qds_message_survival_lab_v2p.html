@@ -1,0 +1,1722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>QDS Message Survival Lab v2p</title>
+<style>
+  :root{
+    --bg0:#05070c; --bg1:#07111b; --card:#0b1a2a; --card2:#0a1624;
+    --text:#e6edf7; --muted:#9bb1cc; --line:rgba(120,170,220,.18);
+    --cyan:#3bd3ff; --teal:#34f6c7; --amber:#ffcc66; --red:#ff5f6d;
+    --ok:#33ff99; --shadow:0 12px 40px rgba(0,0,0,.45);
+    --r:22px; --r2:16px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; color:var(--text); font-family:var(--sans);
+    background:
+      radial-gradient(1200px 700px at 18% 12%, rgba(59,211,255,.14), transparent 60%),
+      radial-gradient(900px 600px at 86% 16%, rgba(52,246,199,.10), transparent 62%),
+      radial-gradient(900px 700px at 45% 90%, rgba(255,204,102,.08), transparent 60%),
+      linear-gradient(180deg, var(--bg1), var(--bg0));
+    overflow-x:hidden;
+  }
+  .wrap{ max-width:980px; margin:0 auto; padding:18px 14px 28px; }
+  .topbadges{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0 10px; }
+  .pill{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:10px 12px; border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(9,18,30,.62);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.02) inset;
+    font-size:13px; color:var(--muted);
+    max-width:100%;
+  }
+  .dot{ width:9px; height:9px; border-radius:50%; background:var(--teal); box-shadow:0 0 14px rgba(52,246,199,.35); }
+  .dot.err{ background:var(--red); box-shadow:0 0 14px rgba(255,95,109,.35); }
+  .dot.ok{ background:var(--ok); box-shadow:0 0 14px rgba(51,255,153,.35); }
+  h1{ font-size:42px; line-height:1.05; margin:12px 0 6px; letter-spacing:-.02em; }
+  .sub{ color:var(--muted); font-size:16px; line-height:1.45; margin:0 0 14px; }
+  .card{
+    background: linear-gradient(180deg, rgba(10,22,36,.74), rgba(7,16,27,.68));
+    border:1px solid var(--line);
+    border-radius: var(--r);
+    padding:16px;
+    box-shadow: var(--shadow);
+    max-width:100%;
+  }
+  .callout{
+    margin:12px 0 16px;
+    border-radius: var(--r2);
+    border:1px solid rgba(255,204,102,.26);
+    background: rgba(255,204,102,.08);
+    padding:14px 14px;
+    color: #f7e6c6;
+  }
+  .callout code{ font-family:var(--mono); color:#ffe3a3; }
+  .grid{ display:grid; grid-template-columns: 1fr; gap:14px; }
+  @media(min-width:860px){ .grid{ grid-template-columns: 1.1fr .9fr; } }
+  label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+  textarea{
+    width:100%; min-height:150px; resize:vertical;
+    border-radius:16px; border:1px solid var(--line);
+    background:rgba(6,14,24,.75); color:var(--text);
+    padding:12px 12px; outline:none;
+    font-family:var(--sans);
+  }
+  select,input{
+    width:100%;
+    border-radius:14px; border:1px solid var(--line);
+    background:rgba(6,14,24,.75); color:var(--text);
+    padding:10px 10px; outline:none;
+  }
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+  .btnrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  button{
+    appearance:none; border:1px solid var(--line);
+    background:rgba(10,22,36,.72); color:var(--text);
+    padding:12px 14px; border-radius:18px; cursor:pointer;
+    font-weight:700; letter-spacing:.01em;
+  }
+  button.primary{
+    background: linear-gradient(180deg, rgba(59,211,255,.14), rgba(10,22,36,.82));
+    border-color: rgba(59,211,255,.26);
+  }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
+  .kpi{
+    display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px;
+  }
+  .kpi .box{
+    border-radius:18px; border:1px solid var(--line);
+    background:rgba(6,14,24,.62);
+    padding:12px;
+  }
+  .kpi .t{ color:var(--muted); font-size:12px; margin-bottom:4px;}
+  .kpi .v{ font-family:var(--mono); font-size:14px; }
+  .gate{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-top:10px; padding:10px 12px;
+    border-radius:16px; border:1px solid var(--line);
+    background:rgba(6,14,24,.62);
+  }
+  .tag{
+    font-family:var(--mono);
+    padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(9,18,30,.62);
+  }
+  .tag.green{ border-color: rgba(51,255,153,.26); color:#bfffe0; }
+  .tag.amber{ border-color: rgba(255,204,102,.30); color:#ffe7ba; }
+  .tag.red{ border-color: rgba(255,95,109,.28); color:#ffd0d4; }
+  pre{
+    margin:10px 0 0; padding:12px;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:rgba(6,14,24,.62);
+    color:#d7e6ff;
+    font-family:var(--mono);
+    font-size:12px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    max-width:100%;
+  }
+  .small{ font-size:12px; color:var(--muted); margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbadges">
+    <div class="pill"><span class="dot ok" id="jsDot"></span><span id="jsPill">JS: booting…</span></div>
+    <div class="pill"><span class="dot"></span>offline • no calls</div>
+    <div class="pill">Mode: instrument</div>
+    <div class="pill">NASA-modern • v2p</div>
+    <div class="pill">QDS_PROTO_DISCLAIMER_V1</div>
+    <div class="pill">No pink ✅</div>
+  </div>
+
+  <h1>QDS Message Survival Lab v2p</h1>
+  <p class="sub">Meaning survival as <b>structure</b> (words ⇄ numbers). Razor-first, hard-nulls, and “which phrases survive”. This is a <b>sanity instrument</b>, not a truth-decoder.</p>
+
+  <div class="callout">
+    <div><b>Reality check:</b> It hunts structure that survives increasingly strong nulls. If your “signal” dies under Markov-2, it was local grammar — that’s not failure, that’s honesty.</div>
+    <div style="margin-top:10px; font-family:var(--mono); line-height:1.35;">
+      <code>score = wE·(1−h) + wT·(1−h1) + wA·a + wS·simEx</code><br/>
+      <code>hard-null gate = minZ over {block, markov1, markov2} (shift = debug-only when circular=true)</code>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3 style="margin:0 0 10px;">1) INPUT</h3>
+      <label for="inp">Paste text OR numeric tokens (spaces/newlines ok)</label>
+      <textarea id="inp" placeholder="Paste text OR numeric tokens. Spaces/newlines ok."></textarea>
+      <div class="btnrow">
+        <button id="btnDemo">Load demo feed</button>
+        <button id="btnClear">Clear</button>
+        <button id="btnCancel" disabled>Cancel</button>
+        <button id="btnPanic" class="danger">UNLOCK UI</button>
+      </div>
+      <div class="small"><b>busy:</b> <span id="busyTxt">no</span></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px;">2) CONTROLS</h3>
+
+      <div class="row">
+        <div>
+          <label>Token mode</label>
+          <select id="tokMode">
+            <option value="words">Words (lowercased)</option>
+            <option value="chars">Characters (A–Z0–9 kept)</option>
+            <option value="tokens">Space-separated tokens (verbatim)</option>
+            <option value="digits">Digits (0–9)</option>
+            <option value="pairs">Digit pairs (00–99)</option>
+            <option value="triplets">Digit triplets (000–999)</option>
+          </select>
+        </div>
+        <div>
+          <label>Encoder</label>
+          <select id="encMode">
+            <option value="identity">Identity (tokens as-is)</option>
+            <option value="wordid">Word-ID dictionary (stable IDs)</option>
+            <option value="a1sum">A1Z26 sum per token</option>
+            <option value="b26tok">Base-26 per token (A=0..Z=25)</option>
+            <option value="a1stream">A1Z26 per char stream</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row3">
+        <div><label>Max tokens</label><input id="maxTok" type="number" min="10" max="50000" value="5000"></div>
+        <div><label>MC runs (R)</label><input id="R" type="number" min="20" max="5000" value="200"></div>
+        <div><label>Block size</label><input id="blockN" type="number" min="2" max="200" value="10"></div>
+      </div>
+
+      <div class="row3">
+        <div><label>Seed</label><input id="seed" type="number" min="0" max="999999999" value="1337"></div>
+        <div><label>Max lag</label><input id="maxLag" type="number" min="10" max="2000" value="200"></div>
+        <div><label>τ (tokens)</label><input id="tau" type="number" min="1" max="5000" value="160"></div>
+      </div>
+
+      <div class="row3">
+        <div><label>λ (tokens)</label><input id="lam" type="number" min="1" max="5000" value="50"></div>
+        <div><label>edgeTrim (linear)</label><input id="edgeTrim" type="number" min="0" max="5000" value="0"></div>
+        <div>
+          <label style="opacity:.0;">.</label>
+          <div class="pill" style="width:100%; justify-content:space-between;">
+            <span>circular (wrap)</span>
+            <input id="circular" type="checkbox" checked style="width:auto; transform:scale(1.15);"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div><label>Phrase scan n-gram range (e.g. 2,6)</label><input id="ngRange" value="2,6"></div>
+        <div><label>Phrase scan shuffles (K)</label><input id="K" type="number" min="10" max="2000" value="40"></div>
+      </div>
+
+      <div class="row3">
+        <div><label>Weights wE / wT / wA / wS</label><input id="wts" value="0.20,0.35,0.30,0.15"></div>
+        <div><label>topK phrases</label><input id="topK" type="number" min="10" max="300" value="40"></div>
+        <div>
+          <label style="opacity:.0;">.</label>
+          <div class="pill" style="width:100%; justify-content:space-between;">
+            <span>Fast MC (deterministic PRNG)</span>
+            <input id="fast" type="checkbox" checked style="width:auto; transform:scale(1.15);"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <div class="row" style="margin:8px 0 10px 0; gap:10px; align-items:center; flex-wrap:wrap;">
+  <label class="chip" style="display:flex; gap:10px; align-items:center;">
+    <input type="checkbox" id="chkScanOverride">
+    <span>Debug override: allow Phrase scan when gate is RED</span>
+  </label>
+  <span class="muted" style="font-size:12px;">(Boardroom default: blocked when minZ&lt;0)</span>
+</div>
+<button class="primary" id="btnRun">RUN SURVIVAL (1-button)</button>
+        <button id="btnAnalysis">Analysis only</button>
+        <button id="btnHard">Hard nulls</button>
+        <button id="btnScan">Phrase scan</button>
+        <button id="btnSelf">Self-test</button>
+      </div>
+
+      <div class="gate">
+        <div><b>gate:</b> <span id="gateTxt">ready</span></div>
+        <div class="tag amber" id="gateTag">AMBER</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 10px;">3) RESULTS</h3>
+    <div class="kpi">
+      <div class="box"><div class="t">Tokens • Alphabet</div><div class="v" id="kTok">—</div></div>
+      <div class="box"><div class="t">Score</div><div class="v" id="kScore">—</div></div>
+      <div class="box"><div class="t">Hard-null minZ</div><div class="v" id="kMinZ">—</div></div>
+      <div class="box"><div class="t">Entropy h / h1</div><div class="v" id="kH">—</div></div>
+      <div class="box"><div class="t">ACF area a</div><div class="v" id="kA">—</div></div>
+      <div class="box"><div class="t">Similarity simEx</div><div class="v" id="kSim">—</div></div>
+    </div>
+
+    <div class="small" style="margin-top:10px;">
+      Notes: “Hard nulls” = block/Markov-1/Markov-2. Shuffle is shown for context, not gating. Shift is debug-only when circular=true.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 10px;">4) PHRASE SURVIVAL (top)</h3>
+    <div class="small">This is a **structure scan**: high-z n-grams that stay “too stable” vs shuffled corpus. It can surface boilerplate, repetition, templating, or real constraints — but it does not prove semantics.</div>
+    <pre id="phrOut">—</pre>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3 style="margin:0 0 10px;">PROGRESS LOG</h3>
+    <pre id="log"></pre>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  // ---------- minimal utilities ----------
+  const $ = (id)=>document.getElementById(id);
+  const now = ()=>new Date().toTimeString().slice(0,8);
+  const logEl = $("log");
+  const log = (s)=>{ logEl.textContent += `[${now()}] ${s}\n`; logEl.scrollTop = logEl.scrollHeight; };
+  const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+  const fmt = (x,d=3)=> (Number.isFinite(x) ? x.toFixed(d) : "—");
+  const fmt2 = (x)=>fmt(x,2);
+  const fmt3 = (x)=>fmt(x,3);
+  const fmt4 = (x)=>fmt(x,4);
+
+  // ---------- error surfacing (no silent deaths) ----------
+  window.addEventListener("error", (e)=>{
+    $("jsDot").classList.remove("ok"); $("jsDot").classList.add("err");
+    $("jsPill").textContent = "JS: ERROR (see log)";
+    log(`❌ error: ${e.message || e.type}`);
+  });
+  window.addEventListener("unhandledrejection", (e)=>{
+    $("jsDot").classList.remove("ok"); $("jsDot").classList.add("err");
+    $("jsPill").textContent = "JS: PROMISE ERROR (see log)";
+    log(`❌ promise: ${String(e.reason||"unhandled rejection")}`);
+  });
+
+  // ---------- deterministic PRNG ----------
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const randInt = (rng,n)=> (rng()*n)|0;
+
+  // ---------- tokenise ----------
+  function tokenise(raw, mode){
+    raw = raw || "";
+    if(mode==="words"){
+      return raw.toLowerCase().replace(/[^a-z0-9\s]+/g," ").trim().split(/\s+/).filter(Boolean);
+    }
+    if(mode==="chars"){
+      const s = raw.toUpperCase().replace(/[^A-Z0-9]+/g,"");
+      return s.split("").filter(Boolean);
+    }
+    if(mode==="tokens"){
+      return raw.trim().split(/\s+/).filter(Boolean);
+    }
+    if(mode==="digits"){
+      const s = raw.replace(/[^0-9]+/g,"");
+      return s.split("");
+    }
+    if(mode==="pairs"){
+      const s = raw.replace(/[^0-9]+/g,"");
+      const out=[]; for(let i=0;i+1<s.length;i+=2) out.push(s.slice(i,i+2));
+      return out;
+    }
+    if(mode==="triplets"){
+      const s = raw.replace(/[^0-9]+/g,"");
+      const out=[]; for(let i=0;i+2<s.length;i+=3) out.push(s.slice(i,i+3));
+      return out;
+    }
+    return raw.trim().split(/\s+/).filter(Boolean);
+  }
+
+  // ---------- encoders ----------
+  function a1z26sum(tok){
+    const s = String(tok).toUpperCase().replace(/[^A-Z]/g,"");
+    let sum=0; for(const ch of s) sum += (ch.charCodeAt(0)-64);
+    return String(sum||0);
+  }
+  function b26tok(tok){
+    const s = String(tok).toUpperCase().replace(/[^A-Z]/g,"");
+    let v=0;
+    for(const ch of s){ v = v*26 + (ch.charCodeAt(0)-65); }
+    return String(v);
+  }
+  function a1stream(tokens){
+    const s = tokens.join("").toUpperCase().replace(/[^A-Z]/g,"");
+    const out=[];
+    for(const ch of s){ out.push(String(ch.charCodeAt(0)-64)); }
+    return out.length? out : ["0"];
+  }
+
+  function encode(tokens, encMode){
+    if(encMode==="identity") return {enc: tokens.slice(), map:null};
+    if(encMode==="a1sum") return {enc: tokens.map(a1z26sum), map:null};
+    if(encMode==="b26tok") return {enc: tokens.map(b26tok), map:null};
+    if(encMode==="a1stream") return {enc: a1stream(tokens), map:null};
+
+    // word-id dictionary (stable by first appearance)
+    const map = new Map();
+    const rev = [];
+    const enc = [];
+    for(const t of tokens){
+      if(!map.has(t)){ map.set(t, map.size+1); rev.push([map.size, t]); }
+      enc.push(String(map.get(t)));
+    }
+    return {enc, map: rev};
+  }
+
+  // ---------- stats: entropy (0..1 normalized) ----------
+  function entropy(tokens){
+    const n=tokens.length;
+    if(n<=1) return {H:0,h:0};
+    const freq=new Map();
+    for(const t of tokens) freq.set(t,(freq.get(t)||0)+1);
+    const A=freq.size;
+    let H=0;
+    for(const c of freq.values()){
+      const p=c/n; H += -p*Math.log2(p);
+    }
+    const h = A>1 ? (H/Math.log2(A)) : 0;
+    return {H, h, A};
+  }
+  function entropy1(tokens, circular){
+    const n=tokens.length;
+    if(n<=2) return {H1:0,h1:0};
+    const pairs=new Map();
+    const steps = circular ? n : (n-1);
+    for(let i=0;i<steps;i++){
+      const a=tokens[i], b=tokens[(i+1)%n];
+      const k=a+"→"+b;
+      pairs.set(k,(pairs.get(k)||0)+1);
+    }
+    const A=pairs.size;
+    let H1=0;
+    for(const c of pairs.values()){
+      const p=c/steps; H1 += -p*Math.log2(p);
+    }
+    const h1 = A>1 ? (H1/Math.log2(A)) : 0;
+    return {H1, h1};
+  }
+
+  // ---------- ACF area (simple circular/linear autocorr of equality) ----------
+  function acfArea(tokens, maxLag, tau, circular){
+    const n=tokens.length;
+    if(n<3) return 0;
+    const L = Math.min(maxLag, n-1);
+    let area=0, wsum=0;
+    for(let d=1; d<=L; d++){
+      const w = Math.exp(-d/Math.max(1,tau));
+      let eq=0, cnt=0;
+      const steps = circular ? n : (n-d);
+      for(let i=0;i<steps;i++){
+        const j = (i+d)%n;
+        if(!circular && (i+d)>=n) break;
+        cnt++;
+        if(tokens[i]===tokens[j]) eq++;
+      }
+      const c = cnt? (eq/cnt) : 0;
+      area += w*c; wsum += w;
+    }
+    return wsum? (area/wsum) : 0;
+  }
+
+  // ---------- circular symbol similarity (nearby match weighting) ----------
+  function symbolSim(tokens, lam, circular){
+    const n=tokens.length;
+    if(n<3) return {sim:0, base:0, ex:0};
+    const L = Math.min( Math.max(10, Math.floor(3*lam)), n-1 );
+    let sum=0, wsum=0;
+    for(let d=1; d<=L; d++){
+      const g = Math.exp(-(d*d)/(2*Math.max(1,lam)*Math.max(1,lam)));
+      let match=0, cnt=0;
+      const steps = circular ? n : (n-d);
+      for(let i=0;i<steps;i++){
+        const j=(i+d)%n;
+        if(!circular && (i+d)>=n) break;
+        cnt++;
+        if(tokens[i]===tokens[j]) match++;
+      }
+      const p = cnt? (match/cnt) : 0;
+      sum += g*p; wsum += g;
+    }
+    const sim = wsum? (sum/wsum) : 0;
+
+    // base rate from marginal frequencies
+    const freq=new Map();
+    for(const t of tokens) freq.set(t,(freq.get(t)||0)+1);
+    let base=0;
+    for(const c of freq.values()){
+      const p=c/n; base += p*p;
+    }
+    const ex = sim - base;
+    return {sim, base, ex};
+  }
+
+  // ---------- null generators ----------
+  function shuffleNull(tokens, rng){
+    const a=tokens.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=randInt(rng,i+1);
+      const tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+    }
+    return a;
+  }
+  function blockShuffleNull(tokens, rng, blockN){
+    const n=tokens.length;
+    const b=Math.max(2, Math.min(blockN, n));
+    const blocks=[];
+    for(let i=0;i<n;i+=b) blocks.push(tokens.slice(i, Math.min(n,i+b)));
+    for(let i=blocks.length-1;i>0;i--){
+      const j=randInt(rng,i+1); const t=blocks[i]; blocks[i]=blocks[j]; blocks[j]=t;
+    }
+    return blocks.flat();
+  }
+  function markov1Null(tokens, rng, circular){
+    const n=tokens.length;
+    const next=new Map(); // state -> array of nexts
+    const steps = circular ? n : (n-1);
+    for(let i=0;i<steps;i++){
+      const a=tokens[i], b=tokens[(i+1)%n];
+      if(!next.has(a)) next.set(a,[]);
+      next.get(a).push(b);
+    }
+    const states=[...next.keys()];
+    if(states.length===0) return tokens.slice();
+    let cur = tokens[0] ?? states[randInt(rng,states.length)];
+    const out=[cur];
+    for(let i=1;i<n;i++){
+      const arr = next.get(cur);
+      if(arr && arr.length){
+        cur = arr[randInt(rng,arr.length)];
+      } else {
+        cur = states[randInt(rng,states.length)];
+      }
+      out.push(cur);
+    }
+    return out;
+  }
+  function markov2Null(tokens, rng, circular){
+    const n=tokens.length;
+    if(n<4) return markov1Null(tokens,rng,circular);
+    const map=new Map(); // "a|b" -> [c...]
+    const steps = circular ? n : (n-2);
+    for(let i=0;i<steps;i++){
+      const a=tokens[i], b=tokens[(i+1)%n], c=tokens[(i+2)%n];
+      const k=a+"|"+b;
+      if(!map.has(k)) map.set(k,[]);
+      map.get(k).push(c);
+    }
+    const keys=[...map.keys()];
+    if(!keys.length) return markov1Null(tokens,rng,circular);
+    let a=tokens[0], b=tokens[1];
+    if(a==null || b==null){
+      const kk=keys[randInt(rng,keys.length)].split("|"); a=kk[0]; b=kk[1];
+    }
+    const out=[a,b];
+    for(let i=2;i<n;i++){
+      const k=a+"|"+b;
+      const arr=map.get(k);
+      const c = (arr && arr.length) ? arr[randInt(rng,arr.length)] : map.get(keys[randInt(rng,keys.length)])[0];
+      out.push(c);
+      a=b; b=c;
+    }
+    return out;
+  }
+
+  // ---------- scoring ----------
+  function parseWeights(s){
+    const parts = String(s||"").split(",").map(x=>parseFloat(x.trim())).filter(x=>Number.isFinite(x));
+    let wE=parts[0]??0.20, wT=parts[1]??0.35, wA=parts[2]??0.30, wS=parts[3]??0.15;
+    const sum=wE+wT+wA+wS;
+    if(sum<=0) return {wE:.2,wT:.35,wA:.3,wS:.15};
+    return {wE:wE/sum, wT:wT/sum, wA:wA/sum, wS:wS/sum};
+  }
+
+  function computeAll(tokens, cfg){
+    const {circular, maxLag, tau, lam, wE,wT,wA,wS} = cfg;
+    const e0 = entropy(tokens);
+    const e1 = entropy1(tokens, circular);
+    const a = acfArea(tokens, maxLag, tau, circular);
+    const sim = symbolSim(tokens, lam, circular);
+    const score = wE*(1-e0.h) + wT*(1-e1.h1) + wA*a + wS*(sim.ex);
+    return {
+      n: tokens.length, A: e0.A,
+      H: e0.H, h:e0.h,
+      H1: e1.H1, h1:e1.h1,
+      a, sim: sim.sim, base: sim.base, simEx: sim.ex,
+      score
+    };
+  }
+
+  function meanSd(arr){
+    const n=arr.length; if(n<2) return {mu:arr[0]??0, sd:0};
+    let mu=0; for(const x of arr) mu+=x; mu/=n;
+    let v=0; for(const x of arr){ const d=x-mu; v+=d*d; } v/=(n-1);
+    return {mu, sd: Math.sqrt(v)};
+  }
+
+  async function mcZ(obsScore, genNull, tokens, cfg, R, rng){
+    const scores=[];
+    for(let r=0;r<R;r++){
+      const t = genNull(tokens, rng);
+      const s = computeAll(t,cfg).score;
+      scores.push(s);
+      if((r%50)===49) await new Promise(res=>setTimeout(res,0));
+    }
+    const ms=meanSd(scores);
+    const z = ms.sd>0 ? (obsScore - ms.mu)/ms.sd : 0;
+    // empirical p (two-sided) from sample ranks
+    let ge=0;
+    for(const s of scores) if(Math.abs(s-ms.mu) >= Math.abs(obsScore-ms.mu)) ge++;
+    const p = (ge+1)/(scores.length+1);
+    return {mu:ms.mu, sd:ms.sd, z, p, runs:scores.length};
+  }
+
+  // ---------- phrase scan (top observed n-grams; then null z via K shuffles) ----------
+  function ngramCounts(tokens, n){
+    const m=new Map();
+    for(let i=0;i<=tokens.length-n;i++){
+      const g=tokens.slice(i,i+n).join(" ");
+      m.set(g,(m.get(g)||0)+1);
+    }
+    return m;
+  }
+  function pickTopNgrams(tokens, nMin, nMax, topK){
+    const all=[];
+    for(let n=nMin;n<=nMax;n++){
+      const m=ngramCounts(tokens,n);
+      for(const [g,c] of m.entries()){
+        all.push({n, g, c});
+      }
+    }
+    all.sort((a,b)=> (b.c-a.c) || (a.n-b.n) || (a.g<b.g?-1:1));
+    return all.slice(0, topK);
+  }
+
+  async function phraseScan(tokens, encTokens, nMin, nMax, topK, K, rng){
+    const picked = pickTopNgrams(tokens, nMin, nMax, topK);
+    if(!picked.length) return [];
+    // build trackers for picked grams
+    const stats = picked.map(p=>({ ...p, sum:0, sum2:0, k:0 }));
+    const idx = new Map();
+    stats.forEach((p,i)=>idx.set(p.g, i));
+    for(let k=0;k<K;k++){
+      const sh = shuffleNull(tokens, rng);
+      // count only for each n present
+      // cheap: count full ngrams per n and accumulate if in idx
+      for(let n=nMin;n<=nMax;n++){
+        const m=ngramCounts(sh,n);
+        for(const [g,c] of m.entries()){
+          const i = idx.get(g);
+          if(i!=null){
+            const p = stats[i];
+            p.sum += c; p.sum2 += c*c; p.k++;
+          }
+        }
+      }
+      if((k%10)===9) await new Promise(res=>setTimeout(res,0));
+    }
+    // compute z for each picked based on null mean/sd
+    for(const p of stats){
+      const kk = Math.max(1, p.k || K);
+      const mu = p.sum/kk;
+      const v = Math.max(0, (p.sum2/kk) - mu*mu);
+      const sd = Math.sqrt(v);
+      p.z = sd>0 ? (p.c - mu)/sd : 0;
+      p.mu = mu; p.sd = sd;
+    }
+    stats.sort((a,b)=> (b.z-a.z) || (b.c-a.c));
+    // attach encoded view (same span length)
+    stats.forEach(p=>{
+      const n=p.n;
+      // find first occurrence index in original tokens to show encoded snippet
+      let at=-1;
+      for(let i=0;i<=tokens.length-n;i++){
+        if(tokens.slice(i,i+n).join(" ")===p.g){ at=i; break; }
+      }
+      if(at>=0) p.encoded = encTokens.slice(at, at+n).join(" ");
+      else p.encoded = "—";
+    });
+    return stats.slice(0, topK);
+  }
+
+  // ---------- UI lock ----------
+  const btns = ["btnRun","btnAnalysis","btnHard","btnScan","btnDemo","btnClear","tokMode","encMode","maxTok","R","blockN","seed","maxLag","tau","lam","edgeTrim","circular","ngRange","K","wts","topK"];
+  function setBusy(on){
+    $("busyTxt").textContent = on ? "YES" : "no";
+    $("btnCancel").disabled = !on;
+    for(const id of btns){
+      const el=$(id);
+      if(!el) continue;
+      if(el.tagName==="BUTTON") el.disabled = on;
+      else el.disabled = on;
+    }
+  }
+
+  function gateFromMinZ(minZ){
+    if(!Number.isFinite(minZ)) return {txt:"ready", cls:"amber"};
+    if(minZ>3) return {txt:`GREEN (minZ=${fmt2(minZ)})`, cls:"green"};
+    if(minZ>0) return {txt:`AMBER (minZ=${fmt2(minZ)})`, cls:"amber"};
+    return {txt:`RED (minZ=${fmt2(minZ)})`, cls:"red"};
+  }
+
+  function readCfg(){
+    const circular = $("circular").checked;
+    const edgeTrim = Math.max(0, parseInt($("edgeTrim").value||"0",10)||0);
+    const maxLag = Math.max(10, parseInt($("maxLag").value||"200",10)||200);
+    const tau = Math.max(1, parseFloat($("tau").value||"160")||160);
+    const lam = Math.max(1, parseFloat($("lam").value||"50")||50);
+    const {wE,wT,wA,wS} = parseWeights($("wts").value);
+    return {circular, edgeTrim, maxLag, tau, lam, wE,wT,wA,wS};
+  }
+
+  function prepTokens(){
+    const raw = $("inp").value;
+    const tokMode = $("tokMode").value;
+    const encMode = $("encMode").value;
+    const maxTok = Math.max(10, parseInt($("maxTok").value||"5000",10)||5000);
+
+    let tokens = tokenise(raw, tokMode).slice(0, maxTok);
+    const cfg = readCfg();
+
+    // edgeTrim only for linear
+    if(!cfg.circular && cfg.edgeTrim>0 && tokens.length>2*cfg.edgeTrim){
+      tokens = tokens.slice(cfg.edgeTrim, tokens.length-cfg.edgeTrim);
+    }
+
+    const enc = encode(tokens, encMode);
+    return {tokens, encTokens: enc.enc, dictMap: enc.map, tokMode, encMode};
+  }
+
+  async function runHardNulls(){
+    const cfg = readCfg();
+    const {tokens, encTokens, tokMode, encMode} = prepTokens();
+    const seed = (parseInt($("seed").value||"1337",10)||1337) >>> 0;
+    const rng = mulberry32(seed);
+
+    if(encTokens.length<12){
+      log("⚠️ need more tokens (>=12) for hard-nulls.");
+      return {minZ: NaN, out: []};
+    }
+
+    const R = Math.max(20, parseInt($("R").value||"200",10)||200);
+    const obs = computeAll(encTokens, cfg);
+
+    log(`analysis: tokMode=${tokMode} enc=${encMode} n=${obs.n} circular=${cfg.circular} edgeTrim=${cfg.edgeTrim}`);
+    log(`hard-null gate: block/markov1/markov2 …`);
+
+    // Hard nulls (no shift here by design)
+    const blockN = Math.max(2, parseInt($("blockN").value||"10",10)||10);
+
+    log(`hard-null: block x${R} …`);
+    const mBlock = await mcZ(obs.score, (t,r)=>blockShuffleNull(t,r,blockN), encTokens, cfg, R, rng);
+
+    log(`hard-null: markov1 x${R} …`);
+    const mM1 = await mcZ(obs.score, (t,r)=>markov1Null(t,r,cfg.circular), encTokens, cfg, R, rng);
+
+    log(`hard-null: markov2 x${R} …`);
+    const mM2 = await mcZ(obs.score, (t,r)=>markov2Null(t,r,cfg.circular), encTokens, cfg, R, rng);
+
+    const out = [
+      {fam:"block", ...mBlock},
+      {fam:"markov1", ...mM1},
+      {fam:"markov2", ...mM2},
+    ];
+    const minZ = Math.min(...out.map(o=>o.z));
+    window.__mslab_minZ = minZ;
+      try{ const b=$('btnScan'); const ov=$('chkScanOverride')?.checked; if(b) b.disabled = (minZ < 0) && (!ov); }catch(e){}
+      log(`hard-null gate: minZ=${fmt3(minZ)} :: ${out.map(o=>`${o.fam} z=${fmt2(o.z)} p=${fmt3(o.p)}`).join(" | ")}`);
+    return {minZ, out, obs};
+  }
+
+  function paintObs(obs){
+    $("kTok").textContent = `${obs.n} • ${obs.A}`;
+    $("kScore").textContent = fmt4(obs.score);
+    $("kH").textContent = `h=${fmt4(obs.h)} • h1=${fmt4(obs.h1)} (H=${fmt3(obs.H)} H1=${fmt3(obs.H1)})`;
+    $("kA").textContent = fmt4(obs.a);
+    $("kSim").textContent = `simEx=${fmt4(obs.simEx)} (sim=${fmt4(obs.sim)} base=${fmt4(obs.base)})`;
+  }
+
+  async function runAnalysisOnly(){
+    const cfg = readCfg();
+    const {encTokens, tokMode, encMode} = prepTokens();
+    if(encTokens.length<6){ log("⚠️ need more tokens."); return; }
+    const obs = computeAll(encTokens, cfg);
+    log(`analysis: tokMode=${tokMode} enc=${encMode} n=${obs.n} circular=${cfg.circular} edgeTrim=${cfg.edgeTrim}`);
+    log(`analysis: score=${fmt4(obs.score)} a=${fmt4(obs.a)} simEx=${fmt4(obs.simEx)} (h=${fmt4(obs.h)} h1=${fmt4(obs.h1)})`);
+    paintObs(obs);
+  }
+
+  async function runPhraseScan(){
+    const cfg = readCfg();
+    const {tokens, encTokens} = prepTokens();
+    const seed = ((parseInt($("seed").value||"1337",10)||1337) + 777) >>> 0;
+    const rng = mulberry32(seed);
+
+    const r = String($("ngRange").value||"2,6").split(",").map(x=>parseInt(x.trim(),10)).filter(Number.isFinite);
+    const nMin = clamp(r[0]||2, 1, 12);
+    const nMax = clamp(r[1]||6, nMin, 12);
+    const topK = clamp(parseInt($("topK").value||"40",10)||40, 10, 300);
+    const K = clamp(parseInt($("K").value||"40",10)||40, 10, 2000);
+
+    if(tokens.length < (nMin+2)){
+      log("⚠️ not enough tokens for phrase scan.");
+      return;
+    }
+    // boardroom gate: block phrase scan when hard-null says RED, unless debug override
+    try{
+      const ov = $("chkScanOverride") ? $("chkScanOverride").checked : false;
+      const mz = (typeof window.__mslab_minZ === "number") ? window.__mslab_minZ : null;
+      if(mz !== null && mz < 0 && !ov){
+        const f = (typeof fmt3 === "function") ? fmt3 : (x=>(""+x));
+        log(`⛔ phrase scan blocked (RED gate minZ=${f(mz)}). Toggle Debug override to run anyway.`);
+        return;
+      }
+    }catch(e){}
+
+    log(`phrase scan: n=${nMin}..${nMax}, topK=${topK}, shuffles K=${K} …`);
+    const rows = await phraseScan(tokens, encTokens, nMin, nMax, topK, K, rng);
+    if(!rows.length){
+      $("phrOut").textContent = "—";
+      log("phrase scan: none.");
+      return;
+    }
+    $("phrOut").textContent =
+      rows.slice(0,topK).map(p=>`${fmt2(p.z)}\tcount=${p.c}\t[${p.n}] ${p.g}\t|| enc: ${p.encoded}`).join("\n");
+    log(`phrase scan: done (${rows.length} rows).`);
+  }
+
+  let cancelFlag = false;
+
+  async function runPipeline(){
+    if($("btnRun").disabled) return;
+    cancelFlag = false;
+    setBusy(true);
+    $("gateTxt").textContent = "running…";
+    $("gateTag").textContent = "BUSY";
+    $("gateTag").className = "tag amber";
+    try{
+      // HARD NULLS FIRST (boardroom-grade)
+      log("RUN SURVIVAL: starting (hard-nulls → analysis → phrase scan) …");
+      const hard = await runHardNulls();
+      if(cancelFlag){ log("⛔ cancelled."); return; }
+
+      // paint obs from hard run if available
+      if(hard.obs){ paintObs(hard.obs); }
+
+      // gate + label
+      $("kMinZ").textContent = Number.isFinite(hard.minZ) ? fmt3(hard.minZ) : "—";
+      const g = gateFromMinZ(hard.minZ);
+      $("gateTxt").textContent = g.txt;
+      $("gateTag").textContent = g.cls.toUpperCase();
+      $("gateTag").className = "tag " + g.cls;
+
+      // analysis log line (explicit)
+      if(hard.obs){
+        log(`analysis: score=${fmt4(hard.obs.score)} a=${fmt4(hard.obs.a)} simEx=${fmt4(hard.obs.simEx)} (h=${fmt4(hard.obs.h)} h1=${fmt4(hard.obs.h1)})`);
+      }
+
+      // phrase scan
+      try{
+        const ov = $("chkScanOverride") ? $("chkScanOverride").checked : false;
+        const mz = (typeof window.__mslab_minZ === "number") ? window.__mslab_minZ : null;
+        if(mz !== null && mz < 0 && !ov){
+          log("pipeline phrase scan blocked (RED gate). (Enable Debug override to run anyway.)");
+        }else{
+          await runPhraseScan();
+        }
+      }catch(e){
+}
+if(cancelFlag){ log("⛔ cancelled."); return; }
+
+      log("RUN SURVIVAL: done.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // ---------- demo feed ----------
+  function loadDemo(){
+    const demo = [
+      "This is a demo feed for the Message Survival Lab.",
+      "We repeat certain phrases, we repeat certain phrases, we repeat certain phrases.",
+      "Noise noise noise. Structure structure. Noise noise noise.",
+      "If you can still see this pattern under Markov-2, it is not just grammar."
+    ].join("\n");
+    $("inp").value = demo;
+    log("demo: loaded.");
+  }
+
+  // ---------- bind ----------
+  $("btnDemo").addEventListener("click", loadDemo);
+  $("btnClear").addEventListener("click", ()=>{ $("inp").value=""; $("phrOut").textContent="—"; log("cleared."); });
+  $("btnCancel").addEventListener("click", ()=>{ cancelFlag=true; log("cancel requested (finishes current step)."); });
+
+  $("btnRun").addEventListener("click", runPipeline);
+  $("btnAnalysis").addEventListener("click", async()=>{ setBusy(true); try{ await runAnalysisOnly(); } finally { setBusy(false); }});
+  $("btnHard").addEventListener("click", async()=>{ setBusy(true); try{
+    const hard = await runHardNulls();
+    if(hard.obs){ paintObs(hard.obs); }
+    $("kMinZ").textContent = Number.isFinite(hard.minZ) ? fmt3(hard.minZ) : "—";
+    const g = gateFromMinZ(hard.minZ);
+    $("gateTxt").textContent = g.txt;
+    $("gateTag").textContent = g.cls.toUpperCase();
+    $("gateTag").className = "tag " + g.cls;
+  } finally { setBusy(false); }});
+  $("btnScan").addEventListener("click", async()=>{ setBusy(true); try{
+} finally { setBusy(false); }});
+  $("chkScanOverride") && $("chkScanOverride").addEventListener("change", ()=>{
+    try{
+      const mz = (typeof window.__mslab_minZ === "number") ? window.__mslab_minZ : null;
+      if(mz !== null){
+        $("btnScan").disabled = (mz < 0) && !$("chkScanOverride").checked;
+      }
+    }catch(e){}
+  });
+
+  $("btnSelf").addEventListener("click", ()=>{ log("self-test: click handler OK ✅"); });
+
+  // boot complete
+  $("jsDot").classList.add("ok");
+  $("jsPill").textContent = "JS: OK";
+  log("ready: paste input → RUN SURVIVAL (hard-nulls → analysis → phrase scan).");
+})();
+
+/* === MSLAB_BOARDROOM_GUARD_V1 ===
+   Purpose:
+   - If hard-null gate is RED (minZ < 0), hide phrase table by default.
+   - Show an explicit warning + "Show anyway" toggle.
+   - Prevent stakeholder misreads (phrases can look impressive even when nulls explain structure).
+*/
+(function(){
+  const TOKEN = "MSLAB_BOARDROOM_GUARD_V1";
+
+  function _log(msg){
+    try { if (typeof log === "function") log(msg); } catch(e){}
+  }
+
+  function parseMinZFromText(){
+    // Robust fallback: parse from page text. Works even if IDs change.
+    try{
+      const t = (document.body && document.body.innerText) ? document.body.innerText : "";
+      // Look for: "Hard-null minZ" then a number on same/near line
+      // Examples seen: "Hard-null minZ\n-0.525" or "Hard-null minZ -0.525"
+      const idx = t.toLowerCase().indexOf("hard-null minz");
+      if(idx < 0) return null;
+      const slice = t.slice(idx, idx + 200);
+      // Extract first float in slice
+      const m = slice.match(/-?\d+(\.\d+)?/);
+      if(!m) return null;
+      const v = parseFloat(m[0]);
+      if(!Number.isFinite(v)) return null;
+      return v;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function findPhraseSection(){
+    // Find header that contains "PHRASE SURVIVAL"
+    const heads = Array.from(document.querySelectorAll("h1,h2,h3,h4, .h2, .h3, .sectionTitle"));
+    let h = null;
+    for(const el of heads){
+      const tx = (el.textContent||"").toUpperCase();
+      if(tx.includes("PHRASE") && tx.includes("SURVIVAL")) { h = el; break; }
+    }
+    if(!h) return null;
+
+    // Find the first table after the header
+    let node = h;
+    for(let i=0;i<25;i++){
+      node = node.nextElementSibling;
+      if(!node) break;
+      const tbl = node.querySelector && node.querySelector("table");
+      if(tbl) return {header:h, table:tbl};
+      if(node.tagName && node.tagName.toLowerCase()==="table") return {header:h, table:node};
+    }
+
+    // fallback: any phrase table-ish (has columns z/count/phrase/encoded)
+    const tables = Array.from(document.querySelectorAll("table"));
+    for(const tbl of tables){
+      const th = Array.from(tbl.querySelectorAll("th")).map(x => (x.textContent||"").toLowerCase()).join(" ");
+      if(th.includes("phrase") && th.includes("count")) return {header:h, table:tbl};
+    }
+    return {header:h, table:null};
+  }
+
+  function ensureStyles(){
+    if(document.getElementById("mslab_boardroom_styles")) return;
+    const st = document.createElement("style");
+    st.id = "mslab_boardroom_styles";
+    st.textContent = `
+      .mslab-warn{
+        margin: 10px 0 12px 0;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,200,120,.35);
+        background: rgba(255,170,70,.08);
+        color: rgba(255,230,200,.95);
+        line-height: 1.35;
+      }
+      .mslab-warn b{ color: rgba(255,230,200,1); }
+      .mslab-warn .small{ opacity:.85; font-size: 12px; margin-top:6px; }
+      .mslab-btn-mini{
+        margin-top:10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(140,200,255,.25);
+        background: rgba(70,120,170,.18);
+        color: rgba(225,240,255,.95);
+        cursor:pointer;
+      }
+      .mslab-hidden{ display:none !important; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function applyBoardroomGuard(){
+    ensureStyles();
+    const minZ = parseMinZFromText();
+    if(minZ === null) return;
+
+    const sec = findPhraseSection();
+    if(!sec || !sec.header) return;
+
+    // Remove prior warn if exists (idempotent on reruns)
+    const old = document.getElementById("mslab_phrase_warn");
+    if(old) old.remove();
+
+    // If RED gate: hide phrase table by default; allow show anyway
+    if(minZ < 0){
+      const warn = document.createElement("div");
+      warn.id = "mslab_phrase_warn";
+      warn.className = "mslab-warn";
+      warn.innerHTML =
+        `<b>Gate RED (minZ=${minZ.toFixed(3)}):</b> phrase list is <b>non-surviving</b> under hard nulls (Markov/block). ` +
+        `Shown phrases can still be repetition/templating. Stakeholder-safe default is to hide the table.` +
+        `<div class="small">You can still inspect it as a debug/exploration artefact — just don’t pitch it as evidence.</div>`;
+
+      const btn = document.createElement("button");
+      btn.className = "mslab-btn-mini";
+      btn.textContent = "Show phrase table anyway";
+      btn.addEventListener("click", () => {
+        if(sec.table) sec.table.classList.remove("mslab-hidden");
+        btn.textContent = "Phrase table shown (RED gate)";
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+      });
+
+      warn.appendChild(btn);
+
+      // Insert warning just after the header
+      sec.header.insertAdjacentElement("afterend", warn);
+
+      if(sec.table) sec.table.classList.add("mslab-hidden");
+    }
+  }
+
+  // Run once on load
+  window.addEventListener("DOMContentLoaded", () => {
+    setTimeout(applyBoardroomGuard, 50);
+  });
+
+  // Wrap runSurvival if present so guard re-applies after each run
+  try{
+    if(typeof window.runSurvival === "function" && !window.__mslab_wrapped){
+      const _orig = window.runSurvival;
+      window.runSurvival = async function(){
+        try{ return await _orig.apply(this, arguments); }
+        finally{
+          try{ setTimeout(applyBoardroomGuard, 50); }catch(e){}
+        }
+      };
+      window.__mslab_wrapped = true;
+      _log("boardroom-guard: armed (RED gate hides phrase table by default).");
+    }
+  }catch(e){}
+})();
+
+
+
+/* === MSLAB_GUARD_V2_TOKEN ===
+   Boardroom guard:
+   - If hard-null minZ < 0 (RED), hide Phrase Survival section by default.
+   - Works even when phrase output is NOT a table (plain text / divs).
+   - Adds "Show anyway" toggle (debug-only).
+*/
+(function(){
+  function _safeLog(msg){ try{ if(typeof log==="function") log(msg);}catch(e){} }
+
+  function parseMinZ(){
+    try{
+      const t = (document.body && document.body.innerText) ? document.body.innerText : "";
+      const idx = t.toLowerCase().indexOf("hard-null minz");
+      if(idx < 0) return null;
+      const slice = t.slice(idx, idx+220);
+      const m = slice.match(/-?\d+(\.\d+)?/);
+      if(!m) return null;
+      const v = parseFloat(m[0]);
+      return Number.isFinite(v) ? v : null;
+    }catch(e){ return null; }
+  }
+
+  function ensureStyles(){
+    if(document.getElementById("mslab_guard_styles_v2")) return;
+    const st = document.createElement("style");
+    st.id = "mslab_guard_styles_v2";
+    st.textContent = `
+      .mslab-guard-warn{
+        margin: 10px 0 12px 0;
+        padding: 10px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,200,120,.35);
+        background: rgba(255,170,70,.08);
+        color: rgba(255,230,200,.95);
+        line-height: 1.35;
+      }
+      .mslab-guard-warn b{ color: rgba(255,240,210,1); }
+      .mslab-guard-warn .small{ opacity:.85; font-size: 12px; margin-top:6px; }
+      .mslab-guard-btn{
+        margin-top:10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(140,200,255,.25);
+        background: rgba(70,120,170,.18);
+        color: rgba(225,240,255,.95);
+        cursor:pointer;
+      }
+      .mslab-guard-hidden{ display:none !important; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function findPhraseHeader(){
+    const els = Array.from(document.querySelectorAll("h1,h2,h3,h4, .sectionTitle, .title, .h2, .h3"));
+    for(const el of els){
+      const tx = (el.textContent||"").toUpperCase();
+      if(tx.includes("PHRASE") && tx.includes("SURVIVAL")) return el;
+    }
+    // fallback: scan for any element that contains that string
+    const all = Array.from(document.querySelectorAll("*"));
+    for(const el of all){
+      const tx = (el.textContent||"");
+      if(tx && tx.length<120 && /phrase\s+survival/i.test(tx)) return el;
+    }
+    return null;
+  }
+
+  function wrapPhraseSection(headerEl){
+    // Wrap everything after "PHRASE SURVIVAL" until "PROGRESS LOG" (or end)
+    if(!headerEl) return null;
+
+    // If already wrapped, return it
+    const existing = document.getElementById("mslab_phrase_wrap_v2");
+    if(existing) return existing;
+
+    const wrap = document.createElement("div");
+    wrap.id = "mslab_phrase_wrap_v2";
+
+    // Insert wrapper right AFTER header
+    headerEl.insertAdjacentElement("afterend", wrap);
+
+    // Move siblings into wrapper until stop marker
+    let node = wrap.nextElementSibling;
+    let moved = 0;
+    while(node && moved < 200){
+      const tx = (node.textContent||"").toUpperCase();
+      if(tx.includes("PROGRESS LOG")) break;
+      const next = node.nextElementSibling;
+      wrap.appendChild(node);
+      node = next;
+      moved++;
+    }
+    return wrap;
+  }
+
+  function applyGuard(){
+    ensureStyles();
+    const minZ = parseMinZ();
+    if(minZ === null) return;
+
+    const hdr = findPhraseHeader();
+    if(!hdr) return;
+
+    // Remove old warning if exists
+    const old = document.getElementById("mslab_phrase_warn_v2");
+    if(old) old.remove();
+
+    const wrap = wrapPhraseSection(hdr);
+    if(!wrap) return;
+
+    if(minZ < 0){
+      wrap.classList.add("mslab-guard-hidden");
+
+      const warn = document.createElement("div");
+      warn.id = "mslab_phrase_warn_v2";
+      warn.className = "mslab-guard-warn";
+      warn.innerHTML =
+        `<b>Gate RED (minZ=${minZ.toFixed(3)}):</b> Phrase output is hidden by default (hard nulls can explain the structure).` +
+        `<div class="small">You can still view it for debugging, but it’s not stakeholder-safe evidence.</div>`;
+
+      const btn = document.createElement("button");
+      btn.className = "mslab-guard-btn";
+      btn.textContent = "Show Phrase Survival anyway (debug)";
+      btn.addEventListener("click", () => {
+        wrap.classList.remove("mslab-guard-hidden");
+        btn.textContent = "Shown (RED gate) ✅";
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+      });
+
+      warn.appendChild(btn);
+      hdr.insertAdjacentElement("afterend", warn);
+      _safeLog("boardroom-guard(v2): RED gate => Phrase section hidden by default.");
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => setTimeout(applyGuard, 60));
+
+  // Re-apply after RUN SURVIVAL if the function exists
+  try{
+    if(typeof window.runSurvival === "function" && !window.__mslab_guard_v2_wrapped){
+      const orig = window.runSurvival;
+      window.runSurvival = async function(){
+        try{ return await orig.apply(this, arguments); }
+        finally{ try{ setTimeout(applyGuard, 80); }catch(e){} }
+      };
+      window.__mslab_guard_v2_wrapped = true;
+    }
+  }catch(e){}
+})();
+
+
+/* MSLAB_UI_UNLOCK_V1 */
+(function(){
+  function $id(x){ return document.getElementById(x); }
+  function safeEnableAll(){
+    try{
+      document.querySelectorAll("button").forEach(b=>b.disabled=false);
+      // keep Cancel usable but not mandatory
+      const c = $id("btnCancel"); if(c) c.disabled=false;
+      const p = $id("btnPanic"); if(p) p.disabled=false;
+    }catch(e){}
+  }
+  // force unlock callable
+  window.__mslab_forceUnlock = function(reason){
+    try{ window.__busy=false; }catch(e){}
+    safeEnableAll();
+    try{
+      if(typeof log==="function") log("🧯 UNLOCK UI" + (reason?": "+reason:"") + " (busy reset)");
+    }catch(e){}
+  };
+
+  // Wrap setBusy if it exists (don’t let it brick the UI)
+  try{
+    if(typeof window.setBusy === "function" && !window.__mslab_setBusy_wrapped){
+      window.__mslab_setBusy_wrapped = true;
+      const orig = window.setBusy;
+      window.setBusy = function(b){
+        try{ orig(!!b); }catch(e){ window.__mslab_forceUnlock("setBusy exception"); }
+        // Always keep panic button enabled
+        try{ const p=$id("btnPanic"); if(p) p.disabled=false; }catch(e){}
+      };
+    }
+  }catch(e){}
+
+  // Hook the panic button + ESC key
+  try{
+    const p = $id("btnPanic");
+    if(p && !p.__mslab_bound){
+      p.__mslab_bound = true;
+      p.addEventListener("click", ()=>window.__mslab_forceUnlock("panic button"));
+    }
+  }catch(e){}
+
+  window.addEventListener("keydown", (ev)=>{
+    if(ev && ev.key==="Escape") window.__mslab_forceUnlock("ESC");
+  });
+
+  // If page loads with buttons disabled for any reason, auto-unlock after 2s
+  setTimeout(()=>{
+    try{
+      const anyDisabled = Array.from(document.querySelectorAll("button")).some(b=>b.disabled);
+      if(anyDisabled) window.__mslab_forceUnlock("auto");
+    }catch(e){}
+  }, 2000);
+})();
+
+
+/* MSLAB_PHRASE_SINGLEFLIGHT_V1 */
+(function(){
+  // Prevent double-running phrase scan (pipeline + guard / double-bind)
+  if(window.__mslab_phrase_wrapped) return;
+  window.__mslab_phrase_wrapped = true;
+
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+
+  async function wrapOnce(){
+    // wait until functions exist
+    for(let i=0;i<40;i++){ // ~2s
+      if(typeof window.runPhraseScan === "function") break;
+      await sleep(50);
+    }
+    if(typeof window.runPhraseScan !== "function") return;
+
+    const orig = window.runPhraseScan;
+    window.runPhraseScan = async function(){
+      if(window.__mslab_phrase_busy){
+        try{ if(typeof log==="function") log("⏭️ phrase scan: skipped (already running)"); }catch(e){}
+        return null;
+      }
+      window.__mslab_phrase_busy = true;
+      try{
+        return await orig.apply(this, arguments);
+      } finally {
+        window.__mslab_phrase_busy = false;
+      }
+    };
+  }
+
+  wrapOnce();
+})();
+
+
+/* MSLAB_SINGLEFLIGHT_FIX_V2 */
+(function(){
+  if(window.__mslab_sf_v2) return; window.__mslab_sf_v2=true;
+  const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+  async function arm(){
+    for(let i=0;i<80;i++){ // ~4s
+      if(typeof window.phraseScan==="function" && typeof window.runPipeline==="function") break;
+      await sleep(50);
+    }
+
+    // Singleflight the *core* phraseScan (covers pipeline + button)
+    if(typeof window.phraseScan==="function" && !window.__mslab_phraseScan_wrapped){
+      window.__mslab_phraseScan_wrapped=true;
+      const orig=window.phraseScan;
+      window.phraseScan=async function(){
+        if(window.__mslab_phrase_busy){
+          try{ window.log && log("⏭️ phrase scan: skipped (singleflight)"); }catch(e){}
+          return [];
+        }
+        window.__mslab_phrase_busy=true;
+        try{ return await orig.apply(this, arguments); }
+        finally{ window.__mslab_phrase_busy=false; }
+      };
+    }
+
+    // Singleflight pipeline too (belt + braces)
+    if(typeof window.runPipeline==="function" && !window.__mslab_pipe_wrapped){
+      window.__mslab_pipe_wrapped=true;
+      const orig=window.runPipeline;
+      window.runPipeline=async function(){
+        if(window.__mslab_pipe_busy){
+          try{ window.log && log("⏭️ RUN SURVIVAL: ignored (already running)"); }catch(e){}
+          return;
+        }
+        window.__mslab_pipe_busy=true;
+        try{ return await orig.apply(this, arguments); }
+        finally{ window.__mslab_pipe_busy=false; }
+      };
+    }
+  }
+
+  arm();
+})();
+
+
+/* MSLAB_PHRASE_DEDUP_V3 */
+(function(){
+  if(window.__mslab_phrase_dedup_v3) return;
+  window.__mslab_phrase_dedup_v3 = true;
+
+  const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+  const fnv1a32=(str)=>{ // tiny hash for input signatures
+    let h=0x811c9dc5;
+    for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return (h>>>0).toString(16);
+  };
+
+  async function arm(){
+    for(let i=0;i<80;i++){ // ~4s
+      if(typeof window.runPhraseScan==="function") break;
+      await sleep(50);
+    }
+    if(typeof window.runPhraseScan!=="function") return;
+
+    const orig = window.runPhraseScan;
+
+    window.runPhraseScan = async function(){
+      // Build a signature from current UI state + input hash.
+      let key="unknown";
+      try{
+        const $ = (id)=>document.getElementById(id);
+        const inp = ($("inp")?.value||"");
+        const nRange = ($("ngRange")?.value||"");
+        const K = ($("scanK")?.value||"");
+        const topK = ($("topK")?.value||"");
+        const tokMode = ($("tokMode")?.value||"");
+        const encMode = ($("encMode")?.value||"");
+        const circ = ($("circular")?.checked? "1":"0");
+        const edge = ($("edgeTrim")?.value||"0");
+        key = [tokMode,encMode,nRange,topK,K,circ,edge,fnv1a32(inp)].join("|");
+      }catch(e){}
+
+      const now = Date.now();
+      const lastK = window.__mslab_phrase_last_key;
+      const lastT = window.__mslab_phrase_last_ts || 0;
+
+      // If the exact same scan fires again within 3s, skip it (this is your double-log case).
+      if(lastK === key && (now - lastT) < 3000){
+        try{ window.log && log("⏭️ phrase scan: dedup (duplicate call suppressed)"); }catch(e){}
+        return null;
+      }
+
+      // Also block re-entry while running.
+      if(window.__mslab_phrase_busy){
+        try{ window.log && log("⏭️ phrase scan: skipped (already running)"); }catch(e){}
+        return null;
+      }
+
+      window.__mslab_phrase_last_key = key;
+      window.__mslab_phrase_last_ts = now;
+
+      window.__mslab_phrase_busy = true;
+      try {
+        return await orig.apply(this, arguments);
+      } finally {
+        window.__mslab_phrase_busy = false;
+      }
+    };
+  }
+
+  arm();
+})();
+
+</script>
+
+<script>
+/* === MSLAB_GUARD_V4_TOKEN ===
+   If minZ < 0 => hide Phrase Survival container by default.
+   Adds a toggle to show anyway (debug).
+*/
+(function(){
+  const q=(sel,root)=> (root||document).querySelector(sel);
+  const qa=(sel,root)=> Array.from((root||document).querySelectorAll(sel));
+  const safeLog=(m)=>{ try{ if(typeof log==="function") log(m); }catch(e){} };
+
+  function ensureStyles(){
+    if(q("#mslab_guard_v4_styles")) return;
+    const st=document.createElement("style");
+    st.id="mslab_guard_v4_styles";
+    st.textContent=`
+      .mslabBadge{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;
+        border:1px solid rgba(120,200,255,.25);background:rgba(40,80,120,.22);color:rgba(235,245,255,.95);
+        font-size:12px;letter-spacing:.2px;margin:8px 0}
+      .mslabDot{width:9px;height:9px;border-radius:999px;background:#4ef0c2;box-shadow:0 0 14px rgba(78,240,194,.45)}
+      .mslabGuardWarn{margin:10px 0 12px 0;padding:12px 14px;border-radius:16px;
+        border:1px solid rgba(255,200,120,.35);background:rgba(255,170,70,.08);color:rgba(255,230,200,.95);line-height:1.35}
+      .mslabGuardWarn b{color:rgba(255,240,210,1)}
+      .mslabGuardBtn{margin-top:10px;padding:8px 10px;border-radius:12px;
+        border:1px solid rgba(140,200,255,.25);background:rgba(70,120,170,.18);color:rgba(225,240,255,.95);cursor:pointer}
+      .mslabHide{display:none !important}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function addBadge(){
+    if(q("#mslab_guard_badge_v4")) return;
+    const badge=document.createElement("div");
+    badge.id="mslab_guard_badge_v4";
+    badge.className="mslabBadge";
+    badge.innerHTML=`<span class="mslabDot"></span><span>GUARD: ARMED (v4)</span>`;
+    const anchor = qa(".chips,.chipRow,header,.topbar,.wrap,.container")[0] || document.body;
+    anchor.insertAdjacentElement("afterbegin", badge);
+  }
+
+  function parseMinZ(){
+    const t = (document.body && document.body.innerText) ? document.body.innerText : "";
+    let m = t.match(/Hard-null\s*minZ\s*\n?\s*(-?\d+(?:\.\d+)?)/i);
+    if(!m) m = t.match(/minZ\s*=\s*(-?\d+(?:\.\d+)?)/i);
+    if(!m) return null;
+    const v = parseFloat(m[1]);
+    return Number.isFinite(v) ? v : null;
+  }
+
+  function findPhraseHeading(){
+    const nodes = qa("h1,h2,h3,h4,h5,div,p,span");
+    for(const el of nodes){
+      const tx=(el.textContent||"").trim();
+      if(tx && tx.length<120 && /phrase\s+survival/i.test(tx)) return el;
+    }
+    return null;
+  }
+
+  function findContainer(el){
+    if(!el) return null;
+    return el.closest(".card, section, .panel, .box, .tile, .block, .pane, .group, div") || el.parentElement;
+  }
+
+  function applyGuard(){
+    ensureStyles();
+    addBadge();
+
+    const minZ = parseMinZ();
+    if(minZ === null) return;
+
+    const head = findPhraseHeading();
+    if(!head) return;
+
+    const container = findContainer(head);
+    if(!container) return;
+
+    const old = q("#mslab_phrase_warn_v4");
+    if(old) old.remove();
+
+    if(minZ < 0){
+      container.classList.add("mslabHide");
+
+      const warn=document.createElement("div");
+      warn.id="mslab_phrase_warn_v4";
+      warn.className="mslabGuardWarn";
+      warn.innerHTML=`<b>Gate RED (minZ=${minZ.toFixed(3)}):</b> Phrase output hidden by default (hard nulls explain it).`;
+
+      const btn=document.createElement("button");
+      btn.className="mslabGuardBtn";
+      btn.textContent="Show Phrase Survival anyway (debug)";
+      btn.onclick=()=>{
+        container.classList.remove("mslabHide");
+        btn.textContent="Shown (RED gate) ✅";
+        btn.disabled=true;
+        btn.style.opacity="0.7";
+      };
+      warn.appendChild(btn);
+      container.insertAdjacentElement("beforebegin", warn);
+
+      safeLog("guard(v4): RED gate => phrase container hidden.");
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", ()=> setTimeout(applyGuard, 80));
+
+  // Optional: block Phrase Scan button when RED (logic-level)
+  window.addEventListener("click", (ev)=>{
+    const b = ev.target && ev.target.closest && ev.target.closest("button");
+    if(!b) return;
+    if(!/phrase\s*scan/i.test(b.textContent||"")) return;
+    const minZ = parseMinZ();
+    if(minZ !== null && minZ < 0){
+      ev.preventDefault(); ev.stopPropagation();
+      safeLog("guard(v4): blocked Phrase Scan button (RED).");
+      applyGuard();
+    }
+  }, true);
+
+  // Re-apply after pipeline runs
+  ["runSurvival","runSurvivalPipeline"].forEach((fnName)=>{
+    try{
+      const fn = window[fnName];
+      if(typeof fn !== "function") return;
+      window[fnName] = async function(){
+        try{ return await fn.apply(this, arguments); }
+        finally{ setTimeout(applyGuard, 150); }
+      };
+    }catch(e){}
+  });
+})();
+
+/* MSLAB_UI_UNLOCK_V1 */
+(function(){
+  function $id(x){ return document.getElementById(x); }
+  function safeEnableAll(){
+    try{
+      document.querySelectorAll("button").forEach(b=>b.disabled=false);
+      // keep Cancel usable but not mandatory
+      const c = $id("btnCancel"); if(c) c.disabled=false;
+      const p = $id("btnPanic"); if(p) p.disabled=false;
+    }catch(e){}
+  }
+  // force unlock callable
+  window.__mslab_forceUnlock = function(reason){
+    try{ window.__busy=false; }catch(e){}
+    safeEnableAll();
+    try{
+      if(typeof log==="function") log("🧯 UNLOCK UI" + (reason?": "+reason:"") + " (busy reset)");
+    }catch(e){}
+  };
+
+  // Wrap setBusy if it exists (don’t let it brick the UI)
+  try{
+    if(typeof window.setBusy === "function" && !window.__mslab_setBusy_wrapped){
+      window.__mslab_setBusy_wrapped = true;
+      const orig = window.setBusy;
+      window.setBusy = function(b){
+        try{ orig(!!b); }catch(e){ window.__mslab_forceUnlock("setBusy exception"); }
+        // Always keep panic button enabled
+        try{ const p=$id("btnPanic"); if(p) p.disabled=false; }catch(e){}
+      };
+    }
+  }catch(e){}
+
+  // Hook the panic button + ESC key
+  try{
+    const p = $id("btnPanic");
+    if(p && !p.__mslab_bound){
+      p.__mslab_bound = true;
+      p.addEventListener("click", ()=>window.__mslab_forceUnlock("panic button"));
+    }
+  }catch(e){}
+
+  window.addEventListener("keydown", (ev)=>{
+    if(ev && ev.key==="Escape") window.__mslab_forceUnlock("ESC");
+  });
+
+  // If page loads with buttons disabled for any reason, auto-unlock after 2s
+  setTimeout(()=>{
+    try{
+      const anyDisabled = Array.from(document.querySelectorAll("button")).some(b=>b.disabled);
+      if(anyDisabled) window.__mslab_forceUnlock("auto");
+    }catch(e){}
+  }, 2000);
+})();
+
+
+/* MSLAB_PHRASE_SINGLEFLIGHT_V1 */
+(function(){
+  // Prevent double-running phrase scan (pipeline + guard / double-bind)
+  if(window.__mslab_phrase_wrapped) return;
+  window.__mslab_phrase_wrapped = true;
+
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+
+  async function wrapOnce(){
+    // wait until functions exist
+    for(let i=0;i<40;i++){ // ~2s
+      if(typeof window.runPhraseScan === "function") break;
+      await sleep(50);
+    }
+    if(typeof window.runPhraseScan !== "function") return;
+
+    const orig = window.runPhraseScan;
+    window.runPhraseScan = async function(){
+      if(window.__mslab_phrase_busy){
+        try{ if(typeof log==="function") log("⏭️ phrase scan: skipped (already running)"); }catch(e){}
+        return null;
+      }
+      window.__mslab_phrase_busy = true;
+      try{
+        return await orig.apply(this, arguments);
+      } finally {
+        window.__mslab_phrase_busy = false;
+      }
+    };
+  }
+
+  wrapOnce();
+})();
+
+</script>
+
+
+<script>
+/* MSLAB_PHRASE_SINGLEFLIGHT_V2 */
+(function(){
+  if(window.__mslab_phrase_sf_v2) return;
+  window.__mslab_phrase_sf_v2 = true;
+
+  const $ = (id)=>document.getElementById(id);
+  const v = (id, d="")=>{ try{ const e=$(id); if(!e) return d; return (e.type==="checkbox") ? (e.checked?"1":"0") : (e.value??d); }catch(_e){ return d; } };
+
+  function keyNow(){
+    // Best-effort key (works even if some ids differ; missing ids just blank)
+    const inp = (v("inp","") || "").slice(0, 8000); // cap so key stays sane
+    return [
+      "len="+inp.length,
+      "tok="+v("tokMode",""),
+      "enc="+v("encMode",""),
+      "maxT="+v("maxTok",""),
+      "R="+v("mcRuns","")+v("R",""),
+      "K="+v("kShuf","")+v("K",""),
+      "blk="+v("blk","")+v("block",""),
+      "lag="+v("maxLag",""),
+      "tau="+v("tau",""),
+      "lam="+v("lam",""),
+      "edge="+v("edgeTrim",""),
+      "circ="+v("circular","")+v("wrap",""),
+      "ng="+v("ngRange",""),
+      "topK="+v("topK",""),
+      "seed="+v("seed",""),
+      "dbg="+v("dbgOverride","")+v("debugOverride","")
+    ].join("|");
+  }
+
+  function safeLog(msg){
+    try{ if(typeof log==="function") log(msg); }catch(e){}
+  }
+
+  async function wrapLater(){
+    for(let i=0;i<80;i++){ // ~4s
+      if(typeof window.runPhraseScan === "function") break;
+      await new Promise(r=>setTimeout(r,50));
+    }
+    if(typeof window.runPhraseScan !== "function") return;
+
+    const orig = window.runPhraseScan;
+    window.runPhraseScan = async function(){
+      const now = Date.now();
+      const key = keyNow();
+
+      // block concurrent
+      if(window.__mslab_phrase_busy){
+        safeLog("⏭️ phrase scan: skipped (already running)");
+        return null;
+      }
+
+      // block immediate duplicate (pipeline/guard double-trigger)
+      const lastKey = window.__mslab_phrase_lastKey || "";
+      const lastAt  = window.__mslab_phrase_lastAt  || 0;
+      if(key && lastKey===key && (now - lastAt) < 800){
+        safeLog("⏭️ phrase scan: skipped (duplicate trigger)");
+        return null;
+      }
+
+      window.__mslab_phrase_busy = true;
+      window.__mslab_phrase_lastKey = key;
+      window.__mslab_phrase_lastAt  = now;
+      try {
+        return await orig.apply(this, arguments);
+      } finally {
+        window.__mslab_phrase_busy = false;
+      }
+    };
+
+    safeLog("PHRASE SINGLE-FLIGHT: ON (v2 cooldown)");
+  }
+
+  wrapLater();
+})();
+</script>
+
+</body>
+</html>

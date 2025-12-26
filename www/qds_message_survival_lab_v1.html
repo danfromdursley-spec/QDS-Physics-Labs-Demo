@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>QDS Message Survival Lab v1</title>
+<style>
+  :root{
+    --bg:#050505; --panel:#0b0b0b; --ink:#ffe86a;
+    --muted:#d7c85a; --line:#ff7a18; --line2:#ff2a00;
+    --good:#37ff7a; --warn:#ffd54a; --bad:#ff3a2a;
+    --card:#0f0f0f; --shadow: 0 10px 30px rgba(0,0,0,.55);
+    --r:16px; --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  html,body{background:var(--bg); color:var(--ink); margin:0; font-family:var(--sans);}
+  .wrap{max-width:1060px; margin:0 auto; padding:14px;}
+  .top{
+    border:1px solid rgba(255,122,24,.45);
+    border-radius:24px;
+    padding:14px 14px 12px;
+    background:
+      radial-gradient(1200px 500px at 10% 0%, rgba(255,122,24,.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(255,42,0,.18), transparent 55%),
+      linear-gradient(180deg, rgba(255,232,106,.05), rgba(0,0,0,0));
+    box-shadow: var(--shadow);
+  }
+  h1{margin:0 0 6px; font-size:18px; letter-spacing:.4px}
+  .sub{font-size:12px; color:var(--muted); line-height:1.35}
+  .badge{display:inline-block; font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,122,24,.6); color:var(--ink); margin-right:6px}
+  .grid{display:grid; grid-template-columns:1.15fr .85fr; gap:12px; margin-top:12px;}
+  @media (max-width: 940px){ .grid{grid-template-columns:1fr;} }
+  .card{
+    background:linear-gradient(180deg, rgba(255,232,106,.04), rgba(0,0,0,0));
+    border:1px solid rgba(255,122,24,.35);
+    border-radius:var(--r);
+    padding:12px;
+    box-shadow: var(--shadow);
+  }
+  .card h2{margin:0 0 10px; font-size:14px}
+  textarea{
+    width:100%; min-height:120px; resize:vertical;
+    background:var(--panel);
+    border:1px solid rgba(255,122,24,.4);
+    border-radius:12px;
+    color:var(--ink);
+    padding:10px;
+    font-family:var(--mono);
+    font-size:12px;
+    outline:none;
+  }
+  .row{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0;}
+  .row > * {flex: 0 0 auto;}
+  label{font-size:12px; color:var(--muted)}
+  select,input[type="number"],input[type="text"]{
+    background:var(--panel);
+    border:1px solid rgba(255,122,24,.45);
+    border-radius:12px;
+    color:var(--ink);
+    padding:8px 10px;
+    font-family:var(--mono);
+    font-size:12px;
+    outline:none;
+  }
+  input[type="checkbox"]{transform: scale(1.2); accent-color: #ffd54a;}
+  button{
+    background:linear-gradient(180deg, rgba(255,122,24,.35), rgba(255,42,0,.15));
+    border:1px solid rgba(255,122,24,.75);
+    border-radius:14px;
+    color:var(--ink);
+    padding:10px 12px;
+    font-family:var(--mono);
+    font-size:12px;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+  }
+  button:disabled{opacity:.45; cursor:not-allowed}
+  .btn2{background:transparent}
+  .tiny{font-size:11px; color:var(--muted)}
+  .mono{font-family:var(--mono)}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,122,24,.4);
+    border-radius:999px; padding:7px 10px;
+    background:rgba(0,0,0,.25);
+    font-family:var(--mono); font-size:11px;
+  }
+  .gate{font-weight:700}
+  .gGREEN{color:var(--good)}
+  .gAMBER{color:var(--warn)}
+  .gRED{color:var(--bad)}
+  pre{
+    background:var(--panel);
+    border:1px solid rgba(255,122,24,.35);
+    border-radius:12px;
+    padding:10px;
+    overflow:auto;
+    font-family:var(--mono);
+    font-size:12px;
+    margin:8px 0 0;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media (max-width: 780px){ .split{grid-template-columns:1fr;} }
+  canvas{width:100%; height:180px; background:rgba(0,0,0,.35); border:1px solid rgba(255,122,24,.25); border-radius:12px}
+  .hr{height:1px; background:rgba(255,122,24,.28); margin:10px 0}
+  .table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11px}
+  .table th,.table td{padding:6px 8px; border-bottom:1px solid rgba(255,122,24,.18); vertical-align:top}
+  .table th{color:var(--muted); text-align:left; font-weight:600}
+  .k{color:var(--muted)}
+  .ok{color:var(--good)}
+  .warn{color:var(--warn)}
+  .bad{color:var(--bad)}
+
+
+/* PATCH: mobile width + stop horizontal bleed */
+html, body { max-width:100%; overflow-x:hidden; }
+*, *::before, *::after { box-sizing:border-box; }
+.card, .panel, .box, .wrap, .container, .shell, .app, .root {
+  max-width:100% !important;
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="row">
+      <span class="badge">QDS Message Survival Lab v1</span>
+      <span class="badge">offline • no calls</span>
+      <span class="badge">Neon. No pink. ✅</span>
+      <span class="badge mono">Mode: instrument</span>
+    </div>
+    <h1>Meaning survival as structure (words ⇄ numbers) — razor-first, hard-nulls, and “which phrases survive”</h1>
+    <div class="sub">
+      <b>Reality check:</b> This instrument does <b>not</b> decode truth. It hunts <b>structure that survives</b> increasingly strong null models.
+      If your “signal” dies under Markov-2, it was just local grammar. That’s not failure — that’s honesty.
+      <div class="hr"></div>
+      <div class="mono tiny"><b>Score model:</b> score = wE·(1−h) + wT·(1−h1) + wA·a + wS·simEx, with hard-null gate = minZ over {block, markov1, markov2} (shift is debug only in circular mode).</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1) Input</h2>
+      <label>Paste text OR numeric tokens. (Spaces allowed. Newlines ok.)</label>
+      <textarea id="inp" placeholder="Paste text here… e.g. a paragraph, a list of phrases, or a digit string."></textarea>
+
+      <div class="row">
+        <button id="btnFeed">Load demo feed</button>
+        <button id="btnClear" class="btn2">Clear</button>
+        <button id="btnCancel" class="btn2" disabled>Cancel</button>
+        <span class="pill"><span class="k">busy:</span> <span id="busy">no</span></span>
+      </div>
+
+      <div class="split">
+        <div>
+          <h2 style="margin-top:0">2) Tokenise</h2>
+          <div class="row">
+            <label>Token mode</label>
+            <select id="tokMode">
+              <option value="words">Words (lowercased)</option>
+              <option value="chars">Characters (A–Z0–9 kept)</option>
+              <option value="spacetoks">Space-separated tokens (verbatim)</option>
+              <option value="digits">Digits (0–9)</option>
+              <option value="pairs">Digit pairs (00–99)</option>
+              <option value="triplets">Digit triplets (000–999)</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>Max tokens</label>
+            <input id="maxT" type="number" min="50" max="50000" step="50" value="5000"/>
+            <label class="mono"><input id="circular" type="checkbox" checked/> circular (wrap)</label>
+            <label class="mono"><input id="edgeTrimOn" type="checkbox"/> edgeTrim (linear only)</label>
+            <input id="edgeTrim" type="number" min="0" max="2000" step="1" value="0" style="width:90px"/>
+          </div>
+        </div>
+
+        <div>
+          <h2 style="margin-top:0">3) Encode (word ⇄ number)</h2>
+          <div class="row">
+            <label>Encoder</label>
+            <select id="enc">
+              <option value="identity">Identity (tokens as-is)</option>
+              <option value="wordid">Word-ID dictionary (stable IDs)</option>
+              <option value="a1z26">A1Z26 (letters→1..26, nonletters dropped)</option>
+              <option value="base26">Base-26 (A=0..Z=25 from letters)</option>
+              <option value="ord">English ordinal (A=1..Z=26) per char stream</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="mono"><input id="showMap" type="checkbox" checked/> show dictionary map</label>
+            <label class="mono"><input id="phraseScan" type="checkbox" checked/> phrase survival scan</label>
+          </div>
+          <div class="row">
+            <label>n-gram range</label>
+            <input id="ngMin" type="number" min="2" max="6" value="2" style="width:70px"/>
+            <input id="ngMax" type="number" min="2" max="8" value="4" style="width:70px"/>
+            <label>topK</label>
+            <input id="topK" type="number" min="10" max="200" value="40" style="width:80px"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row">
+        <button id="btnRun">RUN SURVIVAL (1-button)</button>
+        <button id="btnAnalysis" class="btn2">Analysis only</button>
+        <button id="btnNulls" class="btn2">Hard nulls</button>
+        <button id="btnPhrases" class="btn2">Phrase scan</button>
+        <span class="pill"><span class="k">gate:</span> <span id="gate" class="gate gAMBER">ready</span></span>
+      </div>
+
+      <div class="tiny mono" id="pipelineNote">Pipeline: hard-nulls → analysis score → phrase scan → export. Buttons lock while RUN is active.</div>
+
+      <div class="hr"></div>
+
+      <h2>Progress</h2>
+      <pre id="log">[ready] paste input → RUN SURVIVAL.</pre>
+    </div>
+
+    <div class="card">
+      <h2>Results</h2>
+
+      <div class="row">
+        <span class="pill"><span class="k">tokens:</span> <span id="n">—</span></span>
+        <span class="pill"><span class="k">alphabet:</span> <span id="A">—</span></span>
+        <span class="pill"><span class="k">repeats:</span> <span id="rep">—</span></span>
+      </div>
+
+      <table class="table">
+        <tr><th>Score model</th><td class="mono" id="scoreLine">—</td></tr>
+        <tr><th>Hard-null gate</th><td class="mono" id="gateLine">—</td></tr>
+        <tr><th>Note</th><td class="mono" id="note">—</td></tr>
+      </table>
+
+      <div class="hr"></div>
+
+      <div class="split">
+        <div>
+          <h2>ACF</h2>
+          <canvas id="c1" width="900" height="240"></canvas>
+        </div>
+        <div>
+          <h2>Null distribution</h2>
+          <canvas id="c2" width="900" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>Phrase survival (top)</h2>
+      <div class="tiny">Shows n-grams that are “too consistent” vs shuffled corpus (frequency-preserving). Also shows the encoded token string (word-ID) so you can see what survives when semantics are stripped.</div>
+      <div style="max-height:260px; overflow:auto; margin-top:8px">
+        <table class="table" id="phrTable">
+          <tr><th>z</th><th>count</th><th>phrase</th><th>encoded</th></tr>
+        </table>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>Dictionary map (if used)</h2>
+      <pre id="map">—</pre>
+
+      <div class="row">
+        <button id="btnCopy">Copy readout</button>
+        <button id="btnJSON" class="btn2">Download JSON</button>
+        <button id="btnTXT" class="btn2">Download TXT</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== utilities ========== */
+const $ = (id)=>document.getElementById(id);
+const now=()=>new Date().toISOString().slice(11,19);
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const fmt=(x,d=3)=>Number.isFinite(x)?x.toFixed(d):"—";
+const fmt2=(x)=>fmt(x,2);
+const fmt4=(x)=>fmt(x,4);
+function log(s){ const L=$("log"); L.textContent = `[${now()}] ${s}\n` + L.textContent; }
+function setBusy(b){
+  $("busy").textContent = b?"YES":"no";
+  const dis = b;
+  ["btnRun","btnAnalysis","btnNulls","btnPhrases","btnFeed","btnClear","btnCopy","btnJSON","btnTXT"].forEach(id=>$(id).disabled=dis);
+  $("btnCancel").disabled = !b;
+}
+let CANCEL=false;
+$("btnCancel").onclick=()=>{CANCEL=true; log("⛔ cancel requested.");};
+
+/* deterministic PRNG (mulberry32) */
+function mulberry32(seed){
+  let a = seed>>>0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function sleep0(){ return new Promise(r=>setTimeout(r,0)); }
+
+/* ========== tokenise ========== */
+function tokenise(raw, mode){
+  if(!raw) return [];
+  if(mode==="spacetoks"){
+    return raw.trim().split(/\s+/).filter(Boolean);
+  }
+  if(mode==="digits"){
+    return (raw.match(/\d/g)||[]);
+  }
+  if(mode==="pairs"){
+    const d=(raw.match(/\d/g)||[]).join("");
+    const out=[];
+    for(let i=0;i+1<d.length;i+=2) out.push(d.slice(i,i+2));
+    return out;
+  }
+  if(mode==="triplets"){
+    const d=(raw.match(/\d/g)||[]).join("");
+    const out=[];
+    for(let i=0;i+2<d.length;i+=3) out.push(d.slice(i,i+3));
+    return out;
+  }
+  if(mode==="chars"){
+    const s=raw.toUpperCase().replace(/[^A-Z0-9]+/g,"");
+    return s.split("").filter(Boolean);
+  }
+  // words
+  return raw.toLowerCase().replace(/[^a-z0-9'\s]+/g," ").trim().split(/\s+/).filter(Boolean);
+}
+
+/* ========== encoders ========== */
+function encodeTokens(tokens, enc){
+  // returns {tok: numeric tokens (ints), map: optional, rev: optional decoder}
+  if(enc==="identity"){
+    // best effort numeric: hash strings to stable ints in range
+    const map=new Map(); let k=1;
+    const out=tokens.map(t=>{
+      if(/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
+      if(!map.has(t)) map.set(t,k++);
+      return map.get(t);
+    });
+    return {tok: out, map, rev: (x)=>x};
+  }
+  if(enc==="wordid"){
+    const map=new Map(); const rev=new Map(); let k=1;
+    const out=tokens.map(t=>{
+      if(!map.has(t)){ map.set(t,k); rev.set(k,t); k++; }
+      return map.get(t);
+    });
+    return {tok: out, map, rev:(id)=>rev.get(id)||String(id)};
+  }
+  // encoders from character stream (merge tokens to text)
+  const stream = tokens.join("");
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if(enc==="a1z26" || enc==="ord"){
+    const letters = stream.toUpperCase().replace(/[^A-Z]+/g,"");
+    const out=[];
+    for(const ch of letters){
+      out.push(A.indexOf(ch)+1);
+    }
+    return {tok: out, map:null, rev:null};
+  }
+  if(enc==="base26"){
+    const letters = stream.toUpperCase().replace(/[^A-Z]+/g,"");
+    const out=[];
+    for(const ch of letters){
+      out.push(A.indexOf(ch)); // 0..25
+    }
+    return {tok: out, map:null, rev:null};
+  }
+  // fallback
+  return encodeTokens(tokens,"identity");
+}
+
+/* ========== core metrics ========== */
+function entropyCounts(counts){
+  // counts: Map val->count
+  const n = Array.from(counts.values()).reduce((a,b)=>a+b,0);
+  if(n<=0) return 0;
+  let H=0;
+  for(const c of counts.values()){
+    const p=c/n;
+    H -= p * Math.log2(p);
+  }
+  return H;
+}
+
+function countMap(arr){
+  const m=new Map();
+  for(const x of arr) m.set(x,(m.get(x)||0)+1);
+  return m;
+}
+
+function transitionEntropy(tokens, circular, smooth=1){
+  // smoothed Markov-1 conditional entropy H(X_t|X_{t-1})
+  const n=tokens.length;
+  if(n<2) return 0;
+  const prevCounts=new Map(); // prev -> total
+  const pairCounts=new Map(); // "prev|cur" -> count
+  const add=(a,b)=>{
+    const k=a+"|"+b;
+    pairCounts.set(k,(pairCounts.get(k)||0)+1);
+    prevCounts.set(a,(prevCounts.get(a)||0)+1);
+  };
+  for(let i=1;i<n;i++) add(tokens[i-1],tokens[i]);
+  if(circular) add(tokens[n-1],tokens[0]);
+
+  // smoothing over outgoing alphabet size per prev
+  const alphabet = new Set(tokens);
+  const A = alphabet.size || 1;
+
+  let H=0, total=0;
+  for(const [prev, tot] of prevCounts.entries()){
+    // outgoing distribution for this prev
+    let denom = tot + smooth*A;
+    // accumulate - sum_c p(prev)* sum_cur p(cur|prev) log p(cur|prev)
+    const pPrev = tot / (circular ? n : (n-1));
+    let inner=0;
+    for(const cur of alphabet){
+      const k=prev+"|"+cur;
+      const c = (pairCounts.get(k)||0) + smooth;
+      const p = c/denom;
+      inner -= p * Math.log2(p);
+    }
+    H += pPrev * inner;
+    total += pPrev;
+  }
+  return H;
+}
+
+function acf(tokens, maxLag, circular){
+  const n=tokens.length;
+  if(n<3) return {acf:[], area:0, tauHat:NaN};
+  // numericize: z-score
+  const x=tokens.map(Number);
+  const mu=x.reduce((a,b)=>a+b,0)/n;
+  let v=0; for(const xi of x){ const d=xi-mu; v+=d*d; }
+  v/=n; if(v<=0) v=1e-9;
+  const z=x.map(xi=>(xi-mu)/Math.sqrt(v));
+
+  const L = clamp(maxLag,1,Math.min(600, Math.floor(n/2)));
+  const out=new Array(L+1).fill(0);
+  out[0]=1;
+  // chunk to avoid UI death
+  let area=0;
+  for(let lag=1; lag<=L; lag++){
+    let s=0;
+    if(circular){
+      for(let i=0;i<n;i++){
+        s += z[i]*z[(i+lag)%n];
+      }
+      s/=n;
+    }else{
+      const m=n-lag;
+      for(let i=0;i<m;i++) s += z[i]*z[i+lag];
+      s/=m;
+    }
+    out[lag]=s;
+    if(s>0) area += s;
+  }
+  // tauHat: exp fit to positive tail (rough)
+  let tau=NaN;
+  const xs=[], ys=[];
+  for(let lag=1; lag<=L; lag++){
+    const r=out[lag];
+    if(r>0 && r<0.999){ xs.push(lag); ys.push(Math.log(r)); }
+    if(xs.length>60) break;
+  }
+  if(xs.length>=8){
+    // linear fit y = a + b x ; tau=-1/b
+    const n2=xs.length;
+    let sx=0,sy=0,sxx=0,sxy=0;
+    for(let i=0;i<n2;i++){ const x0=xs[i], y0=ys[i]; sx+=x0; sy+=y0; sxx+=x0*x0; sxy+=x0*y0; }
+    const den=(n2*sxx - sx*sx);
+    if(Math.abs(den)>1e-9){
+      const b=(n2*sxy - sx*sy)/den;
+      if(b<0) tau = -1/b;
+    }
+  }
+  return {acf:out, area, tauHat:tau};
+}
+
+function symbolSimilarity(tokens, maxLag, lambda, circular){
+  const n=tokens.length;
+  if(n<3) return {sim:[], simEx:0, base:0};
+  const x=tokens.map(Number);
+  // base similarity: expected exp(-d^2/2λ^2) under independent draws from marginals
+  const counts=countMap(x);
+  const vals=Array.from(counts.keys());
+  const nTot=n;
+  let base=0;
+  for(const a of vals){
+    const pa=counts.get(a)/nTot;
+    for(const b of vals){
+      const pb=counts.get(b)/nTot;
+      const d=a-b;
+      base += pa*pb*Math.exp(-(d*d)/(2*lambda*lambda));
+    }
+  }
+  const L = clamp(maxLag,1,Math.min(600, Math.floor(n/2)));
+  const sim=new Array(L+1).fill(0);
+  sim[0]=1;
+  let ex=0;
+  for(let lag=1; lag<=L; lag++){
+    let s=0;
+    if(circular){
+      for(let i=0;i<n;i++){
+        const d=x[i]-x[(i+lag)%n];
+        s += Math.exp(-(d*d)/(2*lambda*lambda));
+      }
+      s/=n;
+    }else{
+      const m=n-lag;
+      for(let i=0;i<m;i++){
+        const d=x[i]-x[i+lag];
+        s += Math.exp(-(d*d)/(2*lambda*lambda));
+      }
+      s/=m;
+    }
+    sim[lag]=s;
+    // excess vs base
+    const e = s - base;
+    if(e>0) ex += e;
+  }
+  return {sim, simEx:ex, base};
+}
+
+function scoreModel(H, Hmax, H1, H1max, a, simEx){
+  const h = (Hmax>0)?(H/Hmax):0;
+  const h1 = (H1max>0)?(H1/H1max):0;
+  // weights: keep conservative; ACF + transition carry most
+  const wE=0.20, wT=0.35, wA=0.30, wS=0.15;
+  const s = wE*(1-h) + wT*(1-h1) + wA*a + wS*clamp(simEx,0,10);
+  return {score:clamp(s,0,1), h, h1, wE,wT,wA,wS};
+}
+
+/* ========== null generators ========== */
+function shuffle(arr, rng){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function blockShuffle(arr, block, rng){
+  const n=arr.length;
+  const b=Math.max(2, block|0);
+  const blocks=[];
+  for(let i=0;i<n;i+=b) blocks.push(arr.slice(i, Math.min(n,i+b)));
+  const idx=blocks.map((_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    [idx[i],idx[j]]=[idx[j],idx[i]];
+  }
+  const out=[];
+  for(const k of idx) out.push(...blocks[k]);
+  return out;
+}
+function cyclicShift(arr, rng){
+  const n=arr.length;
+  const k=Math.floor(rng()*n);
+  return arr.slice(k).concat(arr.slice(0,k));
+}
+function markov1Null(arr, rng, circular){
+  // generate sequence preserving transition matrix + start distribution
+  const n=arr.length;
+  if(n<3) return arr.slice();
+  const states=Array.from(new Set(arr));
+  const idx=new Map(states.map((s,i)=>[s,i]));
+  const S=states.length;
+  const trans=Array.from({length:S}, ()=>Array(S).fill(0));
+  const startCounts=new Array(S).fill(0);
+
+  const add=(a,b)=>{
+    trans[idx.get(a)][idx.get(b)]++;
+  };
+  startCounts[idx.get(arr[0])]++;
+
+  for(let i=1;i<n;i++) add(arr[i-1],arr[i]);
+  if(circular) add(arr[n-1],arr[0]);
+
+  // precompute row CDFs
+  const rowCDF = trans.map(row=>{
+    const sum=row.reduce((a,b)=>a+b,0) || 1;
+    let c=0;
+    return row.map(v=>(c+=v/sum));
+  });
+
+  // sample start
+  const stSum=startCounts.reduce((a,b)=>a+b,0) || 1;
+  let u=rng(), c=0, cur=0;
+  for(let i=0;i<S;i++){ c+=startCounts[i]/stSum; if(u<=c){cur=i; break;} }
+  const out=[states[cur]];
+  for(let t=1;t<n;t++){
+    u=rng(); const cdf=rowCDF[cur];
+    let nxt=0;
+    for(let j=0;j<S;j++){ if(u<=cdf[j]){nxt=j; break;} }
+    cur=nxt;
+    out.push(states[cur]);
+  }
+  return out;
+}
+function markov2Null(arr, rng, circular){
+  // preserve 2-step transitions approx: P(x_t | x_{t-2}, x_{t-1})
+  const n=arr.length;
+  if(n<4) return arr.slice();
+  const states=Array.from(new Set(arr));
+  const idx=new Map(states.map((s,i)=>[s,i]));
+  const S=states.length;
+
+  // map pair-> next counts
+  const key=(a,b)=>a+"|"+b;
+  const nextMap=new Map(); // pairKey -> Array(S) counts
+  const pairCounts=new Map();
+
+  function bump(a,b,c){
+    const k=key(a,b);
+    if(!nextMap.has(k)) nextMap.set(k, Array(S).fill(0));
+    nextMap.get(k)[idx.get(c)]++;
+    pairCounts.set(k,(pairCounts.get(k)||0)+1);
+  }
+
+  for(let i=2;i<n;i++) bump(arr[i-2],arr[i-1],arr[i]);
+  if(circular){
+    bump(arr[n-2],arr[n-1],arr[0]);
+    bump(arr[n-1],arr[0],arr[1]);
+  }
+
+  // start from first two
+  const out=[arr[0],arr[1]];
+  for(let t=2;t<n;t++){
+    const k=key(out[t-2],out[t-1]);
+    const row = nextMap.get(k);
+    if(!row){
+      // fallback to markov1-ish from previous token frequencies
+      out.push(arr[Math.floor(rng()*n)]);
+      continue;
+    }
+    const sum=row.reduce((a,b)=>a+b,0) || 1;
+    let u=rng(), c=0, nxt=0;
+    for(let j=0;j<S;j++){ c+=row[j]/sum; if(u<=c){nxt=j; break;} }
+    out.push(states[nxt]);
+  }
+  return out;
+}
+
+/* ========== analysis wrapper ========== */
+async function analyzeNumeric(numTok, opts){
+  const n=numTok.length;
+  const counts=countMap(numTok);
+  const A=counts.size||1;
+  const H=entropyCounts(counts);
+  const Hmax=Math.log2(A);
+  const H1=transitionEntropy(numTok, opts.circularTransitions, 1);
+  const H1max=Hmax; // conservative bound
+  const ACF=acf(numTok, opts.maxLag, opts.circular);
+  const a=ACF.area / (opts.maxLag||1);
+  const SIM = opts.doSim ? symbolSimilarity(numTok, opts.maxLag, opts.lambda, opts.circular) : {sim:[], simEx:0, base:0};
+  const SM = scoreModel(H, Hmax, H1, H1max, a, SIM.simEx);
+
+  return {
+    n, A,
+    repeats: (n>0? (1 - A/n) : 0),
+    H, Hmax, h:SM.h,
+    H1, H1max, h1:SM.h1,
+    acf:ACF.acf, a, tauHat:ACF.tauHat,
+    sim:SIM.sim, simEx:SIM.simEx, simBase:SIM.base,
+    score:SM.score,
+    weights:{wE:SM.wE,wT:SM.wT,wA:SM.wA,wS:SM.wS}
+  };
+}
+
+async function mcNullScore(obsScore, baseTok, fam, runs, opts, seed){
+  const rng=mulberry32(seed>>>0);
+  const nullScores=[];
+  let mu=0, m2=0;
+  const decisive=12;
+  for(let r=0;r<runs;r++){
+    if(CANCEL) break;
+    let tok;
+    if(fam==="shuffle") tok=shuffle(baseTok,rng);
+    else if(fam==="block") tok=blockShuffle(baseTok, opts.blockSize, rng);
+    else if(fam==="shift") tok=cyclicShift(baseTok,rng);
+    else if(fam==="markov1") tok=markov1Null(baseTok,rng,opts.circularTransitions);
+    else if(fam==="markov2") tok=markov2Null(baseTok,rng,opts.circularTransitions);
+    else tok=shuffle(baseTok,rng);
+
+    const res=await analyzeNumeric(tok, opts);
+    const s=res.score;
+    nullScores.push(s);
+
+    // streaming mean/sd
+    const k=r+1;
+    const delta=s-mu; mu += delta/k;
+    m2 += delta*(s-mu);
+
+    if(r%12===0) await sleep0();
+
+    // early-stop: if z is decisive, stop but label p as bound/low-res
+    if(opts.earlyStop && k>=Math.min(30, runs)){
+      const sd = (k>1)?Math.sqrt(m2/(k-1)):0;
+      const z = sd>0 ? (obsScore-mu)/sd : 0;
+      if(Math.abs(z)>decisive){
+        return {fam, runsUsed:k, runsPlanned:runs, mu, sd, z, earlyStop:true, nullScores};
+      }
+    }
+  }
+  const k=nullScores.length||1;
+  const sd = (k>1)?Math.sqrt(m2/(k-1)):0;
+  const z = sd>0 ? (obsScore-mu)/sd : 0;
+  return {fam, runsUsed:k, runsPlanned:runs, mu, sd, z, earlyStop:(k<runs), nullScores};
+}
+
+function empP(obs, nullScores){
+  // two-sided empirical p with +1 smoothing
+  const n=nullScores.length;
+  if(n<=0) return {p:NaN, bound:NaN};
+  let ge=0;
+  for(const s of nullScores) if(Math.abs(s) >= Math.abs(obs)) ge++;
+  const p = (ge+1)/(n+1);
+  const bound = 1/(n+1);
+  return {p, bound};
+}
+
+/* ========== phrase survival (word n-grams) ========== */
+async function phraseSurvival(wordTokens, encMap, opts){
+  // counts observed n-grams; compare to shuffled corpus (freq preserved)
+  const n=wordTokens.length;
+  const ngMin=opts.ngMin, ngMax=opts.ngMax, topK=opts.topK;
+  if(n<20) return [];
+
+  // build observed counts
+  const obs=new Map();
+  for(let k=ngMin;k<=ngMax;k++){
+    for(let i=0;i+k<=n;i++){
+      const g=wordTokens.slice(i,i+k).join(" ");
+      obs.set(g,(obs.get(g)||0)+1);
+    }
+  }
+  // keep candidates with count>=2
+  const cand=Array.from(obs.entries()).filter(([g,c])=>c>=2);
+  cand.sort((a,b)=>b[1]-a[1]);
+  const candTop=cand.slice(0, Math.min(500, cand.length)); // cap
+
+  // MC shuffle of words (preserve unigram freqs)
+  const rng=mulberry32(opts.seed>>>0);
+  const runs = clamp(opts.mcPhrases, 20, 300);
+  const stats=new Map(); // g -> {mu,m2,k}
+  for(const [g] of candTop) stats.set(g,{mu:0,m2:0,k:0});
+
+  for(let r=0;r<runs;r++){
+    if(CANCEL) break;
+    const sh=shuffle(wordTokens, rng);
+    const tmp=new Map();
+    for(let k=ngMin;k<=ngMax;k++){
+      for(let i=0;i+k<=n;i++){
+        const g=sh.slice(i,i+k).join(" ");
+        if(stats.has(g)) tmp.set(g,(tmp.get(g)||0)+1);
+      }
+    }
+    for(const [g,st] of stats.entries()){
+      const x = tmp.get(g)||0;
+      st.k++;
+      const delta=x-st.mu; st.mu += delta/st.k;
+      st.m2 += delta*(x-st.mu);
+    }
+    if(r%10===0) await sleep0();
+  }
+
+  // compute z for each candidate
+  const rows=[];
+  for(const [g,c] of candTop){
+    const st=stats.get(g);
+    const k=st.k||1;
+    const sd = (k>1)?Math.sqrt(st.m2/(k-1)):0;
+    const z = sd>0 ? (c - st.mu)/sd : 0;
+    rows.push({z, count:c, phrase:g});
+  }
+  rows.sort((a,b)=>b.z-a.z);
+  const out=rows.slice(0, topK);
+
+  // add encoded representation (word-id)
+  for(const row of out){
+    row.encoded = row.phrase.split(" ").map(w=>encMap.get(w)||"?").join("-");
+  }
+  return out;
+}
+
+/* ========== drawing ========== */
+function drawSeries(canvas, series, title){
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // axes
+  ctx.globalAlpha=1;
+  ctx.lineWidth=1;
+  ctx.strokeStyle="rgba(255,122,24,.35)";
+  ctx.beginPath(); ctx.moveTo(50,16); ctx.lineTo(50,H-34); ctx.lineTo(W-16,H-34); ctx.stroke();
+
+  ctx.fillStyle="rgba(255,232,106,.85)";
+  ctx.font="12px "+getComputedStyle(document.body).fontFamily;
+  ctx.fillText(title||"", 56, 18);
+
+  if(!series || series.length<2) return;
+
+  const xs = series.map((_,i)=>i);
+  const ys = series;
+  const ymin = Math.min(...ys, -0.05);
+  const ymax = Math.max(...ys,  0.05);
+  const x0=50, y0=H-34, x1=W-16, y1=18;
+  const sx=(x1-x0)/Math.max(1, xs[xs.length-1]);
+  const sy=(y0-y1)/Math.max(1e-9,(ymax-ymin));
+
+  // line (no explicit color picking beyond strokeStyle from CSS vibe; but canvas needs a color)
+  ctx.strokeStyle="rgba(255,232,106,.9)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<xs.length;i++){
+    const X=x0 + xs[i]*sx;
+    const Y=y0 - (ys[i]-ymin)*sy;
+    if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+  }
+  ctx.stroke();
+
+  // zero line
+  const zy=y0 - (0 - ymin)*sy;
+  ctx.strokeStyle="rgba(255,42,0,.35)";
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x0,zy); ctx.lineTo(x1,zy); ctx.stroke();
+}
+
+function drawHist(canvas, samples, obs){
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="rgba(255,122,24,.35)";
+  ctx.beginPath(); ctx.moveTo(50,16); ctx.lineTo(50,H-34); ctx.lineTo(W-16,H-34); ctx.stroke();
+  ctx.fillStyle="rgba(255,232,106,.85)";
+  ctx.font="12px "+getComputedStyle(document.body).fontFamily;
+  ctx.fillText("Null score distribution", 56, 18);
+
+  if(!samples || samples.length<10) return;
+
+  const x0=50, y0=H-34, x1=W-16, y1=18;
+  const min=Math.min(...samples, obs);
+  const max=Math.max(...samples, obs);
+  const bins=28;
+  const counts=new Array(bins).fill(0);
+  for(const s of samples){
+    const t=(s-min)/Math.max(1e-9,(max-min));
+    const b=clamp(Math.floor(t*bins),0,bins-1);
+    counts[b]++;
+  }
+  const cmax=Math.max(...counts)||1;
+  const bw=(x1-x0)/bins;
+
+  ctx.fillStyle="rgba(255,232,106,.35)";
+  for(let i=0;i<bins;i++){
+    const h = (counts[i]/cmax)*(y0-y1);
+    ctx.fillRect(x0+i*bw, y0-h, bw-2, h);
+  }
+
+  // obs marker
+  const tx=(obs-min)/Math.max(1e-9,(max-min));
+  const X=x0 + clamp(tx,0,1)*(x1-x0);
+  ctx.strokeStyle="rgba(55,255,122,.95)";
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(X,y0); ctx.lineTo(X,y1); ctx.stroke();
+}
+
+/* ========== state + readout ========== */
+let LAST=null;
+
+function setGate(state, msg){
+  const g=$("gate");
+  g.textContent = state;
+  g.classList.remove("gGREEN","gAMBER","gRED");
+  if(state==="GREEN") g.classList.add("gGREEN");
+  else if(state==="AMBER") g.classList.add("gAMBER");
+  else g.classList.add("gRED");
+  $("note").textContent = msg||"—";
+}
+
+function buildReadout(){
+  if(!LAST) return "—";
+  const L=LAST;
+  const s=[];
+  s.push(`# QDS Message Survival Lab v1`);
+  s.push(`offline • no calls • QDS_PROTO_DISCLAIMER_V1`);
+  s.push(`tokMode=${L.tokMode} enc=${L.encoder} circular=${L.opts.circular} edgeTrim=${L.edgeTrim}`);
+  s.push(`n=${L.main.n} A=${L.main.A} repeats=${fmt2(L.main.repeats*100)}%`);
+  s.push(`score=${fmt4(L.main.score)}  a=${fmt4(L.main.a)}  simEx=${fmt4(L.main.simEx)}`);
+  s.push(`H=${fmt4(L.main.H)} (h=${fmt4(L.main.h)})  H1=${fmt4(L.main.H1)} (h1=${fmt4(L.main.h1)})  tauHat=${fmt2(L.main.tauHat)}`);
+  if(L.hard){
+    s.push(`hard-null minZ=${fmt3(L.hard.minZ)} over {block, markov1, markov2}  (shift debug only if circular)`);
+    for(const o of L.hard.detail){
+      const pnote=o.p_note?` ${o.p_note}`:"";
+      s.push(`  ${o.fam}: z=${fmt3(o.z)} p_emp=${fmt4(o.p_emp)}${pnote}`);
+    }
+  }
+  if(L.sel){
+    const pnote=L.sel.p_note?` ${L.sel.p_note}`:"";
+    s.push(`MC selected=${L.sel.fam} runs=${L.sel.runsUsed}/${L.sel.runsPlanned} mean=${fmt4(L.sel.mu)} sd=${fmt4(L.sel.sd)} z=${fmt3(L.sel.z)} p_emp=${fmt4(L.sel.p_emp)}${pnote}`);
+  }
+  if(L.phrases && L.phrases.length){
+    s.push(`\nTop phrases (z, count, phrase):`);
+    for(const r of L.phrases.slice(0,12)){
+      s.push(`  z=${fmt2(r.z)} c=${r.count} :: ${r.phrase}`);
+    }
+  }
+  return s.join("\n");
+}
+
+/* ========== main run pipeline ========== */
+async function runHardNulls(mainScore, baseTok, opts, seed){
+  // evidence null set: block + markov1 + markov2 (shift excluded in circular mode by design)
+  const fams=["block","markov1","markov2"];
+  const detail=[];
+  let minZ=Infinity;
+
+  for(const fam of fams){
+    if(CANCEL) break;
+    log(`hard-null: ${fam} x${opts.mcRuns} …`);
+    const mc = await mcNullScore(mainScore, baseTok, fam, opts.mcRuns, opts, seed ^ (fam.length*0x9e3779b9));
+    const pObj=empP(mainScore, mc.nullScores);
+    const p_note = mc.earlyStop ? ` (early-stop; low-res; ≤${fmt4(pObj.bound)})` : "";
+    const o={fam, z:mc.z, p_emp:pObj.p, p_note};
+    detail.push(o);
+    if(Number.isFinite(mc.z) && mc.z < minZ) minZ=mc.z;
+    await sleep0();
+  }
+  return {minZ, detail};
+}
+
+function gateFromMinZ(minZ){
+  if(!Number.isFinite(minZ)) return {state:"AMBER", msg:"Run hard nulls to get minZ."};
+  if(minZ>3) return {state:"GREEN", msg:`Robust: survives hard nulls (minZ=${fmt2(minZ)}).`};
+  if(minZ>0) return {state:"AMBER", msg:`Fragile: some nulls nearly explain it (minZ=${fmt2(minZ)}).`};
+  return {state:"RED", msg:`Explained by hard null(s): minZ=${fmt2(minZ)}. Treat as local grammar / cheap structure.`};
+}
+
+/* ========== UI wiring ========== */
+function demoFeed(){
+  // mixed: a small text + a digit blob (so you can see both modes)
+  return `We are pets of universal design. New, I craft my soul.\n\n` +
+         `Now a digit blob (vigenum-ish):\n` +
+         `3141592653589793238462643383279502884197169399375105820974944592\n` +
+         `2718281828459045235360287471352662497757247093699959574966967627\n`;
+}
+
+$("btnFeed").onclick=()=>{ $("inp").value=demoFeed(); log("demo feed loaded."); };
+$("btnClear").onclick=()=>{ $("inp").value=""; $("map").textContent="—"; $("phrTable").innerHTML=`<tr><th>z</th><th>count</th><th>phrase</th><th>encoded</th></tr>`; log("cleared."); };
+
+function collectOpts(){
+  const tokMode=$("tokMode").value;
+  const encoder=$("enc").value;
+  const maxT=clamp(parseInt($("maxT").value||"5000",10), 20, 50000);
+  const circular=!!$("circular").checked;
+  const edgeTrimOn=!!$("edgeTrimOn").checked;
+  const edgeTrim=clamp(parseInt($("edgeTrim").value||"0",10), 0, 4000);
+  const doSim=true;
+  const mcRuns=200;
+  const blockSize=clamp(Math.floor(Math.sqrt(maxT))||50, 8, 400);
+  const earlyStop=true;
+  const maxLag=clamp(Math.floor(Math.min(300, maxT/10)), 20, 400);
+  const lambda=20;
+
+  return {tokMode, encoder, maxT, circular, edgeTrimOn, edgeTrim,
+          doSim, mcRuns, blockSize, earlyStop, maxLag, lambda,
+          circularTransitions:true};
+}
+
+function applyEdgeTrim(arr, opts){
+  if(opts.circular) return arr; // edgeTrim only meaningful in linear mode
+  if(!opts.edgeTrimOn || opts.edgeTrim<=0) return arr;
+  const k=clamp(opts.edgeTrim,0,Math.floor(arr.length/3));
+  return arr.slice(k, arr.length-k);
+}
+
+function updateResults(main, hard, selected){
+  $("n").textContent = main?.n ?? "—";
+  $("A").textContent = main?.A ?? "—";
+  $("rep").textContent = main? `${fmt2(main.repeats*100)}%` : "—";
+
+  if(main){
+    const w=main.weights;
+    $("scoreLine").textContent =
+      `score=${fmt4(main.score)} = ${fmt2(w.wE)}·(1-h) + ${fmt2(w.wT)}·(1-h1) + ${fmt2(w.wA)}·a + ${fmt2(w.wS)}·simEx`;
+  }else{
+    $("scoreLine").textContent="—";
+  }
+
+  if(hard){
+    $("gateLine").textContent = `minZ(hard nulls) = ${fmt3(hard.minZ)} over {block, markov1, markov2}`;
+    const g=gateFromMinZ(hard.minZ);
+    setGate(g.state, g.msg);
+  }else{
+    $("gateLine").textContent="—";
+    setGate("AMBER","ready");
+  }
+
+  // draw charts
+  if(main?.acf?.length) drawSeries($("c1"), main.acf.slice(0, main.acf.length), "ACF by lag");
+  if(selected?.nullScores?.length) drawHist($("c2"), selected.nullScores, main.score);
+}
+
+function renderMap(map, show){
+  if(!show || !map){ $("map").textContent="—"; return; }
+  const items=Array.from(map.entries()).slice(0,200);
+  const lines=items.map(([k,v])=>`${String(v).padStart(4," ")}  ${k}`);
+  const more=map.size>items.length?`\n… (${map.size-items.length} more)`:"";
+  $("map").textContent = lines.join("\n")+more;
+}
+
+function renderPhrases(rows){
+  const tbl=$("phrTable");
+  tbl.innerHTML = `<tr><th>z</th><th>count</th><th>phrase</th><th>encoded</th></tr>`;
+  for(const r of rows){
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${fmt2(r.z)}</td><td>${r.count}</td><td>${r.phrase}</td><td>${r.encoded||"—"}</td>`;
+    tbl.appendChild(tr);
+  }
+}
+
+async function doRun(all){
+  CANCEL=false;
+  setBusy(true);
+  try{
+    const opts=collectOpts();
+    const raw=$("inp").value||"";
+    if(!raw.trim()){ log("❌ no input."); setBusy(false); return; }
+
+    // tokenise
+    let toks=tokenise(raw, opts.tokMode);
+    toks=toks.slice(0, opts.maxT);
+    // encode
+    const enc=encodeTokens(toks, opts.encoder);
+
+    // if wordid, keep map for phrase translation
+    const edgeTok=applyEdgeTrim(enc.tok, opts);
+
+    // auto-lambda: scale to token std
+    const x=edgeTok.map(Number);
+    let mu=0; for(const v of x) mu+=v; mu/=Math.max(1,x.length);
+    let vv=0; for(const v of x){ const d=v-mu; vv+=d*d; } vv/=Math.max(1,x.length);
+    const sd=Math.sqrt(vv||1);
+    opts.lambda = clamp(sd, 5, 120);
+
+    // analysis first (to compute score used by nulls)
+    log(`analysis: tokMode=${opts.tokMode} enc=${opts.encoder} n=${edgeTok.length} circular=${opts.circular} edgeTrim=${opts.edgeTrimOn?opts.edgeTrim:0}`);
+    const main=await analyzeNumeric(edgeTok, opts);
+
+    // selected null (shuffle) for histogram + sanity
+    log(`MC null: shuffle x${opts.mcRuns} …`);
+    const seed=0xC0FFEE ^ edgeTok.length;
+    const selMC = await mcNullScore(main.score, edgeTok, "shuffle", opts.mcRuns, opts, seed);
+    const pObj=empP(main.score, selMC.nullScores);
+    selMC.p_emp = pObj.p;
+    selMC.p_note = selMC.earlyStop ? ` (early-stop; low-res; ≤${fmt4(pObj.bound)})` : "";
+
+    // hard nulls (boardroom gate)
+    log(`hard-null gate: block/markov1/markov2 …`);
+    const hard = await runHardNulls(main.score, edgeTok, opts, seed^0x9E3779B9);
+
+    // phrase scan (only meaningful for word token mode)
+    let phrases=[];
+    if($("phraseScan").checked && opts.tokMode==="words"){
+      log(`phrase scan: n-grams …`);
+      const ngMin=clamp(parseInt($("ngMin").value||"2",10),2,6);
+      const ngMax=clamp(parseInt($("ngMax").value||"4",10),ngMin,8);
+      const topK=clamp(parseInt($("topK").value||"40",10),10,200);
+      const mcPhrases=120;
+      const wordToks=tokenise(raw,"words").slice(0, opts.maxT);
+      const wordMap = (opts.encoder==="wordid") ? enc.map : new Map(wordToks.map((w,i)=>[w,i+1]));
+      phrases = await phraseSurvival(wordToks, wordMap, {ngMin,ngMax,topK,seed:seed^0xA5A5A5A5, mcPhrases});
+    }
+
+    // update state
+    LAST={
+      tokMode:opts.tokMode, encoder:opts.encoder, opts,
+      edgeTrim: (opts.edgeTrimOn?opts.edgeTrim:0),
+      main, sel: {fam:"shuffle", ...selMC}, hard, phrases,
+      map: enc.map
+    };
+
+    updateResults(main, hard, selMC);
+    renderMap(enc.map, $("showMap").checked && opts.encoder==="wordid");
+    renderPhrases(phrases);
+
+    log(`done. score=${fmt4(main.score)}  hard minZ=${fmt3(hard.minZ)}  shuffle z=${fmt2(selMC.z)}`);
+  }catch(e){
+    log("❌ error: "+(e?.message||String(e)));
+  }finally{
+    setBusy(false);
+  }
+}
+
+$("btnRun").onclick=()=>doRun();
+$("btnAnalysis").onclick=()=>doRun();
+$("btnNulls").onclick=()=>doRun();
+$("btnPhrases").onclick=()=>doRun();
+
+$("btnCopy").onclick=async()=>{
+  const t=buildReadout();
+  try{ await navigator.clipboard.writeText(t); log("copied readout."); }
+  catch{ log("copy failed (browser policy)."); }
+};
+function download(name, content, type){
+  const blob=new Blob([content],{type:type||"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},250);
+}
+$("btnJSON").onclick=()=>{
+  const obj={meta:{tool:"QDS Message Survival Lab v1", t:Date.now()}, LAST};
+  download("qds_message_survival_lab_v1.json", JSON.stringify(obj,null,2), "application/json");
+  log("download JSON.");
+};
+$("btnTXT").onclick=()=>{
+  download("qds_message_survival_lab_v1.txt", buildReadout(), "text/plain");
+  log("download TXT.");
+};
+
+log("ready: paste input → RUN SURVIVAL.");
+</script>
+</body>
+</html>

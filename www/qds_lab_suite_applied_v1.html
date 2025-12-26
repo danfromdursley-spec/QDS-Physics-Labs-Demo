@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QDS Lab Suite · Panel C · Applied & Evidence</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="_os/qds_os.css">
+  <style>
+    .card-grid{max-width:980px;margin:16px auto 40px;display:grid;grid-template-columns:1fr;gap:14px;}
+    @media(min-width:720px){.card-grid{grid-template-columns:1fr 1fr;}}
+    .lab-card{
+      position:relative;padding:14px 16px 16px;border-radius:22px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:radial-gradient(circle at top left,#172642,#090615);
+      box-shadow:0 0 18px rgba(0,0,0,0.7);
+    }
+    .lab-pill{
+      position:absolute;top:10px;right:12px;
+      font-size:0.70rem;text-transform:uppercase;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.35);
+      background:rgba(5,5,20,0.9);letter-spacing:0.08em;
+    }
+    h1{max-width:960px;margin:14px auto 4px;font-size:1.2rem;letter-spacing:0.08em;text-transform:uppercase;}
+    .subtitle{max-width:960px;margin:0 auto 14px;font-size:0.85rem;opacity:0.85;}
+    .lab-card h2{margin:4px 0 4px;font-size:1.02rem;letter-spacing:0.05em;text-transform:uppercase;}
+    .lab-card p{margin:4px 0 6px;font-size:0.86rem;line-height:1.35;}
+    .lab-links a{
+      display:inline-block;margin-top:6px;margin-right:8px;
+      font-size:0.8rem;text-decoration:none;
+      padding:5px 10px;border-radius:999px;
+      border:1px solid rgba(140,200,255,0.7);
+      background:rgba(12,25,45,0.95);
+    }
+    .backlink{max-width:960px;margin:10px auto 0;font-size:0.82rem;}
+  </style>
+</head>
+<body>
+<div class="backlink">
+  ⬅ <a href="qds_lab_suite_frontdoor_v1.html">Back to Lab Suite Front Door</a>
+</div>
+<h1>Panel C · Applied Labs & Evidence</h1>
+<p class="subtitle">
+  These four are about real-world hooks: sensors, compression,
+  cross-domain test front door, and a clean evidence ledger.
+</p>
+
+<main class="card-grid">
+  <article class="lab-card">
+    <div class="lab-pill">sensor kernel ideas</div>
+    <h2>Sensors & Metrology Lab v1</h2>
+    <p>
+      Early sketches for turning QDS into a design knob for sensors
+      and metrology: noise floors, correlation lengths, calibration
+      thinking.
+    </p>
+    <p><strong>File:</strong> qds_sensors_metrology_v1.html</p>
+    <div class="lab-links">
+      <a href="qds_sensors_metrology_v1.html">Open sensors lab</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">QDS-SAVE demo</div>
+    <h2>Compression Lab v1</h2>
+    <p>
+      Demonstrator for QDS-SAVE: coherence-aware thinning /
+      compression. Built to show “not magic, just structure-aware”.
+    </p>
+    <p><strong>File:</strong> qds_compression_lab_v1.html</p>
+    <div class="lab-links">
+      <a href="qds_compression_lab_v1.html">Open compression lab</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">multi-domain</div>
+    <h2>QDS Science Test Labs · Front Door</h2>
+    <p>
+      Cross-domain front door: galaxy rotation, variance, batteries,
+      birds, genomics. Good “one slide” proof that it all runs on a
+      single device.
+    </p>
+    <p><strong>File:</strong> qds_science_frontdoor_v1.html</p>
+    <div class="lab-links">
+      <a href="qds_science_frontdoor_v1.html">Open science front door</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">evidence ledger</div>
+    <h2>Physics Evidence Log v1</h2>
+    <p>
+      One place to log what actually happened in the labs: which
+      galaxy / dataset, which kernel, and whether QDS helped, hurt,
+      or sat in the noise.
+    </p>
+    <p><strong>File:</strong> qds_physics_evidence_log_v1.html</p>
+    <div class="lab-links">
+      <a href="qds_physics_evidence_log_v1.html">Open evidence log</a>
+    </div>
+  </article>
+</main>
+</body>
+</html>

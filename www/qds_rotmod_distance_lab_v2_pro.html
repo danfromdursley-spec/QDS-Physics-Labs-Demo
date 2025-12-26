@@ -1,0 +1,1563 @@
+cd "$HOME/OMEGA_EMPIRE/UV_QDS/www"
+
+cat <<'EOF' > qds_rotmod_distance_lab_v2_pro.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS RotMod Distance Probe Lab · v2 PRO</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #030515;
+      --bg-alt: #06091f;
+      --card: #0b1024;
+      --card-soft: rgba(11, 16, 36, 0.88);
+      --border-soft: rgba(120, 150, 255, 0.5);
+      --accent: #4af2ff;
+      --accent-soft: rgba(74, 242, 255, 0.16);
+      --accent-warm: #ff7ee5;
+      --accent-warm-soft: rgba(255, 126, 229, 0.22);
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --radius-lg: 22px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(90, 255, 210, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(120, 140, 255, 0.26) 0, transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255, 126, 229, 0.18) 0, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 12px 32px;
+    }
+
+    header {
+      background: linear-gradient(
+          135deg,
+          rgba(255, 126, 229, 0.16),
+          rgba(74, 242, 255, 0.12)
+        ),
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 55%),
+        var(--card-soft);
+      border-radius: 26px;
+      padding: 16px 14px 16px;
+      border: 1px solid rgba(145, 180, 255, 0.5);
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 720px) {
+      .shell {
+        padding: 22px 18px 34px;
+      }
+      header {
+        padding: 20px 22px 18px;
+      }
+    }
+
+    .header-top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2ff);
+      box-shadow: 0 0 18px rgba(74, 242, 255, 0.9);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin: 0;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      background: rgba(3, 4, 24, 0.9);
+      color: var(--text-soft);
+    }
+
+    .subtitle {
+      font-size: 0.84rem;
+      color: var(--text-soft);
+      margin: 6px 0 0;
+      max-width: 720px;
+    }
+
+    .subtitle strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(180, 200, 255, 0.35);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill strong {
+      color: var(--accent);
+    }
+
+    .pill .hot {
+      color: var(--accent-warm);
+    }
+
+    main {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    section {
+      background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0)
+        ),
+        var(--bg-alt);
+      border-radius: 22px;
+      padding: 14px 12px 14px;
+      border: 1px solid rgba(90, 118, 220, 0.7);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.88);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 720px) {
+      section {
+        padding: 18px 18px 18px;
+      }
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      inset: -100px;
+      opacity: 0.18;
+      background: radial-gradient(
+        circle at 10% 0%,
+        rgba(255, 126, 229, 0.26),
+        transparent 55%
+      );
+      pointer-events: none;
+    }
+
+    section h2 {
+      font-size: 0.98rem;
+      margin: 0 0 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    section h2 span.pill-tag {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 205, 255, 0.6);
+      color: var(--text-soft);
+      background: rgba(10, 13, 40, 0.95);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 880px) {
+      .grid-2 {
+        grid-template-columns: 1.05fr 1fr;
+      }
+    }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"] {
+      font-size: 0.85rem;
+      padding: 5px 8px;
+      border-radius: 9px;
+      border: 1px solid rgba(140, 170, 255, 0.8);
+      background: rgba(3, 4, 24, 0.96);
+      color: var(--text);
+      min-width: 0;
+    }
+
+    select {
+      max-width: 220px;
+    }
+
+    input[type="number"] {
+      width: 90px;
+    }
+
+    input[type="text"] {
+      min-width: 150px;
+      max-width: 240px;
+    }
+
+    button {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(110, 200, 255, 0.9);
+      background: linear-gradient(
+        135deg,
+        rgba(74, 242, 255, 0.22),
+        rgba(0, 0, 0, 0.9)
+      );
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      transition: background 0.14s ease, transform 0.1s ease,
+        box-shadow 0.14s ease, border-color 0.14s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(74, 242, 255, 0.35),
+        rgba(0, 0, 0, 0.9)
+      );
+      transform: translateY(-0.5px);
+      box-shadow: 0 0 0 1px rgba(74, 242, 255, 0.6);
+    }
+
+    button.secondary {
+      border-color: rgba(160, 180, 255, 0.8);
+      background: rgba(3, 4, 24, 0.9);
+      color: var(--text-soft);
+    }
+
+    button.secondary:hover {
+      border-color: rgba(200, 210, 255, 1);
+    }
+
+    button.small {
+      padding: 4px 8px;
+      font-size: 0.76rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 205, 255, 0.6);
+      background: rgba(3, 4, 24, 0.9);
+      color: var(--text-soft);
+    }
+
+    .tag.good {
+      border-color: rgba(120, 255, 190, 0.9);
+      color: #7dffba;
+    }
+
+    .tag.bad {
+      border-color: rgba(255, 140, 140, 0.9);
+      color: #ffb0b0;
+    }
+
+    .tag.neutral {
+      border-color: rgba(200, 200, 255, 0.9);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+    }
+
+    @media (min-width: 720px) {
+      .metrics-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .metric-card {
+      background: rgba(3, 4, 24, 0.96);
+      border-radius: 14px;
+      padding: 7px 8px;
+      border: 1px solid rgba(80, 110, 210, 0.9);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    .metric-value {
+      font-size: 0.9rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-value.bad {
+      color: #ffb0b0;
+    }
+
+    .metric-value.good {
+      color: #7dffba;
+    }
+
+    .metric-value.neutral {
+      color: var(--accent);
+    }
+
+    .mono {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .status strong {
+      color: var(--accent);
+    }
+
+    .status.bad strong {
+      color: var(--accent-warm);
+    }
+
+    .status.good strong {
+      color: #7dffba;
+    }
+
+    canvas {
+      width: 100%;
+      height: 160px;
+      border-radius: 16px;
+      background: radial-gradient(
+          circle at 0 0,
+          rgba(74, 242, 255, 0.15),
+          transparent 60%
+        ),
+        radial-gradient(
+          circle at 100% 100%,
+          rgba(255, 126, 229, 0.16),
+          transparent 55%
+        ),
+        #050718;
+      border: 1px solid rgba(90, 118, 220, 0.8);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.8);
+    }
+
+    .table-wrap {
+      margin-top: 10px;
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.78rem;
+      background: rgba(3, 4, 24, 0.98);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(60, 80, 180, 0.7);
+      text-align: left;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      background: rgba(9, 12, 40, 0.98);
+      color: var(--text-soft);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.highlight {
+      background: rgba(40, 80, 120, 0.35);
+    }
+
+    tr.bad {
+      background: rgba(120, 40, 40, 0.35);
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      padding: 10px 0 0;
+      border-top: 1px solid rgba(90, 118, 220, 0.6);
+    }
+
+    footer strong {
+      color: var(--accent);
+    }
+  
+  /* ROTMOD_HDR_TOGGLE_V1 */
+  header[data-rotmod-intro="1"],
+  section[data-rotmod-intro="1"],
+  article[data-rotmod-intro="1"] {
+    position: sticky;
+    top: 32px; /* leave room for toolbar */
+    z-index: 10;
+  }
+
+  .rotmod-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 11;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    background: rgba(3, 5, 25, 0.95);
+    border-radius: 999px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border: 1px solid rgba(255, 120, 140, 0.7);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  }
+
+  .rotmod-hdr-toolbar-label {
+    opacity: 0.9;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .rotmod-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+  [data-rotmod-intro="1"].rotmod-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+
+  /* LAB_HDR_TOGGLE_V1 */
+  [data-lab-intro="1"] {
+    transition:
+      max-height 0.2s ease,
+      padding 0.2s ease,
+      margin 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  [data-lab-intro="1"].lab-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 4px !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lab-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border-radius: 999px;
+    background: rgba(3, 5, 25, 0.96);
+    border: 1px solid rgba(255, 120, 140, 0.85);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  }
+
+  .lab-hdr-label {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+
+  .lab-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+</style>
+
+    <!-- QDS_LAB_HEADER_STRIP_V1 -->
+    <style>
+      .qds-lab-strip {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px;
+        margin: 0 0 8px 0;
+        border-radius: 999px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: radial-gradient(circle at 0% 0%, rgba(0,255,255,0.16), rgba(0,0,0,0.8));
+        border: 1px solid rgba(255,255,255,0.16);
+        color: #f5f5ff;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        backdrop-filter: blur(20px);
+      }
+      .qds-lab-strip-label {
+        padding-right: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .qds-lab-strip-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(90deg,#ff6b6b,#ffb347);
+        color: #160016;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+      }
+      .qds-lab-strip-btn:active {
+        transform: translateY(1px);
+      }
+    </style>
+
+
+<style>
+/* Hide the legacy RotMod top header strip; keep the shared QDS LAB HEADER */
+.qds-top-header:first-of-type{
+  display:none !important;
+}
+</style>
+
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="header-top">
+        <div class="dot"></div>
+        <div>
+          <h1>QDS RotMod Distance Probe Lab · v2 PRO</h1>
+          <div class="subtitle">
+            Assumption mode: <strong>kernel fixed from cosmology</strong>.  
+            We let each <strong>ROTMOD galaxy</strong> tell us which
+            <strong>distance factor s = D / D₀</strong> makes it most consistent
+            with that kernel.
+          </div>
+        </div>
+        <span class="badge mono">offline · no deps · χ²-first</span>
+      </div>
+      <div class="pill-row">
+        <div class="pill"><span>Data: <strong>ROTMOD CSV (public)</strong></span></div>
+        <div class="pill"><span>Kernel: <strong>Yukawa (α, λ<sub>c</sub>)</strong></span></div>
+        <div class="pill"><span>Mode: <span class="hot">distance scan only</span> · all baryons fixed</span></div>
+        <div class="pill"><span>Usage: <strong>lab-grade what-if</strong>, not a distance ladder (yet)</span></div>
+      </div>
+    </header>
+
+    <main>
+      <!-- 1) Controls + single-galaxy view -->
+      <section>
+        <h2>
+          1. Single-Galaxy Probe
+          <span class="pill-tag">ROTMOD CSV · distance scan · fixed kernel</span>
+        </h2>
+        <div class="grid-2">
+          <div>
+            <div class="field-row">
+              <label for="galaxySelect">Galaxy (headline set)</label>
+              <select id="galaxySelect">
+                <option value="DDO154.csv">DDO154</option>
+                <option value="NGC2403.csv">NGC2403</option>
+                <option value="NGC3198.csv">NGC3198</option>
+                <option value="NGC6503.csv">NGC6503</option>
+                <option value="NGC2841.csv">NGC2841</option>
+                <option value="NGC7331.csv">NGC7331</option>
+              </select>
+              <button id="btnLoadGalaxy" class="small">Load</button>
+            </div>
+
+            <div class="field-row">
+              <label for="customGalaxy">Custom CSV name</label>
+              <input id="customGalaxy" type="text" placeholder="e.g. NGC5907.csv" />
+              <button id="btnLoadCustom" class="secondary small">Load custom</button>
+            </div>
+
+            <div class="field-row">
+              <span class="tag mono">path: data/rotmod_public/rotmod_csv/&lt;name&gt;</span>
+            </div>
+
+            <hr style="border:none;border-top:1px solid rgba(90,118,220,0.7);margin:9px 0;" />
+
+            <div class="field-row">
+              <label>QDS kernel (fixed)</label>
+            </div>
+            <div class="field-row">
+              <label for="alphaInput">α</label>
+              <input id="alphaInput" type="number" step="0.01" value="0.8" />
+              <label for="lambdaInput">λ<sub>c</sub> [kpc]</label>
+              <input id="lambdaInput" type="number" step="0.5" value="10" />
+              <span class="tag neutral mono">DDO154 / NGC2403 kernel</span>
+            </div>
+
+            <div class="field-row">
+              <label for="sInput">Distance factor s = D / D₀</label>
+              <input id="sInput" type="number" step="0.01" value="1.0" />
+              <button id="btnResetS" class="secondary small">s = 1</button>
+              <button id="btnEvalSingle" class="small">Compute χ² @ s</button>
+            </div>
+
+            <div class="field-row">
+              <label>Scan range (QDS view)</label>
+            </div>
+            <div class="field-row">
+              <label for="sMinInput">s<sub>min</sub></label>
+              <input id="sMinInput" type="number" step="0.05" value="0.6" />
+              <label for="sMaxInput">s<sub>max</sub></label>
+              <input id="sMaxInput" type="number" step="0.05" value="1.4" />
+              <label for="sStepInput">Δs</label>
+              <input id="sStepInput" type="number" step="0.01" value="0.01" />
+              <button id="btnScan" class="small">Scan χ²<sub>QDS</sub>(s)</button>
+            </div>
+
+            <div class="status" id="statusSingle">
+              Waiting for galaxy load…
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-label">Points used (finite, err &gt; 0)</div>
+                <div class="metric-value mono" id="metricN">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">χ² baseline @ s</div>
+                <div class="metric-value mono" id="metricChi2Base">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">χ² QDS @ s</div>
+                <div class="metric-value mono" id="metricChi2Qds">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Δχ² (QDS − base)</div>
+                <div class="metric-value mono" id="metricDeltaChi2">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">χ² per point (base)</div>
+                <div class="metric-value mono" id="metricChi2BasePerN">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">χ² per point (QDS)</div>
+                <div class="metric-value mono" id="metricChi2QdsPerN">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Best s (QDS scan)</div>
+                <div class="metric-value mono neutral" id="metricBestS">–</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">χ²<sub>QDS</sub>(best s)</div>
+                <div class="metric-value mono" id="metricBestChi2Qds">–</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <canvas id="scanCanvas"></canvas>
+            <div class="status" id="statusScan">
+              Distance scan plot: χ²<sub>QDS</sub>(s) vs s.  
+              Best s is marked; lower is better.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2) Multi-galaxy scan -->
+      <section>
+        <h2>
+          2. Multi-Galaxy Summary
+          <span class="pill-tag">DDO154 / NGC2403 / NGC3198 / NGC6503 / NGC2841 / NGC7331</span>
+        </h2>
+        <div class="field-row">
+          <button id="btnScanAll">Run scan for headline set</button>
+          <span class="tag mono">uses same kernel + s-range as above</span>
+        </div>
+        <div class="status" id="statusAll">
+          Not run yet. This will load each ROTMOD CSV, scan s, and summarise  
+          “QDS better or worse” at catalog distance and at QDS-preferred s.
+        </div>
+        <div class="table-wrap">
+          <table id="tableAll">
+            <thead>
+              <tr>
+                <th>Galaxy</th>
+                <th>n</th>
+                <th>Best s</th>
+                <th>χ²<sub>base</sub>(s=1)</th>
+                <th>χ²<sub>QDS</sub>(s=1)</th>
+                <th>Δχ²(s=1)</th>
+                <th>χ²<sub>QDS</sub>(best s)</th>
+                <th>Δχ²(best − base)</th>
+                <th>QDS verdict</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAll">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3) Notes -->
+      <section>
+        <h2>
+          3. Notes & caveats
+          <span class="pill-tag">exploratory · constraint-friendly</span>
+        </h2>
+        <div style="font-size:0.78rem;color:var(--text-soft);max-width:840px;">
+          <ul>
+            <li>
+              <strong>What this page does:</strong> takes existing ROTMOD CSVs
+              (r<sub>kpc</sub>, V<sub>obs</sub>, err, V<sub>gas</sub>, V<sub>disk</sub>, V<sub>bul</sub>),
+              applies a simple Yukawa-like QDS tweak, and lets distance
+              factor s = D / D₀ slide while the kernel stays fixed.
+            </li>
+            <li>
+              <strong>What it doesn’t do (yet):</strong> no inclination, M/L or
+              full beam-smearing fit; those belong in a heavier lab. This one is
+              about <em>“if QDS is right, where would it want this galaxy to sit?”</em>
+            </li>
+            <li>
+              <strong>How to talk about it:</strong> as an offline,
+              falsification-first sandbox. At s = 1 you see whether QDS helps or
+              hurts. The scan then shows whether a modest distance shift could
+              reconcile things, which becomes a <em>testable</em> prediction
+              against independent distance ladders.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>QDS RotMod Distance Probe Lab · v2 PRO</strong> — built to make it very clear which galaxies love the kernel, which hate it, and which ones might be quietly whispering “your distance prior is wrong”.</div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const CSV_BASE = "data/rotmod_public/rotmod_csv/";
+
+      const headlineGalaxies = [
+        "DDO154.csv",
+        "NGC2403.csv",
+        "NGC3198.csv",
+        "NGC6503.csv",
+        "NGC2841.csv",
+        "NGC7331.csv"
+      ];
+
+      const state = {
+        galaxyName: "DDO154.csv",
+        rows: [],
+        scanPoints: [],
+      };
+
+      // --- DOM helpers ---
+      const $ = (id) => document.getElementById(id);
+
+      const els = {
+        galaxySelect: $("galaxySelect"),
+        customGalaxy: $("customGalaxy"),
+        btnLoadGalaxy: $("btnLoadGalaxy"),
+        btnLoadCustom: $("btnLoadCustom"),
+        alphaInput: $("alphaInput"),
+        lambdaInput: $("lambdaInput"),
+        sInput: $("sInput"),
+        btnResetS: $("btnResetS"),
+        btnEvalSingle: $("btnEvalSingle"),
+        sMinInput: $("sMinInput"),
+        sMaxInput: $("sMaxInput"),
+        sStepInput: $("sStepInput"),
+        btnScan: $("btnScan"),
+        statusSingle: $("statusSingle"),
+        statusScan: $("statusScan"),
+        metricN: $("metricN"),
+        metricChi2Base: $("metricChi2Base"),
+        metricChi2Qds: $("metricChi2Qds"),
+        metricDeltaChi2: $("metricDeltaChi2"),
+        metricChi2BasePerN: $("metricChi2BasePerN"),
+        metricChi2QdsPerN: $("metricChi2QdsPerN"),
+        metricBestS: $("metricBestS"),
+        metricBestChi2Qds: $("metricBestChi2Qds"),
+        scanCanvas: $("scanCanvas"),
+        btnScanAll: $("btnScanAll"),
+        statusAll: $("statusAll"),
+        tbodyAll: $("tbodyAll"),
+      };
+
+      // --- Core maths ---
+      function parseNumber(x) {
+        const v = parseFloat(x);
+        return Number.isFinite(v) ? v : NaN;
+      }
+
+      function parseCsv(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (!lines.length) return [];
+        const header = lines[0].split(",");
+        const colIndex = {};
+        header.forEach((name, i) => {
+          colIndex[name.trim().toLowerCase()] = i;
+        });
+
+        function idx(key, fallbackIdx) {
+          const k = key.toLowerCase();
+          if (k in colIndex) return colIndex[k];
+          return fallbackIdx;
+        }
+
+        const iR = idx("r_kpc", 0);
+        const iVobs = idx("vobs", 1);
+        const iErr = idx("err", 2);
+        const iVgas = idx("vgas", 3);
+        const iVdisk = idx("vdisk", 4);
+        const iVbul = idx("vbul", 5);
+
+        const rows = [];
+        for (let li = 1; li < lines.length; li++) {
+          const line = lines[li].trim();
+          if (!line) continue;
+          const cols = line.split(",");
+          if (cols.length < 3) continue;
+
+          const r_kpc = parseNumber(cols[iR]);
+          const Vobs = parseNumber(cols[iVobs]);
+          const err = parseNumber(cols[iErr]);
+          const Vgas = parseNumber(cols[iVgas]);
+          const Vdisk = parseNumber(cols[iVdisk]);
+          const Vbul = parseNumber(cols[iVbul]);
+
+          if (!Number.isFinite(r_kpc) || !Number.isFinite(Vobs) || !Number.isFinite(err)) continue;
+          if (err <= 0) continue;
+
+          const bg = Math.max(0, Vgas);
+          const bd = Math.max(0, Vdisk);
+          const bb = Math.max(0, Vbul);
+
+          const Vbary = Math.sqrt(bg * bg + bd * bd + bb * bb);
+          rows.push({ r_kpc, Vobs, err, Vbary });
+        }
+
+        return rows;
+      }
+
+      function qdsVelocity(Vbary, r_kpc, s, alpha, lambda_kpc) {
+        if (!Number.isFinite(Vbary) || !Number.isFinite(r_kpc) || Vbary <= 0) {
+          return NaN;
+        }
+        const lam = Math.max(lambda_kpc, 1e-6);
+        const r_eff = s * r_kpc;
+        const x = r_eff / lam;
+        const f = alpha * (1 - Math.exp(-x));
+        const factor = Math.max(0, 1 + f);
+        return Vbary * Math.sqrt(factor);
+      }
+
+      function evalMetrics(rows, alpha, lambda_kpc, s) {
+        let n = 0;
+        let chi2Base = 0;
+        let chi2Qds = 0;
+
+        for (const row of rows) {
+          const { r_kpc, Vobs, err, Vbary } = row;
+          if (!Number.isFinite(Vobs) || !Number.isFinite(err)) continue;
+
+          const vBase = Vbary;
+          const vQds = qdsVelocity(Vbary, r_kpc, s, alpha, lambda_kpc);
+
+          if (!Number.isFinite(vBase) || !Number.isFinite(vQds)) continue;
+
+          const resBase = (Vobs - vBase) / err;
+          const resQds = (Vobs - vQds) / err;
+
+          chi2Base += resBase * resBase;
+          chi2Qds += resQds * resQds;
+          n++;
+        }
+
+        const perBase = n > 0 ? chi2Base / n : NaN;
+        const perQds = n > 0 ? chi2Qds / n : NaN;
+
+        return {
+          n,
+          chi2Base,
+          chi2Qds,
+          deltaChi2: chi2Qds - chi2Base,
+          chi2BasePerN: perBase,
+          chi2QdsPerN: perQds
+        };
+      }
+
+      function scanDistance(rows, alpha, lambda_kpc, sMin, sMax, sStep) {
+        const points = [];
+        let best = null;
+
+        const nSteps = Math.max(1, Math.floor((sMax - sMin) / sStep) + 1);
+        for (let i = 0; i < nSteps; i++) {
+          const s = sMin + i * sStep;
+          if (s <= 0) continue;
+          const m = evalMetrics(rows, alpha, lambda_kpc, s);
+          if (!Number.isFinite(m.chi2Qds)) continue;
+          points.push({ s, chi2Qds: m.chi2Qds });
+
+          if (!best || m.chi2Qds < best.chi2Qds) {
+            best = { s, chi2Qds: m.chi2Qds };
+          }
+        }
+
+        return { best, points };
+      }
+
+      function formatNumber(x, digits = 2) {
+        if (!Number.isFinite(x)) return "–";
+        return x.toFixed(digits);
+      }
+
+      function formatInt(x) {
+        if (!Number.isFinite(x)) return "–";
+        return Math.round(x).toString();
+      }
+
+      // --- Canvas plotting ---
+      function drawScan(points, best) {
+        const canvas = els.scanCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const width = canvas.width = canvas.clientWidth * window.devicePixelRatio;
+        const height = canvas.height = canvas.clientHeight * window.devicePixelRatio;
+
+        ctx.clearRect(0, 0, width, height);
+
+        if (!points || !points.length) {
+          ctx.fillStyle = "rgba(255,255,255,0.6)";
+          ctx.font = `${12 * window.devicePixelRatio}px system-ui`;
+          ctx.fillText("No scan yet", 12 * window.devicePixelRatio, 20 * window.devicePixelRatio);
+          return;
+        }
+
+        let sMin = Infinity, sMax = -Infinity;
+        let yMin = Infinity, yMax = -Infinity;
+        for (const p of points) {
+          if (p.s < sMin) sMin = p.s;
+          if (p.s > sMax) sMax = p.s;
+          if (p.chi2Qds < yMin) yMin = p.chi2Qds;
+          if (p.chi2Qds > yMax) yMax = p.chi2Qds;
+        }
+
+        if (!Number.isFinite(sMin) || !Number.isFinite(sMax) || sMin === sMax) {
+          sMin -= 0.1; sMax += 0.1;
+        }
+        if (!Number.isFinite(yMin) || !Number.isFinite(yMax) || yMin === yMax) {
+          yMin -= 1; yMax += 1;
+        }
+
+        const padX = 30 * window.devicePixelRatio;
+        const padY = 20 * window.devicePixelRatio;
+
+        function xMap(s) {
+          return padX + (s - sMin) / (sMax - sMin) * (width - 2 * padX);
+        }
+
+        function yMap(y) {
+          return height - padY - (y - yMin) / (yMax - yMin) * (height - 2 * padY);
+        }
+
+        // Axes
+        ctx.strokeStyle = "rgba(180,200,255,0.7)";
+        ctx.lineWidth = 1 * window.devicePixelRatio;
+        ctx.beginPath();
+        ctx.moveTo(padX, padY);
+        ctx.lineTo(padX, height - padY);
+        ctx.lineTo(width - padX, height - padY);
+        ctx.stroke();
+
+        // Curve
+        ctx.strokeStyle = "rgba(74,242,255,0.95)";
+        ctx.lineWidth = 1.5 * window.devicePixelRatio;
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+          const x = xMap(p.s);
+          const y = yMap(p.chi2Qds);
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        // Best point
+        if (best) {
+          const bx = xMap(best.s);
+          const by = yMap(best.chi2Qds);
+          ctx.fillStyle = "rgba(255,126,229,0.98)";
+          ctx.beginPath();
+          ctx.arc(bx, by, 3.5 * window.devicePixelRatio, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+
+        // Labels
+        ctx.fillStyle = "rgba(200,210,255,0.9)";
+        ctx.font = `${11 * window.devicePixelRatio}px system-ui`;
+        ctx.fillText(`s ∈ [${formatNumber(sMin,2)}, ${formatNumber(sMax,2)}]`, padX, padY - 4 * window.devicePixelRatio);
+        ctx.fillText(`χ²_QDS`, width - padX - 65 * window.devicePixelRatio, padY - 4 * window.devicePixelRatio);
+      }
+
+      // --- UI update helpers ---
+      function updateSingleStatus(metrics, s, alpha, lambda_kpc) {
+        if (!metrics || metrics.n === 0) {
+          els.statusSingle.classList.remove("good", "bad");
+          els.statusSingle.textContent = "No usable points (check CSV / errors).";
+          return;
+        }
+
+        const { n, chi2Base, chi2Qds, deltaChi2 } = metrics;
+        const better = deltaChi2 < 0;
+
+        els.statusSingle.classList.remove("good", "bad");
+        if (better) {
+          els.statusSingle.classList.add("good");
+          els.statusSingle.innerHTML =
+            `Galaxy <strong>${state.galaxyName}</strong>, s = <strong>${formatNumber(s,3)}</strong>, kernel (α=${formatNumber(alpha)}, λ<sub>c</sub>=${formatNumber(lambda_kpc,1)} kpc): ` +
+            `<strong>QDS improves χ² by ${formatNumber(-deltaChi2,1)}</strong> over baryons-only (n = ${n}).`;
+        } else {
+          els.statusSingle.classList.add("bad");
+          els.statusSingle.innerHTML =
+            `Galaxy <strong>${state.galaxyName}</strong>, s = <strong>${formatNumber(s,3)}</strong>, kernel (α=${formatNumber(alpha)}, λ<sub>c</sub>=${formatNumber(lambda_kpc,1)} kpc): ` +
+            `<strong>QDS worsens χ² by ${formatNumber(deltaChi2,1)}</strong> vs baryons-only (n = ${n}).`;
+        }
+      }
+
+      function setMetricText(el, value, digits = 2, clsGoodBad = null) {
+        if (!el) return;
+        el.classList.remove("good", "bad", "neutral");
+        if (!Number.isFinite(value)) {
+          el.textContent = "–";
+          return;
+        }
+        el.textContent = value.toFixed(digits);
+        if (clsGoodBad === "good") el.classList.add("good");
+        else if (clsGoodBad === "bad") el.classList.add("bad");
+        else if (clsGoodBad === "neutral") el.classList.add("neutral");
+      }
+
+      // --- Data load ---
+      async function loadGalaxy(name) {
+        const url = CSV_BASE + name;
+        els.statusSingle.classList.remove("good", "bad");
+        els.statusSingle.textContent = `Loading ${url} …`;
+        try {
+          const resp = await fetch(url);
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const text = await resp.text();
+          const rows = parseCsv(text);
+          state.rows = rows;
+          state.galaxyName = name;
+          els.statusSingle.classList.remove("good", "bad");
+          els.statusSingle.textContent = `Loaded ${name} with ${rows.length} usable points. Set s, kernel, then hit “Compute χ² @ s” or “Scan χ²_QDS(s)”.`;
+          els.metricN.textContent = rows.length ? rows.length.toString() : "0";
+          // Clear scan
+          state.scanPoints = [];
+          drawScan([], null);
+        } catch (err) {
+          console.warn("Failed to load galaxy", err);
+          state.rows = [];
+          els.statusSingle.classList.remove("good", "bad");
+          els.statusSingle.textContent = `Failed to load ${url}: ${err.message || err}`;
+          els.metricN.textContent = "0";
+        }
+      }
+
+      // --- Single evaluation ---
+      function evalSingle() {
+        const rows = state.rows || [];
+        if (!rows.length) {
+          els.statusSingle.classList.remove("good", "bad");
+          els.statusSingle.textContent = "No galaxy data loaded yet.";
+          return;
+        }
+
+        const alpha = parseNumber(els.alphaInput.value);
+        const lambda_kpc = parseNumber(els.lambdaInput.value);
+        const s = parseNumber(els.sInput.value);
+        if (!Number.isFinite(alpha) || !Number.isFinite(lambda_kpc) || !Number.isFinite(s) || s <= 0) {
+          els.statusSingle.classList.remove("good", "bad");
+          els.statusSingle.textContent = "Please provide sensible α, λc and s.";
+          return;
+        }
+
+        const m = evalMetrics(rows, alpha, lambda_kpc, s);
+        setMetricText(els.metricN, m.n, 0, null);
+        setMetricText(els.metricChi2Base, m.chi2Base, 1, null);
+        setMetricText(els.metricChi2Qds, m.chi2Qds, 1, null);
+        setMetricText(els.metricDeltaChi2, m.deltaChi2, 1, m.deltaChi2 < 0 ? "good" : "bad");
+        setMetricText(els.metricChi2BasePerN, m.chi2BasePerN, 1, null);
+        setMetricText(els.metricChi2QdsPerN, m.chi2QdsPerN, 1, null);
+        // keep best metrics from last scan; don't overwrite here
+        updateSingleStatus(m, s, alpha, lambda_kpc);
+      }
+
+      // --- Distance scan for current galaxy ---
+      function runScanCurrent() {
+        const rows = state.rows || [];
+        if (!rows.length) {
+          els.statusScan.textContent = "No galaxy loaded to scan.";
+          return;
+        }
+
+        const alpha = parseNumber(els.alphaInput.value);
+        const lambda_kpc = parseNumber(els.lambdaInput.value);
+        const sMin = parseNumber(els.sMinInput.value);
+        const sMax = parseNumber(els.sMaxInput.value);
+        const sStep = parseNumber(els.sStepInput.value);
+
+        if (!Number.isFinite(alpha) || !Number.isFinite(lambda_kpc) ||
+            !Number.isFinite(sMin) || !Number.isFinite(sMax) ||
+            !Number.isFinite(sStep) || sMin <= 0 || sMax <= sMin || sStep <= 0) {
+          els.statusScan.textContent = "Check scan parameters: s_min > 0, s_max > s_min, step > 0.";
+          return;
+        }
+
+        els.statusScan.textContent = "Scanning distance factors…";
+
+        const { best, points } = scanDistance(rows, alpha, lambda_kpc, sMin, sMax, sStep);
+        state.scanPoints = points;
+        drawScan(points, best || null);
+
+        if (!best) {
+          els.statusScan.textContent = "Scan produced no valid points (check CSV / kernel).";
+          return;
+        }
+
+        const sBest = best.s;
+        const mAt1 = evalMetrics(rows, alpha, lambda_kpc, 1.0);
+        const mBest = evalMetrics(rows, alpha, lambda_kpc, sBest);
+
+        setMetricText(els.metricBestS, sBest, 3, "neutral");
+        setMetricText(els.metricBestChi2Qds, mBest.chi2Qds, 1, null);
+
+        const deltaBestVs1 = best.chi2Qds - mAt1.chi2Qds;
+        const summary = [
+          `Scan summary for <strong>${state.galaxyName}</strong> (α=${formatNumber(alpha)}, λ<sub>c</sub>=${formatNumber(lambda_kpc,1)} kpc)`,
+          `Range: s ∈ [${formatNumber(sMin,2)}, ${formatNumber(sMax,2)}], step ${formatNumber(sStep,2)}`,
+          `Best s: <strong>${formatNumber(sBest,3)}</strong> → χ²<sub>QDS</sub> ≈ ${formatNumber(best.chi2Qds,1)}`,
+          `s = 1.000: χ²<sub>QDS</sub> ≈ ${formatNumber(mAt1.chi2Qds,1)}`,
+          `Δχ²(best − s=1): ${formatNumber(deltaBestVs1,1)}`
+        ].join(" · ");
+
+        els.statusScan.innerHTML = summary;
+      }
+
+      // --- Multi-galaxy scan ---
+      async function runScanAll() {
+        els.statusAll.classList.remove("good", "bad");
+        els.statusAll.textContent = "Running headline scan set…";
+
+        const alpha = parseNumber(els.alphaInput.value);
+        const lambda_kpc = parseNumber(els.lambdaInput.value);
+        const sMin = parseNumber(els.sMinInput.value);
+        const sMax = parseNumber(els.sMaxInput.value);
+        const sStep = parseNumber(els.sStepInput.value);
+
+        if (!Number.isFinite(alpha) || !Number.isFinite(lambda_kpc) ||
+            !Number.isFinite(sMin) || !Number.isFinite(sMax) ||
+            !Number.isFinite(sStep) || sMin <= 0 || sMax <= sMin || sStep <= 0) {
+          els.statusAll.textContent = "Check scan parameters first (s-range, step, kernel).";
+          return;
+        }
+
+        els.tbodyAll.innerHTML = "";
+        const rowsOut = [];
+
+        for (const name of headlineGalaxies) {
+          const url = CSV_BASE + name;
+          try {
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const text = await resp.text();
+            const rows = parseCsv(text);
+
+            const mAt1 = evalMetrics(rows, alpha, lambda_kpc, 1.0);
+            const scanRes = scanDistance(rows, alpha, lambda_kpc, sMin, sMax, sStep);
+            const best = scanRes.best;
+
+            let bestChi2Qds = NaN;
+            let bestS = NaN;
+            let deltaBestVsBase = NaN;
+            if (best) {
+              bestS = best.s;
+              bestChi2Qds = best.chi2Qds;
+              deltaBestVsBase = bestChi2Qds - mAt1.chi2Base;
+            }
+
+            const verdict = (() => {
+              if (!Number.isFinite(mAt1.deltaChi2)) return "no data";
+              const baseBetter = mAt1.deltaChi2 > 0;
+              const qdsBetter = mAt1.deltaChi2 < 0;
+              if (qdsBetter) return "QDS better @ s=1";
+              if (baseBetter && Number.isFinite(deltaBestVsBase) && deltaBestVsBase < 0) {
+                return "QDS only better if s shifts";
+              }
+              if (baseBetter) return "baryons-only better";
+              return "indeterminate";
+            })();
+
+            rowsOut.push({
+              name,
+              n: mAt1.n,
+              sBest: bestS,
+              chi2Base1: mAt1.chi2Base,
+              chi2Qds1: mAt1.chi2Qds,
+              delta1: mAt1.deltaChi2,
+              chi2QdsBest: bestChi2Qds,
+              deltaBestVsBase,
+              verdict
+            });
+          } catch (err) {
+            console.warn("Scan-all failed for", name, err);
+            rowsOut.push({
+              name,
+              n: 0,
+              sBest: NaN,
+              chi2Base1: NaN,
+              chi2Qds1: NaN,
+              delta1: NaN,
+              chi2QdsBest: NaN,
+              deltaBestVsBase: NaN,
+              verdict: "load error"
+            });
+          }
+        }
+
+        els.tbodyAll.innerHTML = "";
+        for (const row of rowsOut) {
+          const tr = document.createElement("tr");
+          const isImproved = Number.isFinite(row.delta1) && row.delta1 < 0;
+          const isWorse = Number.isFinite(row.delta1) && row.delta1 > 0;
+
+          if (isImproved) tr.classList.add("highlight");
+          if (isWorse) tr.classList.add("bad");
+
+          const cells = [
+            row.name.replace(".csv", ""),
+            formatInt(row.n),
+            Number.isFinite(row.sBest) ? formatNumber(row.sBest, 3) : "–",
+            Number.isFinite(row.chi2Base1) ? formatNumber(row.chi2Base1, 1) : "–",
+            Number.isFinite(row.chi2Qds1) ? formatNumber(row.chi2Qds1, 1) : "–",
+            Number.isFinite(row.delta1) ? formatNumber(row.delta1, 1) : "–",
+            Number.isFinite(row.chi2QdsBest) ? formatNumber(row.chi2QdsBest, 1) : "–",
+            Number.isFinite(row.deltaBestVsBase) ? formatNumber(row.deltaBestVsBase, 1) : "–",
+            row.verdict
+          ];
+
+          for (const txt of cells) {
+            const td = document.createElement("td");
+            td.textContent = txt;
+            tr.appendChild(td);
+          }
+
+          els.tbodyAll.appendChild(tr);
+        }
+
+        els.statusAll.textContent =
+          "Headline scan complete. Use this table as a quick “who loves / hates the kernel” summary before dropping into per-galaxy labs.";
+      }
+
+      // --- Event wiring ---
+      function init() {
+        els.btnLoadGalaxy.addEventListener("click", () => {
+          const name = els.galaxySelect.value;
+          loadGalaxy(name);
+        });
+
+        els.btnLoadCustom.addEventListener("click", () => {
+          const raw = (els.customGalaxy.value || "").trim();
+          if (!raw) return;
+          const name = raw.endsWith(".csv") ? raw : raw + ".csv";
+          loadGalaxy(name);
+        });
+
+        els.btnResetS.addEventListener("click", () => {
+          els.sInput.value = "1.0";
+        });
+
+        els.btnEvalSingle.addEventListener("click", evalSingle);
+        els.btnScan.addEventListener("click", runScanCurrent);
+        els.btnScanAll.addEventListener("click", runScanAll);
+
+        // initial canvas clean + default load
+        drawScan([], null);
+        loadGalaxy(state.galaxyName).catch(() => {});
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+
+  <!-- ROTMOD_HDR_TOGGLE_V1 -->
+  <script>
+  (function() {
+    try {
+      // Grab the first H1 and treat its container as the intro block
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+
+      var intro = h1.closest('header') ||
+                  h1.closest('section') ||
+                  h1.closest('article') ||
+                  h1.parentElement;
+      if (!intro) return;
+
+      intro.setAttribute('data-rotmod-intro', '1');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'rotmod-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'rotmod-hdr-toolbar-label';
+      label.textContent = 'RotMod distance lab header';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = intro.classList.toggle('rotmod-collapsed');
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(label);
+      toolbar.appendChild(btn);
+
+      var body = document.body;
+      if (body.firstChild) {
+        body.insertBefore(toolbar, body.firstChild);
+      } else {
+        body.appendChild(toolbar);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('ROTMOD_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+
+  <!-- LAB_HDR_TOGGLE_V1 -->
+  <script>
+  (function () {
+    try {
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+
+      var intro = h1.closest('header') ||
+                  h1.closest('section') ||
+                  h1.closest('.card') ||
+                  h1.closest('article') ||
+                  h1.parentElement;
+      if (!intro) return;
+
+      intro.setAttribute('data-lab-intro', '1');
+      intro.classList.add('lab-expanded');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'lab-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'lab-hdr-label';
+      label.textContent = 'QDS lab header';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = intro.classList.toggle('lab-collapsed');
+        intro.classList.toggle('lab-expanded', !collapsed);
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(label);
+      toolbar.appendChild(btn);
+
+      var shell = document.querySelector('.shell') || document.body;
+      if (shell.parentNode) {
+        shell.parentNode.insertBefore(toolbar, shell);
+      } else {
+        document.body.insertBefore(toolbar, document.body.firstChild);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('LAB_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+
+    <!-- QDS_LAB_HEADER_STRIP_V1_SCRIPT -->
+    <script>
+      (function(){
+        try {
+          // Find something that looks like the top hero/header block
+          var target =
+            document.querySelector('[data-qds-header]') ||
+            document.querySelector('.page-hero, .hero, .hero-card') ||
+            document.querySelector('main section') ||
+            document.querySelector('.card, .shell, section');
+
+          if (!target) return;
+
+          // Build strip
+          var strip = document.createElement('div');
+          strip.className = 'qds-lab-strip';
+
+          var label = document.createElement('div');
+          label.className = 'qds-lab-strip-label';
+          var title = document.title || 'QDS Lab';
+          label.textContent = title.toUpperCase();
+
+          var btn = document.createElement('button');
+          btn.className = 'qds-lab-strip-btn';
+          btn.textContent = 'Collapse header ▲';
+
+          strip.appendChild(label);
+          strip.appendChild(btn);
+
+          // Insert before the header block
+          target.parentNode.insertBefore(strip, target);
+
+          var collapsed = false;
+          btn.addEventListener('click', function(){
+            collapsed = !collapsed;
+            target.style.display = collapsed ? 'none' : '';
+            btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+          });
+        } catch(e){
+          console && console.warn && console.warn('QDS lab strip failed:', e);
+        }
+      })();
+    </script>
+
+</body>
+</html>
+EOF

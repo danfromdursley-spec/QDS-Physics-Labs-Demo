@@ -1,0 +1,279 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QDS Compression Lab v1</title>
+<style>
+body{margin:0;font-family:system-ui;background:#070b1a;color:#e9f1ff}
+.wrap{max-width:860px;margin:0 auto;padding:18px}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin:12px 0}
+button{background:#0e1b40;color:#fff;border:1px solid rgba(255,255,255,.12);padding:12px 14px;border-radius:12px;font-weight:600}
+code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px}
+
+:root{--qdsP:#8b5cf6;--qdsP2:#a78bfa;}
+header, .topbar, .hdr, .top-menu{
+  background:
+    radial-gradient(700px 220px at 10% -30%, rgba(139,92,246,.35), transparent 60%),
+    radial-gradient(700px 220px at 90% -20%, rgba(167,139,250,.25), transparent 60%),
+    linear-gradient(180deg, rgba(15,22,38,.92), rgba(11,18,32,.86));
+  border-bottom:1px solid rgba(139,92,246,.25);
+}
+#menuPanel{display:block;}
+body.menu-collapsed #menuPanel{display:none;}
+#menuBtn{
+  border:1px solid rgba(139,92,246,.35);
+  background: rgba(11,18,32,.75);
+  color:#eaf2ff;
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:14px;
+}
+#menuBtn:active{transform:scale(.98);}
+
+
+  /* LAB_HDR_TOGGLE_V1 */
+  [data-lab-intro="1"] {
+    transition:
+      max-height 0.2s ease,
+      padding 0.2s ease,
+      margin 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  [data-lab-intro="1"].lab-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 4px !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lab-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border-radius: 999px;
+    background: rgba(3, 5, 25, 0.96);
+    border: 1px solid rgba(255, 120, 140, 0.85);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  }
+
+  .lab-hdr-label {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+
+  .lab-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+</style><link rel="stylesheet" href="_os/qds_os.css">
+
+    <!-- QDS_LAB_HEADER_STRIP_V1 -->
+    <style>
+      .qds-lab-strip {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px;
+        margin: 0 0 8px 0;
+        border-radius: 999px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: radial-gradient(circle at 0% 0%, rgba(0,255,255,0.16), rgba(0,0,0,0.8));
+        border: 1px solid rgba(255,255,255,0.16);
+        color: #f5f5ff;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        backdrop-filter: blur(20px);
+      }
+      .qds-lab-strip-label {
+        padding-right: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .qds-lab-strip-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(90deg,#ff6b6b,#ffb347);
+        color: #160016;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+      }
+      .qds-lab-strip-btn:active {
+        transform: translateY(1px);
+      }
+    </style>
+
+</head>
+<body><div class="wrap">
+<h1>Compression / Signals</h1>
+<div class="card">
+<p>Mini structure-preserving demo. Generates synthetic correlated data, compares naive vs "kernel-ish" thinning.</p>
+</div>
+<div class="card">
+<button id="run">Run toy benchmark</button>
+<p id="out">No run yet.</p>
+</div>
+<script>
+function gen(n){
+  let x=0, arr=[];
+  for(let i=0;i<n;i++){ x=0.7*x+(Math.random()-0.5); arr.push(x); }
+  return arr;
+}
+function sizeEstimate(arr){ return arr.length; }
+document.getElementById("run").onclick=()=>{
+  const raw=gen(2000);
+  const naive=raw.filter((_,i)=>i%2==0);
+  const kernel=raw.filter((v,i)=>Math.abs(v)<0.35 || i%3==0);
+  const r=sizeEstimate(raw), n=sizeEstimate(naive), k=sizeEstimate(kernel);
+  document.getElementById("out").innerHTML=
+    "Raw points: <b>"+r+"</b><br>"+
+    "Naive thin: <b>"+n+"</b> (~"+(100*n/r).toFixed(1)+"%)<br>"+
+    "Kernel-ish thin: <b>"+k+"</b> (~"+(100*k/r).toFixed(1)+"%)<br>"+
+    "<small>Illustrative only - shows the idea of coherence-aware pruning.</small>";
+};
+</script>
+</div>
+<script>
+(() => {
+  const btn = document.getElementById("menuBtn");
+  const key = "qds_menu_collapsed_v1";
+  if(!btn) return;
+  const saved = localStorage.getItem(key);
+    if(saved===null && window.matchMedia && window.matchMedia("(max-width: 520px)").matches){ localStorage.setItem(key,"1"); }
+if(saved === "1") document.body.classList.add("menu-collapsed");
+  btn.addEventListener("click", () => {
+    document.body.classList.toggle("menu-collapsed");
+    localStorage.setItem(key, document.body.classList.contains("menu-collapsed") ? "1" : "0");
+  });
+})();
+</script>
+
+<script src="_os/qds_os.js"></script>
+
+  <!-- LAB_HDR_TOGGLE_V1 -->
+  <script>
+  (function () {
+    try {
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+
+      var intro = h1.closest('header') ||
+                  h1.closest('section') ||
+                  h1.closest('.card') ||
+                  h1.closest('article') ||
+                  h1.parentElement;
+      if (!intro) return;
+
+      intro.setAttribute('data-lab-intro', '1');
+      intro.classList.add('lab-expanded');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'lab-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'lab-hdr-label';
+      label.textContent = 'QDS lab header';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = intro.classList.toggle('lab-collapsed');
+        intro.classList.toggle('lab-expanded', !collapsed);
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(label);
+      toolbar.appendChild(btn);
+
+      var shell = document.querySelector('.shell') || document.body;
+      if (shell.parentNode) {
+        shell.parentNode.insertBefore(toolbar, shell);
+      } else {
+        document.body.insertBefore(toolbar, document.body.firstChild);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('LAB_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+
+    <!-- QDS_LAB_HEADER_STRIP_V1_SCRIPT -->
+    <script>
+      (function(){
+        try {
+          // Find something that looks like the top hero/header block
+          var target =
+            document.querySelector('[data-qds-header]') ||
+            document.querySelector('.page-hero, .hero, .hero-card') ||
+            document.querySelector('main section') ||
+            document.querySelector('.card, .shell, section');
+
+          if (!target) return;
+
+          // Build strip
+          var strip = document.createElement('div');
+          strip.className = 'qds-lab-strip';
+
+          var label = document.createElement('div');
+          label.className = 'qds-lab-strip-label';
+          var title = document.title || 'QDS Lab';
+          label.textContent = title.toUpperCase();
+
+          var btn = document.createElement('button');
+          btn.className = 'qds-lab-strip-btn';
+          btn.textContent = 'Collapse header ▲';
+
+          strip.appendChild(label);
+          strip.appendChild(btn);
+
+          // Insert before the header block
+          target.parentNode.insertBefore(strip, target);
+
+          var collapsed = false;
+          btn.addEventListener('click', function(){
+            collapsed = !collapsed;
+            target.style.display = collapsed ? 'none' : '';
+            btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+          });
+        } catch(e){
+          console && console.warn && console.warn('QDS lab strip failed:', e);
+        }
+      })();
+    </script>
+
+</body></html>

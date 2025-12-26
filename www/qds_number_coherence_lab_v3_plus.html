@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>QDS Number Coherence Lab v3+ (instrument)</title>
+<style>
+  :root{
+    --bg:#070606;
+    --panel:#0b0909;
+    --panel2:#0f0b0b;
+    --text:#ffd66b;
+    --muted:#d1b35a;
+    --hot:#ff3b1a;
+    --hot2:#ff7a00;
+    --line:#3a1a12;
+    --ok:#3dff6a;
+    --warn:#ffd24d;
+    --bad:#ff4b4b;
+    --shadow: 0 10px 35px rgba(0,0,0,.55);
+    --radius:20px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 20% 15%, rgba(255,70,30,.10), transparent 60%),
+      radial-gradient(900px 520px at 80% 20%, rgba(255,140,0,.08), transparent 60%),
+      linear-gradient(180deg, #050404 0%, #070606 55%, #060505 100%);
+    color:var(--text);
+    font-family:var(--sans);
+  }
+  .wrap{ max-width:980px; margin:0 auto; padding:18px 14px 40px; }
+  .top{
+    display:flex; gap:14px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .title{
+    display:flex; flex-direction:column; gap:6px;
+  }
+  h1{ margin:0; font-size:26px; letter-spacing:.3px; }
+  .sub{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.3;
+  }
+  .pills{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+  .pill{
+    border:1px solid rgba(255,80,20,.55);
+    color:var(--text);
+    background: rgba(12,8,8,.65);
+    border-radius:999px;
+    padding:8px 12px;
+    box-shadow: var(--shadow);
+    font-family: var(--mono);
+    font-size:12px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .toggle{
+    display:flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,80,20,.45);
+    border-radius:999px;
+    padding:8px 10px;
+    background: rgba(12,8,8,.55);
+  }
+  input[type="checkbox"]{ transform:scale(1.15); }
+  .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+  @media (min-width: 860px){
+    .grid{ grid-template-columns: 1.05fr .95fr; }
+  }
+  .card{
+    background: linear-gradient(180deg, rgba(15,10,10,.78), rgba(10,8,8,.78));
+    border: 1px solid rgba(255,80,20,.40);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    padding:12px 14px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border-bottom:1px solid rgba(255,80,20,.22);
+    background: linear-gradient(90deg, rgba(255,70,30,.09), transparent);
+  }
+  .card .hd .h{
+    font-weight:700;
+    letter-spacing:.3px;
+  }
+  .tag{
+    font-family: var(--mono);
+    font-size:12px;
+    border:1px solid rgba(255,140,0,.35);
+    padding:6px 10px;
+    border-radius:999px;
+    color:var(--muted);
+    background: rgba(10,7,7,.55);
+  }
+  .body{ padding:14px; }
+  .note{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.35;
+  }
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tabbtn{
+    border:1px solid rgba(255,80,20,.40);
+    background: rgba(10,7,7,.55);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:999px;
+    font-family: var(--mono);
+    font-size:12px;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .08s ease;
+  }
+  .tabbtn:active{ transform: scale(.99); }
+  .tabbtn.on{ border-color: rgba(255,140,0,.65); box-shadow: 0 0 0 2px rgba(255,130,0,.12) inset; }
+  textarea{
+    width:100%;
+    min-height:140px;
+    border-radius: 16px;
+    border:1px solid rgba(255,80,20,.40);
+    background: rgba(7,6,6,.85);
+    color:var(--text);
+    padding:12px 12px;
+    font-family: var(--mono);
+    font-size:14px;
+    outline:none;
+  }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .field{ flex:1 1 160px; }
+  label{ display:block; color:var(--muted); font-size:12px; margin:0 0 6px; font-family:var(--mono); }
+  select, input[type="number"], input[type="text"]{
+    width:100%;
+    border-radius:14px;
+    border:1px solid rgba(255,80,20,.40);
+    background: rgba(7,6,6,.85);
+    color:var(--text);
+    padding:10px 10px;
+    font-family: var(--mono);
+    font-size:13px;
+    outline:none;
+  }
+  .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  button{
+    border-radius: 14px;
+    border:1px solid rgba(255,80,20,.45);
+    background: rgba(10,7,7,.70);
+    color:var(--text);
+    padding:10px 12px;
+    font-family: var(--mono);
+    font-size:13px;
+    cursor:pointer;
+    box-shadow: 0 0 0 1px rgba(255,150,0,.06) inset;
+    user-select:none;
+  }
+  button.hot{ border-color: rgba(255,170,0,.55); background: rgba(24,12,6,.75); }
+  button:active{ transform: scale(.99); }
+  .kpi{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:10px;
+  }
+  @media (min-width: 520px){
+    .kpi{ grid-template-columns: 1fr 1fr; }
+  }
+  .k{
+    border:1px solid rgba(255,80,20,.30);
+    background: rgba(7,6,6,.65);
+    border-radius: 18px;
+    padding:12px 12px;
+  }
+  .k .t{ color:var(--muted); font-family:var(--mono); font-size:12px; margin-bottom:6px; }
+  .k .v{ font-family:var(--mono); font-size:18px; letter-spacing:.2px; }
+  .mini{ font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:6px; }
+  .gate{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 12px;
+    border-radius: 18px;
+    border:1px solid rgba(255,80,20,.30);
+    background: rgba(7,6,6,.65);
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,80,20,.35);
+  }
+  .badge.red{ color:#ffd2d2; border-color: rgba(255,75,75,.65); background: rgba(60,10,10,.55); }
+  .badge.amber{ color:#fff0c4; border-color: rgba(255,210,77,.65); background: rgba(60,45,10,.55); }
+  .badge.green{ color:#d6ffe3; border-color: rgba(61,255,106,.55); background: rgba(10,60,22,.45); }
+  canvas{
+    width:100%;
+    height:240px;
+    background: rgba(7,6,6,.55);
+    border:1px solid rgba(255,80,20,.25);
+    border-radius: 18px;
+  }
+  .log{
+    white-space:pre-wrap;
+    font-family: var(--mono);
+    font-size:12px;
+    line-height:1.35;
+    color: var(--muted);
+    background: rgba(7,6,6,.55);
+    border:1px solid rgba(255,80,20,.25);
+    border-radius: 18px;
+    padding:12px;
+    min-height:140px;
+    max-height:280px;
+    overflow:auto;
+  }
+  .warnbox{
+    margin-top:10px;
+    border:1px solid rgba(255,210,77,.45);
+    background: rgba(40,30,10,.40);
+    border-radius: 16px;
+    padding:10px 12px;
+    color:#ffe8a6;
+    font-family:var(--mono);
+    font-size:12px;
+    display:none;
+  }
+  .lowfx *{ transition:none !important; animation:none !important; }
+  .muteline{ height:1px; background: rgba(255,80,20,.18); margin:12px 0; }
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="top">
+    <div class="title">
+      <h1>QDS Number Coherence Lab</h1>
+      <div class="sub">
+        <span style="color:var(--hot);font-family:var(--mono);">Mode: instrument</span><br/>
+        Kernel-weighted coherence in numeric strings • multi-null sanity • reproducible MC • stability runner
+      </div>
+    </div>
+    <div class="pills">
+      <div class="pill"><span style="color:var(--hot2);">offline</span> • no calls</div>
+      <div class="toggle">
+        <input id="lowfx" type="checkbox"/>
+        <label for="lowfx" style="margin:0; font-family:var(--mono); color:var(--muted);">Low-FX</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd">
+      <div class="h">Reality check</div>
+      <div class="tag">QDS_PROTO_DISCLAIMER_V1</div>
+    </div>
+    <div class="body note">
+      This is a <b>structure / coherence instrument</b>. It does <b>not</b> decode truth. It will happily produce meaningful-looking fragments by chance.
+      Use <b>Null family</b>, <b>MC Null</b>, and <b>Stability</b> to avoid self-hypnosis. If you sweep parameters, treat “best z” as <b>multiple comparisons</b>.
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:12px;">
+    <!-- LEFT: INPUT + CONTROLS -->
+    <div class="card">
+      <div class="hd">
+        <div class="h">Input & controls</div>
+        <div class="tabs">
+          <div class="tabbtn on" data-tab="main">Main</div>
+          <div class="tabbtn" data-tab="testfeeds">Test feeds</div>
+          <div class="tabbtn" data-tab="sweep">Sweep</div>
+          <div class="tabbtn" data-tab="export">Export</div>
+        </div>
+      </div>
+      <div class="body">
+        <div id="tab-main">
+          <div class="note" style="margin-bottom:8px;">
+            Paste numbers (or any text). Numeric modes extract digits. Base-26 converts the whole integer (BigInt) into A=0..Z=25.
+          </div>
+
+          <textarea id="inp" spellcheck="false" placeholder="Paste number or text here…"></textarea>
+
+          <div class="row" style="margin-top:12px;">
+            <div class="field">
+              <label>Tokenization</label>
+              <select id="tok">
+                <option value="digits">Digits (0–9)</option>
+                <option value="pairs">Pairs (00–99)</option>
+                <option value="triplets">Triplets (000–999)</option>
+                <option value="base26">Base-26 from whole integer (A=0..Z=25)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Max tokens (cap)</label>
+              <input id="cap" type="number" min="10" max="500000" value="5000"/>
+            </div>
+
+            <div class="field">
+              <label>Null family</label>
+              <select id="nullFamily">
+                <option value="shuffle">Shuffle tokens (freq preserved)</option>
+                <option value="block">Block-shuffle (preserve local order)</option>
+                <option value="shift">Cyclic shift (rotate sequence)</option>
+                <option value="markov1">Markov-1 null (preserve transitions)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Block size (block-shuffle)</label>
+              <input id="blockSize" type="number" min="2" max="5000" value="20"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="field">
+              <label>MC Null (runs)</label>
+              <input id="mcN" type="number" min="10" max="2000" value="200"/>
+            </div>
+            <div class="field">
+              <label>Stability repeats</label>
+              <input id="stabN" type="number" min="3" max="25" value="7"/>
+            </div>
+            <div class="field">
+              <label>Seed (reproducible)</label>
+              <input id="seed" type="text" value="42"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="field">
+              <label>τ (tokens)</label>
+              <input id="tau" type="number" min="1" max="200000" value="42"/>
+            </div>
+            <div class="field">
+              <label>λ (token units)</label>
+              <input id="lam" type="number" min="0.1" max="1e9" step="0.1" value="2.0"/>
+            </div>
+            <div class="field">
+              <label>Max lag</label>
+              <input id="maxLag" type="number" min="5" max="200000" value="140"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:8px;">
+            <div class="field">
+              <label>Options</label>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <div class="toggle">
+                  <input id="optACF" type="checkbox" checked/>
+                  <label for="optACF" style="margin:0;font-family:var(--mono);color:var(--muted);">Numeric ACF</label>
+                </div>
+                <div class="toggle">
+                  <input id="optSIM" type="checkbox" checked/>
+                  <label for="optSIM" style="margin:0;font-family:var(--mono);color:var(--muted);">Symbol-kernel similarity</label>
+                </div>
+                <div class="toggle">
+                  <input id="optFast" type="checkbox" checked/>
+                  <label for="optFast" style="margin:0;font-family:var(--mono);color:var(--muted);">Fast MC (consistent)</label>
+                </div>
+                <div class="toggle">
+                  <input id="optAutoScale" type="checkbox" checked/>
+                  <label for="optAutoScale" style="margin:0;font-family:var(--mono);color:var(--muted);">Auto-scale λ</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btnbar">
+            <button class="hot" id="runMain">Run analysis</button>
+            <button id="runNullSingle">Null (single)</button>
+            <button id="runMC">MC Null</button>
+            <button id="runStab">Stability (median z)</button>
+            <button id="autoTune">Auto-tune τ/λ</button>
+            <button id="reset">Reset</button>
+          </div>
+
+          <div class="warnbox" id="warnbox"></div>
+        </div>
+
+        <div id="tab-testfeeds" style="display:none;">
+          <div class="note">
+            These are known structured / null-ish feeds to validate the instrument. Use the same MC settings each time.
+          </div>
+          <div class="muteline"></div>
+          <div class="btnbar">
+            <button class="hot" data-feed="random">Random digits (null-ish)</button>
+            <button data-feed="periodic">0101… (strong periodic)</button>
+            <button data-feed="champer">Champernowne (1234567891011…)</button>
+            <button data-feed="fib10">Fibonacci mod 10</button>
+            <button data-feed="a1z26">A1Z26 (THE QUICK BROWN…)</button>
+            <button data-feed="vignum">Vigenère-numeric (key=RAINMAN)</button>
+          </div>
+          <div class="muteline"></div>
+          <div class="note">
+            Tip: A1Z26 / Vigenère are best tested in <b>Pairs</b> mode. Periodic “0101” will spike even in Digits.
+          </div>
+        </div>
+
+        <div id="tab-sweep" style="display:none;">
+          <div class="note">
+            Quick τ sweep (coarse). This is <b>exploratory</b>. Best z across many τ values is subject to multiple comparisons.
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field">
+              <label>τ sweep list (comma)</label>
+              <input id="tauList" type="text" value="10,20,30,42,60,80,120,160"/>
+            </div>
+            <div class="field">
+              <label>MC per point</label>
+              <input id="mcSweep" type="number" min="10" max="400" value="60"/>
+            </div>
+          </div>
+          <div class="btnbar">
+            <button class="hot" id="runSweep">Run τ sweep</button>
+          </div>
+          <div class="muteline"></div>
+          <canvas id="sweepCanvas" width="900" height="260"></canvas>
+          <div class="mini" id="sweepNote"></div>
+        </div>
+
+        <div id="tab-export" style="display:none;">
+          <div class="note">
+            Export last run. JSON includes settings, metrics, null stats, and reproducible seed.
+          </div>
+          <div class="muteline"></div>
+          <div class="btnbar">
+            <button class="hot" id="copyJSON">Copy JSON</button>
+            <button id="dlJSON">Download JSON</button>
+            <button id="dlTXT">Download TXT</button>
+          </div>
+          <div class="muteline"></div>
+          <div class="log" id="exportPreview">No run yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUTPUTS -->
+    <div class="card">
+      <div class="hd">
+        <div class="h">Results</div>
+        <div class="tag" id="statusTag">ready</div>
+      </div>
+      <div class="body">
+        <div class="gate">
+          <div>
+            <div class="mini">Evidence gate</div>
+            <div class="v" style="font-family:var(--mono);font-size:16px;" id="gateText">—</div>
+          </div>
+          <div class="badge red" id="gateBadge">RED</div>
+        </div>
+
+        <div class="muteline"></div>
+
+        <div class="kpi">
+          <div class="k"><div class="t">tokens n</div><div class="v" id="k_n">—</div></div>
+          <div class="k"><div class="t">unique | repeats</div><div class="v" id="k_u">—</div><div class="mini" id="k_rep">—</div></div>
+          <div class="k"><div class="t">entropy H | normalized h</div><div class="v" id="k_H">—</div><div class="mini" id="k_h">—</div></div>
+          <div class="k"><div class="t">transition entropy H₁ | h₁</div><div class="v" id="k_H1">—</div><div class="mini" id="k_h1">—</div></div>
+
+          <div class="k"><div class="t">ACF area (positive) | weighted</div><div class="v" id="k_acf">—</div><div class="mini" id="k_tauhat">—</div></div>
+          <div class="k"><div class="t">symbol-kernel similarity</div><div class="v" id="k_sim">—</div><div class="mini" id="k_base">—</div></div>
+
+          <div class="k" style="grid-column:1 / -1;">
+            <div class="t">QDS coherence score (0–1)</div>
+            <div class="v" id="k_score">—</div>
+            <div class="mini" id="k_parts">—</div>
+          </div>
+
+          <div class="k" style="grid-column:1 / -1;">
+            <div class="t">Null mean ± sd | z-score | Δ</div>
+            <div class="v" id="k_null">—</div>
+            <div class="mini" id="k_p">—</div>
+          </div>
+        </div>
+
+        <div class="muteline"></div>
+
+        <canvas id="chart" width="900" height="260"></canvas>
+        <div class="mini">Blue = ACF • Green = symbol similarity by lag • Orange = exp fit (if any)</div>
+
+        <div class="muteline"></div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ----------------------------
+   V3+ core principles
+   - Offline, deterministic seed for reproducibility
+   - Same estimator for main + null when Fast MC enabled (prevents z blow-ups)
+   - Multiple null families to reduce "easy null" wins
+   - Evidence gate + sd sanity checks
+----------------------------- */
+
+// ---------- deterministic PRNG (xorshift32) ----------
+function hashSeed(str){
+  // simple string hash -> uint32
+  let h = 2166136261 >>> 0;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+function XorShift32(seed){
+  let x = seed >>> 0;
+  return function(){
+    x ^= (x << 13) >>> 0;
+    x ^= (x >>> 17) >>> 0;
+    x ^= (x << 5) >>> 0;
+    return (x >>> 0) / 4294967296;
+  };
+}
+function randint(rng, n){ return Math.floor(rng()*n); }
+
+// ---------- helpers ----------
+const $ = (id)=>document.getElementById(id);
+const fmt = (x, d=4)=> (Number.isFinite(x) ? x.toFixed(d) : "—");
+const fmtSci = (x)=> (Number.isFinite(x) ? (Math.abs(x)<1e-3 && x!==0 ? x.toExponential(3) : x.toFixed(4)) : "—");
+function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+function now(){
+  const d=new Date();
+  return d.toTimeString().slice(0,8);
+}
+
+function logLine(s){
+  const el=$("log");
+  el.textContent = (el.textContent ? el.textContent+"\n" : "") + `[${now()}] ${s}`;
+  el.scrollTop = el.scrollHeight;
+}
+function setStatus(s){ $("statusTag").textContent=s; }
+
+// ---------- tokenization ----------
+function extractDigits(text){
+  const m = text.match(/\d/g);
+  return m ? m.join("") : "";
+}
+function tokenizeDigits(s, cap){
+  const out=[];
+  for(let i=0;i<s.length && out.length<cap;i++){
+    const c=s.charCodeAt(i)-48;
+    if(c>=0 && c<=9) out.push(c);
+  }
+  return out;
+}
+function tokenizeChunks(s, k, cap){
+  const out=[];
+  for(let i=0;i+k<=s.length && out.length<cap;i+=k){
+    const chunk = s.slice(i,i+k);
+    const v = Number(chunk);
+    if(Number.isFinite(v)) out.push(v);
+  }
+  return out;
+}
+function tokenizeBase26(bigintStr, cap){
+  // BigInt -> base26 digits (A=0..Z=25). If parse fails, return empty.
+  let s = extractDigits(bigintStr);
+  if(!s) return [];
+  let n;
+  try{
+    n = BigInt(s);
+  }catch(e){
+    return [];
+  }
+  const base = 26n;
+  const out=[];
+  if(n===0n) return [0];
+  while(n>0n && out.length<cap){
+    const r = n % base;
+    out.push(Number(r));
+    n = n / base;
+  }
+  out.reverse();
+  return out;
+}
+
+function tokenizeInput(text, mode, cap){
+  if(mode==="base26"){
+    return tokenizeBase26(text, cap);
+  }
+  const digits = extractDigits(text);
+  if(mode==="digits") return tokenizeDigits(digits, cap);
+  if(mode==="pairs") return tokenizeChunks(digits, 2, cap);
+  if(mode==="triplets") return tokenizeChunks(digits, 3, cap);
+  return tokenizeDigits(digits, cap);
+}
+
+// ---------- stats: freq, entropy ----------
+function freqMap(tokens){
+  const m=new Map();
+  for(const t of tokens) m.set(t, (m.get(t)||0)+1);
+  return m;
+}
+function entropyBits(freq, n){
+  let H=0;
+  for(const c of freq.values()){
+    const p=c/n;
+    H -= p * Math.log2(p);
+  }
+  return H;
+}
+function transitionEntropy(tokens, alpha=0.25){
+  // conditional entropy H(X_t|X_{t-1}) with Laplace smoothing over observed alphabet
+  const n=tokens.length;
+  if(n<2) return {H1:0, k:0};
+
+  const freq = freqMap(tokens);
+  const alphaKeys = Array.from(freq.keys());
+  const k = alphaKeys.length;
+  const idx = new Map(alphaKeys.map((v,i)=>[v,i]));
+
+  // counts[i][j]
+  const counts = Array.from({length:k}, ()=> new Float64Array(k));
+  const from = new Float64Array(k);
+
+  for(let i=1;i<n;i++){
+    const a = idx.get(tokens[i-1]);
+    const b = idx.get(tokens[i]);
+    if(a===undefined || b===undefined) continue;
+    counts[a][b] += 1;
+    from[a] += 1;
+  }
+
+  let H1=0;
+  const totalFrom = n-1;
+  for(let i=0;i<k;i++){
+    const fi = from[i];
+    if(fi<=0) continue;
+    const pi = fi/totalFrom;
+    const denom = fi + alpha*k;
+    let Hi=0;
+    for(let j=0;j<k;j++){
+      const p = (counts[i][j] + alpha) / denom;
+      Hi -= p * Math.log2(p);
+    }
+    H1 += pi * Hi;
+  }
+  return {H1, k};
+}
+
+// ---------- numeric ACF (standardized) ----------
+function acfNumeric(tokens, maxLag){
+  const n=tokens.length;
+  if(n<3) return {acf:[], mean:0, var:0};
+  let mean=0;
+  for(const x of tokens) mean+=x;
+  mean/=n;
+  let v=0;
+  for(const x of tokens){ const d=x-mean; v += d*d; }
+  v/=n;
+  if(v<=1e-12) return {acf:Array(maxLag+1).fill(0), mean, var:v};
+
+  const acf = new Float64Array(maxLag+1);
+  acf[0]=1;
+  for(let lag=1;lag<=maxLag;lag++){
+    let s=0;
+    const m = n-lag;
+    for(let i=0;i<m;i++){
+      s += (tokens[i]-mean)*(tokens[i+lag]-mean);
+    }
+    acf[lag] = (s/m) / v;
+  }
+  return {acf:Array.from(acf), mean, var:v};
+}
+
+// ---------- exp fit to ACF envelope (rough) ----------
+function fitTauFromACF(acf){
+  // Fit log(acf) vs lag for positive acf values (excluding lag 0)
+  const xs=[], ys=[];
+  for(let i=1;i<acf.length;i++){
+    const y=acf[i];
+    if(y>0.02 && y<0.98){
+      xs.push(i);
+      ys.push(Math.log(y));
+    }
+  }
+  if(xs.length<6) return {tau:NaN, ok:false};
+  // linear regression y = a + b x
+  let sx=0, sy=0, sxx=0, sxy=0;
+  for(let i=0;i<xs.length;i++){
+    const x=xs[i], y=ys[i];
+    sx+=x; sy+=y; sxx+=x*x; sxy+=x*y;
+  }
+  const n=xs.length;
+  const denom = (n*sxx - sx*sx);
+  if(Math.abs(denom)<1e-9) return {tau:NaN, ok:false};
+  const b = (n*sxy - sx*sy)/denom;
+  if(b>=0) return {tau:NaN, ok:false};
+  const tau = -1/b;
+  return {tau, ok:true};
+}
+
+// ---------- 2D symbol-kernel similarity (index + token distance) ----------
+function symbolKernelSimilarity(tokens, tau, lam, maxLag, rng, fast=false){
+  const n=tokens.length;
+  if(n<3) return {sim:0, base:0, w:0};
+
+  // baseline expected similarity under independence: sum p(a)p(b) exp(-(a-b)^2/(2 lam^2))
+  const freq = freqMap(tokens);
+  const keys = Array.from(freq.keys());
+  const counts = keys.map(k=>freq.get(k));
+  const probs = counts.map(c=>c/n);
+
+  let base=0;
+  const denom = 2*lam*lam;
+  for(let i=0;i<keys.length;i++){
+    for(let j=0;j<keys.length;j++){
+      const d = keys[i]-keys[j];
+      base += probs[i]*probs[j]*Math.exp(-(d*d)/denom);
+    }
+  }
+
+  // observed similarity across lags, kernel-weighted
+  let num=0, wsum=0;
+
+  const L = Math.min(maxLag, n-2);
+  // Fast mode: sample a subset of pairs instead of full nested loops
+  const samplesPerLag = fast ? 48 : 0;
+
+  for(let lag=1;lag<=L;lag++){
+    const wd = Math.exp(-lag/Math.max(1e-9,tau));
+    if(wd<1e-12) continue;
+
+    if(!fast){
+      let acc=0;
+      const m=n-lag;
+      for(let i=0;i<m;i++){
+        const dv = tokens[i]-tokens[i+lag];
+        acc += Math.exp(-(dv*dv)/denom);
+      }
+      const obs = acc/m;
+      num += wd * (obs - base);
+      wsum += wd;
+    }else{
+      const m=n-lag;
+      let acc=0;
+      const S=Math.min(samplesPerLag, m);
+      for(let s=0;s<S;s++){
+        const i = randint(rng, m);
+        const dv = tokens[i]-tokens[i+lag];
+        acc += Math.exp(-(dv*dv)/denom);
+      }
+      const obs = acc/S;
+      num += wd * (obs - base);
+      wsum += wd;
+    }
+  }
+
+  const raw = (wsum>0) ? (num/wsum) : 0;
+  // normalize to [0,1] (rough): (raw)/(1-base)
+  const sim = clamp((raw) / Math.max(1e-9,(1-base)), 0, 1);
+  return {sim, base, w:wsum};
+}
+
+// ---------- coherence score ----------
+function coherenceScore(metrics){
+  // weights (kept transparent; do not “learn” them in-app)
+  const wH=0.22, wH1=0.22, wA=0.42, wS=0.14;
+  const score = wH*(1-metrics.h) + wH1*(1-metrics.h1) + wA*(metrics.a) + wS*(metrics.sim);
+  return clamp(score, 0, 1);
+}
+
+// ---------- null family generators ----------
+function shuffleTokens(tokens, rng){
+  const a = tokens.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = randint(rng, i+1);
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+function blockShuffle(tokens, blockSize, rng){
+  const n=tokens.length;
+  const bs = Math.max(2, Math.floor(blockSize));
+  const blocks=[];
+  for(let i=0;i<n;i+=bs){
+    blocks.push(tokens.slice(i, Math.min(n, i+bs)));
+  }
+  // shuffle blocks
+  for(let i=blocks.length-1;i>0;i--){
+    const j=randint(rng,i+1);
+    const t=blocks[i]; blocks[i]=blocks[j]; blocks[j]=t;
+  }
+  return blocks.flat();
+}
+function cyclicShift(tokens, rng){
+  const n=tokens.length;
+  if(n<2) return tokens.slice();
+  const k = randint(rng, n);
+  return tokens.slice(k).concat(tokens.slice(0,k));
+}
+function markov1Null(tokens, rng){
+  // build transition probabilities from data (Laplace smoothing)
+  const n=tokens.length;
+  if(n<3) return shuffleTokens(tokens, rng);
+
+  const freq = freqMap(tokens);
+  const keys = Array.from(freq.keys());
+  const k = keys.length;
+  const idx = new Map(keys.map((v,i)=>[v,i]));
+
+  const alpha=0.25;
+  const counts = Array.from({length:k}, ()=> new Float64Array(k));
+  const from = new Float64Array(k);
+
+  for(let i=1;i<n;i++){
+    const a = idx.get(tokens[i-1]);
+    const b = idx.get(tokens[i]);
+    if(a===undefined || b===undefined) continue;
+    counts[a][b]+=1;
+    from[a]+=1;
+  }
+
+  // precompute CDF rows
+  const cdfs = Array.from({length:k}, ()=> new Float64Array(k));
+  for(let i=0;i<k;i++){
+    const denom = from[i] + alpha*k;
+    let cum=0;
+    for(let j=0;j<k;j++){
+      const p = (counts[i][j] + alpha)/denom;
+      cum += p;
+      cdfs[i][j]=cum;
+    }
+    cdfs[i][k-1]=1;
+  }
+
+  // initial state from marginal
+  const probs = keys.map(v=>freq.get(v)/n);
+  const cum0 = new Float64Array(k);
+  let cum=0;
+  for(let i=0;i<k;i++){ cum+=probs[i]; cum0[i]=cum; }
+  cum0[k-1]=1;
+
+  function sampleFromCDF(cdf){
+    const u=rng();
+    for(let j=0;j<cdf.length;j++) if(u<=cdf[j]) return j;
+    return cdf.length-1;
+  }
+
+  const out = new Array(n);
+  let state = sampleFromCDF(cum0);
+  out[0]=keys[state];
+  for(let i=1;i<n;i++){
+    state = sampleFromCDF(cdfs[state]);
+    out[i]=keys[state];
+  }
+  return out;
+}
+
+function makeNull(tokens, family, rng){
+  if(family==="shuffle") return shuffleTokens(tokens, rng);
+  if(family==="block") return blockShuffle(tokens, Number($("blockSize").value||20), rng);
+  if(family==="shift") return cyclicShift(tokens, rng);
+  if(family==="markov1") return markov1Null(tokens, rng);
+  return shuffleTokens(tokens, rng);
+}
+
+// ---------- analysis pipeline ----------
+function analyze(tokens, settings, rngForFast){
+  const n=tokens.length;
+  const freq = freqMap(tokens);
+  const uniq = freq.size;
+  const H = entropyBits(freq, n);
+  const Hmax = (uniq>0) ? Math.log2(uniq) : 0;
+  const h = (Hmax>0) ? H/Hmax : 0;
+
+  const {H1} = transitionEntropy(tokens, 0.25);
+  const h1 = (Hmax>0) ? H1/Hmax : 0;
+
+  const maxLag = Math.max(5, Math.min(settings.maxLag, n-2));
+
+  let acf=[], a=0, tauHat=NaN, tauOk=false;
+
+  if(settings.useACF){
+    // strict: full ACF, fast: still full for main; MC will use same path if optFast true
+    const res = acfNumeric(tokens, maxLag);
+    acf = res.acf;
+
+    // weighted positive area
+    let num=0, den=0;
+    for(let lag=1;lag<=maxLag;lag++){
+      const w = Math.exp(-lag/Math.max(1e-9, settings.tau));
+      den += w;
+      num += w * Math.max(0, acf[lag]);
+    }
+    a = (den>0) ? (num/den) : 0;
+
+    const ft = fitTauFromACF(acf);
+    tauHat = ft.tau;
+    tauOk = ft.ok;
+  }
+
+  let sim=0, base=0, wsim=0;
+  if(settings.useSIM){
+    const r = symbolKernelSimilarity(tokens, settings.tau, settings.lam, maxLag, rngForFast, settings.fast);
+    sim = r.sim; base=r.base; wsim=r.w;
+  }
+
+  const metrics = {n, uniq, H, Hmax, h, H1, h1, a, sim, base, wsim, maxLag, tauHat, tauOk, acf};
+  const score = coherenceScore(metrics);
+  return {metrics, score};
+}
+
+// ---------- Welford stats ----------
+function welfordInit(){ return {n:0, mean:0, m2:0}; }
+function welfordPush(st, x){
+  st.n++;
+  const d = x - st.mean;
+  st.mean += d/st.n;
+  const d2 = x - st.mean;
+  st.m2 += d*d2;
+}
+function welfordFinal(st){
+  if(st.n<2) return {mean:st.mean, sd:0};
+  const varr = st.m2/(st.n-1);
+  return {mean:st.mean, sd:Math.sqrt(Math.max(0,varr))};
+}
+
+// ---------- normal approx p-value ----------
+function erfc(x){
+  // Abramowitz-Stegun approximation
+  const z = Math.abs(x);
+  const t = 1 / (1 + 0.5*z);
+  const r = t * Math.exp(-z*z - 1.26551223 +
+    t*(1.00002368 +
+    t*(0.37409196 +
+    t*(0.09678418 +
+    t*(-0.18628806 +
+    t*(0.27886807 +
+    t*(-1.13520398 +
+    t*(1.48851587 +
+    t*(-0.82215223 +
+    t*0.17087277)))))))));
+  return (x>=0) ? r : 2-r;
+}
+function pTwoSidedFromZ(z){
+  if(!Number.isFinite(z)) return NaN;
+  // p = erfc(|z|/sqrt(2))
+  return erfc(Math.abs(z)/Math.SQRT2);
+}
+
+// ---------- UI wiring ----------
+let LAST = null;
+
+function readSettings(){
+  const mode = $("tok").value;
+  const cap = Number($("cap").value||5000);
+  const tau = Math.max(1, Number($("tau").value||42));
+  const lamRaw = Math.max(0.1, Number($("lam").value||2));
+  const maxLag = Math.max(5, Number($("maxLag").value||140));
+  const useACF = $("optACF").checked;
+  const useSIM = $("optSIM").checked;
+  const fast = $("optFast").checked;
+  const autoScale = $("optAutoScale").checked;
+  const nullFamily = $("nullFamily").value;
+  const mcN = Math.max(10, Number($("mcN").value||200));
+  const stabN = Math.max(3, Number($("stabN").value||7));
+  const seedStr = String($("seed").value||"42");
+
+  // autoscale λ by tokenization / alphabet range (avoids λ=50 for digits nonsense)
+  let lam = lamRaw;
+  if(autoScale){
+    if(mode==="digits") lam = 1.8;
+    else if(mode==="pairs") lam = 18;
+    else if(mode==="triplets") lam = 90;
+    else if(mode==="base26") lam = 6.5;
+  }
+  return {mode, cap, tau, lam, maxLag, useACF, useSIM, fast, autoScale, nullFamily, mcN, stabN, seedStr};
+}
+
+function showWarn(msg){
+  const wb=$("warnbox");
+  if(!msg){ wb.style.display="none"; wb.textContent=""; return; }
+  wb.style.display="block";
+  wb.textContent=msg;
+}
+
+function setGate(z){
+  const badge=$("gateBadge");
+  const text=$("gateText");
+  if(!Number.isFinite(z)){
+    badge.className="badge red";
+    badge.textContent="RED";
+    text.textContent="No z-score yet.";
+    return;
+  }
+  if(z>=3){
+    badge.className="badge green";
+    badge.textContent="GREEN";
+    text.textContent=`Strong structure vs selected null (z=${z.toFixed(2)}).`;
+  }else if(z>=2){
+    badge.className="badge amber";
+    badge.textContent="AMBER";
+    text.textContent=`Suggestive (z=${z.toFixed(2)}). Needs more data / stricter null.`;
+  }else{
+    badge.className="badge red";
+    badge.textContent="RED";
+    text.textContent=`Weak / null-ish (z=${z.toFixed(2)}).`;
+  }
+}
+
+function drawChart(mainACF, mainSIMByLag, tauFit, maxLag){
+  const c=$("chart"), ctx=c.getContext("2d");
+  const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+
+  // frame
+  ctx.strokeStyle="rgba(255,80,20,.35)";
+  ctx.lineWidth=2;
+  roundRect(ctx, 10, 10, W-20, H-20, 18, false, true);
+
+  // axes
+  const x0=30, y0=H-30, x1=W-20, y1=20;
+  ctx.strokeStyle="rgba(255,220,107,.18)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(x0,y0); ctx.lineTo(x1,y0);
+  ctx.moveTo(x0,y0); ctx.lineTo(x0,y1);
+  ctx.stroke();
+
+  function plotLine(arr, color){
+    if(!arr || arr.length<2) return;
+    ctx.strokeStyle=color;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=1;i<=maxLag && i<arr.length;i++){
+      const x = x0 + (i/maxLag)*(x1-x0);
+      const yv = arr[i];
+      const y = y0 - clamp(yv, -0.2, 1.0) * (y0-y1);
+      if(i===1) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  // ACF (blue-ish but we won't specify; using fixed anyway — sorry style gods)
+  plotLine(mainACF, "rgba(255,220,107,.95)"); // bright line (your terminal vibe)
+  // SIM by lag (green)
+  plotLine(mainSIMByLag, "rgba(61,255,106,.55)");
+
+  // exp fit overlay (orange) if tauFit finite
+  if(Number.isFinite(tauFit)){
+    const fit = new Array(maxLag+1).fill(0);
+    for(let i=1;i<=maxLag;i++){
+      fit[i] = Math.exp(-i/tauFit);
+    }
+    plotLine(fit, "rgba(255,122,0,.65)");
+  }
+
+  // label
+  ctx.fillStyle="rgba(255,220,107,.55)";
+  ctx.font="12px " + getComputedStyle(document.body).fontFamily;
+  ctx.fillText("lag", x1-24, y0+16);
+}
+
+function roundRect(ctx, x, y, w, h, r, fill, stroke){
+  if(w<2*r) r=w/2;
+  if(h<2*r) r=h/2;
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+  if(fill) ctx.fill();
+  if(stroke) ctx.stroke();
+}
+
+// derive SIM-by-lag for chart (fast)
+function simByLag(tokens, tau, lam, maxLag){
+  const n=tokens.length;
+  const L=Math.min(maxLag, n-2);
+  const out = new Array(L+1).fill(0);
+  const denom = 2*lam*lam;
+
+  // baseline (independence)
+  const freq = freqMap(tokens);
+  const keys = Array.from(freq.keys());
+  const probs = keys.map(k=>freq.get(k)/n);
+  let base=0;
+  for(let i=0;i<keys.length;i++){
+    for(let j=0;j<keys.length;j++){
+      const d=keys[i]-keys[j];
+      base += probs[i]*probs[j]*Math.exp(-(d*d)/denom);
+    }
+  }
+  for(let lag=1;lag<=L;lag++){
+    let acc=0;
+    const m=n-lag;
+    for(let i=0;i<m;i++){
+      const dv=tokens[i]-tokens[i+lag];
+      acc += Math.exp(-(dv*dv)/denom);
+    }
+    const obs = acc/m;
+    const raw = obs-base;
+    out[lag] = clamp(raw/Math.max(1e-9,(1-base)), 0, 1);
+  }
+  return out;
+}
+
+// ---------- run main ----------
+function runMain(){
+  showWarn("");
+  const settings = readSettings();
+  const seed = hashSeed(settings.seedStr + "|main|" + settings.mode + "|" + settings.nullFamily);
+  const rng = XorShift32(seed);
+
+  const tokens = tokenizeInput($("inp").value, settings.mode, settings.cap);
+  if(tokens.length<20){
+    showWarn("Power warning: too few tokens. Paste more input or increase cap.");
+  }
+  setStatus("running");
+
+  const main = analyze(tokens, settings, rng);
+
+  // store last
+  LAST = {
+    when: new Date().toISOString(),
+    settings, tokensN: tokens.length,
+    main
+  };
+
+  render(main, null, null);
+  logLine(`main: ${settings.mode} n=${main.metrics.n} uniq=${main.metrics.uniq} H=${fmt(main.metrics.H,3)} H1=${fmt(main.metrics.H1,3)} score=${fmt(main.score,4)} sim=${fmtSci(main.metrics.sim)} tauHat=${Number.isFinite(main.metrics.tauHat)?fmt(main.metrics.tauHat,2):"—"}`);
+  setStatus("done");
+  updateExport();
+}
+
+// ---------- null single ----------
+function runNullSingle(){
+  if(!LAST) runMain();
+  showWarn("");
+  const settings = readSettings();
+  const seed = hashSeed(settings.seedStr + "|nullsingle|" + settings.mode + "|" + settings.nullFamily);
+  const rng = XorShift32(seed);
+
+  const tokens = tokenizeInput($("inp").value, settings.mode, settings.cap);
+  if(tokens.length<20) showWarn("Power warning: too few tokens.");
+
+  const nullTokens = makeNull(tokens, settings.nullFamily, rng);
+  const nullRes = analyze(nullTokens, settings, rng);
+
+  LAST.nullSingle = nullRes;
+  render(LAST.main, {mean:nullRes.score, sd:NaN, z:NaN, p:NaN, delta: LAST.main.score-nullRes.score}, nullRes);
+  logLine(`null (single): score=${fmt(nullRes.score,4)} H=${fmt(nullRes.metrics.H,3)} H1=${fmt(nullRes.metrics.H1,3)} sim=${fmtSci(nullRes.metrics.sim)}`);
+  updateExport();
+}
+
+// ---------- MC null ----------
+function runMC(){
+  if(!LAST) runMain();
+  showWarn("");
+  const settings = readSettings();
+
+  const tokens = tokenizeInput($("inp").value, settings.mode, settings.cap);
+  if(tokens.length<30) showWarn("Power warning: low token count. MC significance will be noisy.");
+
+  const mainSeed = hashSeed(settings.seedStr + "|main|" + settings.mode + "|" + settings.nullFamily);
+  const rngMain = XorShift32(mainSeed);
+
+  // If Fast MC is enabled, we analyze main with fast estimator too (consistency rule)
+  const mainSettings = {...settings, fast: settings.fast};
+  const main = analyze(tokens, mainSettings, rngMain);
+
+  const st = welfordInit();
+  const N = settings.mcN;
+
+  // For MC, each run gets its own rng stream derived from seed and index (reproducible).
+  for(let i=0;i<N;i++){
+    const r = XorShift32(hashSeed(settings.seedStr + `|mc|${settings.nullFamily}|${settings.mode}|${i}`));
+    const nullTokens = makeNull(tokens, settings.nullFamily, r);
+    const nullRes = analyze(nullTokens, mainSettings, r);
+    welfordPush(st, nullRes.score);
+  }
+  const {mean, sd} = welfordFinal(st);
+  const delta = main.score - mean;
+
+  let z = NaN, p = NaN;
+  if(sd > 1e-9){
+    z = delta / sd;
+    p = pTwoSidedFromZ(z);
+  }
+
+  // sd sanity: if sd is absurdly tiny, warn (typical sign of too-easy null or mismatch)
+  if(sd <= 1e-6){
+    showWarn(`SD sanity warning: null sd=${sd.toExponential(2)} is tiny. Consider a stricter null family (block/markov1) or disable Fast MC for strict curves.`);
+  }
+
+  LAST.main = main;
+  LAST.mc = {mean, sd, z, p, delta, N};
+
+  render(main, {mean, sd, z, p, delta, N}, null);
+  logLine(`MC null x${N}: mean=${fmt(mean,4)} sd=${fmtSci(sd)} z=${Number.isFinite(z)?z.toFixed(3):"—"} (Δ=${fmtSci(delta)}) [null=${settings.nullFamily}${settings.fast?"|fast":""}]`);
+  updateExport();
+}
+
+// ---------- Stability (median z) ----------
+async function runStability(){
+  if(!LAST) runMain();
+  showWarn("");
+  const settings = readSettings();
+  const R = settings.stabN;
+  const tokens = tokenizeInput($("inp").value, settings.mode, settings.cap);
+  if(tokens.length<40) showWarn("Power warning: stability is shaky with low token count.");
+
+  setStatus("stability…");
+  const zs=[];
+
+  for(let r=0;r<R;r++){
+    // small MC per repeat to keep it mobile-safe (use mcN but cap)
+    const mc = Math.min(settings.mcN, 200);
+    const repSeed = settings.seedStr + `|stab|${r}`;
+    const repSettings = {...settings, seedStr: repSeed, mcN: mc};
+    $("seed").value = repSeed; // show what happened
+
+    // run MC once with these settings
+    const tok = tokenizeInput($("inp").value, repSettings.mode, repSettings.cap);
+
+    const mainSeed = hashSeed(repSettings.seedStr + "|main|" + repSettings.mode + "|" + repSettings.nullFamily);
+    const rngMain = XorShift32(mainSeed);
+    const main = analyze(tok, repSettings, rngMain);
+
+    const st = welfordInit();
+    for(let i=0;i<mc;i++){
+      const rr = XorShift32(hashSeed(repSettings.seedStr + `|mc|${repSettings.nullFamily}|${repSettings.mode}|${i}`));
+      const nt = makeNull(tok, repSettings.nullFamily, rr);
+      const nr = analyze(nt, repSettings, rr);
+      welfordPush(st, nr.score);
+    }
+    const {mean, sd} = welfordFinal(st);
+    const z = (sd>1e-9) ? (main.score-mean)/sd : NaN;
+    if(Number.isFinite(z)) zs.push(z);
+
+    // yield to UI a bit
+    await new Promise(res=>setTimeout(res, 0));
+  }
+
+  zs.sort((a,b)=>a-b);
+  const med = zs.length ? zs[Math.floor(zs.length/2)] : NaN;
+  const q1 = zs.length ? zs[Math.floor(zs.length*0.25)] : NaN;
+  const q3 = zs.length ? zs[Math.floor(zs.length*0.75)] : NaN;
+
+  $("seed").value = settings.seedStr; // restore
+  setStatus("done");
+  if(Number.isFinite(med)){
+    logLine(`stability: repeats=${R} median z=${med.toFixed(3)} (IQR ${q1.toFixed(2)}–${q3.toFixed(2)})`);
+    showWarn(`Stability result: median z=${med.toFixed(2)} (IQR ${q1.toFixed(2)}–${q3.toFixed(2)}). Use median, not the spikiest run.`);
+    setGate(med);
+  }else{
+    showWarn("Stability failed: z was not finite (likely sd too small or too few tokens).");
+  }
+}
+
+// ---------- Sweep ----------
+async function runSweep(){
+  if(!LAST) runMain();
+  showWarn("");
+  const settings = readSettings();
+  const list = $("tauList").value.split(",").map(x=>Number(x.trim())).filter(x=>Number.isFinite(x)&&x>0);
+  const mc = Math.max(10, Math.min(400, Number($("mcSweep").value||60)));
+  const tokens = tokenizeInput($("inp").value, settings.mode, settings.cap);
+  if(tokens.length<60) showWarn("Power warning: sweep with low tokens will overfit noise.");
+
+  const results=[];
+
+  setStatus("sweep…");
+  for(let t of list){
+    const s2 = {...settings, tau:t, mcN:mc};
+    const mainSeed = hashSeed(s2.seedStr + `|sweep|tau=${t}|main|${s2.mode}|${s2.nullFamily}`);
+    const rngMain = XorShift32(mainSeed);
+    const main = analyze(tokens, s2, rngMain);
+
+    const st = welfordInit();
+    for(let i=0;i<mc;i++){
+      const rr = XorShift32(hashSeed(s2.seedStr + `|sweep|tau=${t}|mc|${s2.nullFamily}|${s2.mode}|${i}`));
+      const nt = makeNull(tokens, s2.nullFamily, rr);
+      const nr = analyze(nt, s2, rr);
+      welfordPush(st, nr.score);
+    }
+    const {mean, sd} = welfordFinal(st);
+    const z = (sd>1e-9) ? (main.score-mean)/sd : NaN;
+    results.push({tau:t, z, mean, sd, score:main.score});
+    await new Promise(res=>setTimeout(res,0));
+  }
+  setStatus("done");
+
+  // draw sweep
+  drawSweep(results);
+  const best = results.filter(r=>Number.isFinite(r.z)).sort((a,b)=>b.z-a.z)[0];
+  if(best){
+    $("sweepNote").textContent = `Best z=${best.z.toFixed(2)} at τ=${best.tau}. (Exploratory; multiple τ tested=${results.length}.)`;
+  }else{
+    $("sweepNote").textContent = "No finite z results.";
+  }
+  logLine(`sweep: τ list=${list.join(",")} mc/pt=${mc} best=${best?`z=${best.z.toFixed(2)}@τ=${best.tau}`:"—"}`);
+}
+
+function drawSweep(results){
+  const c=$("sweepCanvas"), ctx=c.getContext("2d");
+  const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+
+  ctx.strokeStyle="rgba(255,80,20,.35)";
+  ctx.lineWidth=2;
+  roundRect(ctx, 10, 10, W-20, H-20, 18, false, true);
+
+  const x0=30, y0=H-30, x1=W-20, y1=20;
+  ctx.strokeStyle="rgba(255,220,107,.18)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(x0,y0); ctx.lineTo(x1,y0);
+  ctx.moveTo(x0,y0); ctx.lineTo(x0,y1);
+  ctx.stroke();
+
+  const xs = results.map(r=>r.tau);
+  const zs = results.map(r=>Number.isFinite(r.z)?r.z:0);
+  const zmax = Math.max(1, ...zs);
+  const zmin = Math.min(0, ...zs);
+
+  function X(t){
+    const tmin=Math.min(...xs), tmax=Math.max(...xs);
+    if(tmax===tmin) return (x0+x1)/2;
+    return x0 + (t-tmin)/(tmax-tmin)*(x1-x0);
+  }
+  function Y(z){
+    const span = (zmax - zmin) || 1;
+    return y0 - (z - zmin)/span*(y0-y1);
+  }
+
+  // plot line
+  ctx.strokeStyle="rgba(255,220,107,.92)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<results.length;i++){
+    const x=X(results[i].tau);
+    const y=Y(Number.isFinite(results[i].z)?results[i].z:0);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // threshold line z=3
+  const y3 = Y(3);
+  ctx.strokeStyle="rgba(61,255,106,.35)";
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(x0,y3); ctx.lineTo(x1,y3);
+  ctx.stroke();
+
+  ctx.fillStyle="rgba(255,220,107,.55)";
+  ctx.font="12px " + getComputedStyle(document.body).fontFamily;
+  ctx.fillText("z", x0-10, y1-4);
+  ctx.fillText("τ", x1-16, y0+16);
+  ctx.fillStyle="rgba(61,255,106,.55)";
+  ctx.fillText("z=3", x0+6, y3-6);
+}
+
+// ---------- render ----------
+function render(main, mc, nullSingle){
+  const m = main.metrics;
+
+  $("k_n").textContent = m.n;
+  $("k_u").textContent = `${m.uniq}`;
+  const rep = (m.n>0) ? (1 - m.uniq/m.n) : 0;
+  $("k_rep").textContent = `repeats ${(rep*100).toFixed(1)}%`;
+
+  $("k_H").textContent = `${fmt(m.H,4)} (max~${fmt(m.Hmax,4)})`;
+  $("k_h").textContent = `h=${fmt(m.h,3)}`;
+
+  $("k_H1").textContent = `${fmt(m.H1,4)}`;
+  $("k_h1").textContent = `h₁=${fmt(m.h1,3)}`;
+
+  $("k_acf").textContent = `${fmt(m.a,4)} (w-lag)`;
+  $("k_tauhat").textContent = `τ̂ ${Number.isFinite(m.tauHat)?fmt(m.tauHat,2):"—"} | ${m.tauOk?"fit ok":"fit weak"}`;
+
+  $("k_sim").textContent = `${fmtSci(m.sim)}`;
+  $("k_base").textContent = `base=${fmt(m.base,4)} | w=${fmt(m.wsim,4)}`;
+
+  $("k_score").textContent = `${fmt(main.score,4)}`;
+  $("k_parts").textContent = `(1-h=${fmt(1-m.h,3)}  1-h1=${fmt(1-m.h1,3)}  a=${fmt(m.a,3)}  sim=${fmtSci(m.sim)})`;
+
+  let z = NaN;
+  if(mc && Number.isFinite(mc.z)){
+    $("k_null").textContent = `${fmt(mc.mean,4)} ± ${fmtSci(mc.sd)} | z=${mc.z.toFixed(3)} | Δ=${fmtSci(mc.delta)}`;
+    const p = mc.p;
+    $("k_p").textContent = `p≈${Number.isFinite(p)?p.toExponential(2):"—"} (two-sided normal approx) • N=${mc.N}`;
+    z = mc.z;
+  }else if(nullSingle){
+    $("k_null").textContent = `single null score=${fmt(nullSingle.score,4)} | Δ=${fmtSci(main.score-nullSingle.score)}`;
+    $("k_p").textContent = `Run MC Null for mean/sd/z.`;
+  }else{
+    $("k_null").textContent = "—";
+    $("k_p").textContent = "";
+  }
+  setGate(z);
+
+  // chart
+  const acf = (m.acf && m.acf.length) ? m.acf : new Array(m.maxLag+1).fill(0);
+  const simLag = $("optSIM").checked ? simByLag(tokenizeInput($("inp").value, readSettings().mode, readSettings().cap), readSettings().tau, readSettings().lam, m.maxLag) : new Array(m.maxLag+1).fill(0);
+  drawChart(acf, simLag, m.tauHat, m.maxLag);
+
+  // update export preview
+  updateExport();
+}
+
+// ---------- export ----------
+function buildExport(){
+  if(!LAST) return {note:"No run yet."};
+  const out = {
+    tool: "QDS_Number_Coherence_Lab_v3_plus",
+    mode: "instrument",
+    when: LAST.when,
+    settings: LAST.settings,
+    main: {
+      score: LAST.main.score,
+      metrics: {
+        n: LAST.main.metrics.n,
+        uniq: LAST.main.metrics.uniq,
+        H: LAST.main.metrics.H,
+        Hmax: LAST.main.metrics.Hmax,
+        h: LAST.main.metrics.h,
+        H1: LAST.main.metrics.H1,
+        h1: LAST.main.metrics.h1,
+        a: LAST.main.metrics.a,
+        tauHat: LAST.main.metrics.tauHat,
+        tauOk: LAST.main.metrics.tauOk,
+        sim: LAST.main.metrics.sim,
+        base: LAST.main.metrics.base,
+        maxLag: LAST.main.metrics.maxLag
+      }
+    },
+    null_single: LAST.nullSingle ? {score: LAST.nullSingle.score} : null,
+    mc_null: LAST.mc ? LAST.mc : null,
+    log: $("log").textContent.split("\n").slice(-120).join("\n")
+  };
+  return out;
+}
+function updateExport(){
+  const exp = buildExport();
+  const s = JSON.stringify(exp, null, 2);
+  $("exportPreview").textContent = s;
+}
+function download(filename, text){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text], {type:"text/plain"}));
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+// ---------- test feeds ----------
+function genRandomDigits(n, seedStr){
+  const rng = XorShift32(hashSeed(seedStr));
+  let s="";
+  for(let i=0;i<n;i++) s += String(randint(rng,10));
+  return s;
+}
+function genPeriodic(n){
+  return "01".repeat(Math.ceil(n/2)).slice(0,n);
+}
+function genChampernowne(n){
+  let s=""; let k=1;
+  while(s.length<n){ s += String(k); k++; }
+  return s.slice(0,n);
+}
+function genFibMod10(n){
+  let a=1, b=1; let s="";
+  for(let i=0;i<n;i++){
+    s += String(a%10);
+    const c=(a+b); a=b; b=c;
+  }
+  return s;
+}
+function a1z26Pairs(text){
+  const t = (text.toUpperCase().match(/[A-Z]/g)||[]).join("");
+  let s="";
+  for(const ch of t){
+    const v = ch.charCodeAt(0)-64;
+    s += String(v).padStart(2,"0");
+  }
+  return s;
+}
+function vigenereNumericPairs(text, key){
+  const t=(text.toUpperCase().match(/[A-Z]/g)||[]).join("");
+  const k=(key.toUpperCase().match(/[A-Z]/g)||[]).join("");
+  if(!k) return "";
+  let s="";
+  for(let i=0;i<t.length;i++){
+    const p=t.charCodeAt(i)-65;
+    const kk=k.charCodeAt(i%k.length)-65;
+    const c=(p+kk)%26;
+    s += String(c).padStart(2,"0");
+  }
+  return s;
+}
+
+// ---------- auto tune ----------
+function autoTuneParams(){
+  const mode=$("tok").value;
+  // sensible mobile-first defaults
+  if(mode==="digits"){ $("tau").value=42; $("lam").value=1.8; $("maxLag").value=240; }
+  if(mode==="pairs"){ $("tau").value=60; $("lam").value=18; $("maxLag").value=200; }
+  if(mode==="triplets"){ $("tau").value=80; $("lam").value=90; $("maxLag").value=160; }
+  if(mode==="base26"){ $("tau").value=60; $("lam").value=6.5; $("maxLag").value=200; }
+  logLine("auto-tune: τ/λ/maxLag set for selected tokenization (conservative).");
+}
+
+// ---------- tabs ----------
+function setTab(name){
+  for(const b of document.querySelectorAll(".tabbtn")){
+    b.classList.toggle("on", b.dataset.tab===name);
+  }
+  $("tab-main").style.display = (name==="main") ? "" : "none";
+  $("tab-testfeeds").style.display = (name==="testfeeds") ? "" : "none";
+  $("tab-sweep").style.display = (name==="sweep") ? "" : "none";
+  $("tab-export").style.display = (name==="export") ? "" : "none";
+}
+
+// ---------- init ----------
+function init(){
+  $("log").textContent = `[${now()}] ready: paste input → Run analysis. Use MC Null + Stability to sanity-check.`;
+  setGate(NaN);
+  drawChart(new Array(141).fill(0), new Array(141).fill(0), NaN, 140);
+
+  document.querySelectorAll(".tabbtn").forEach(b=>{
+    b.addEventListener("click", ()=>setTab(b.dataset.tab));
+  });
+
+  $("lowfx").addEventListener("change", ()=>{
+    document.body.classList.toggle("lowfx", $("lowfx").checked);
+  });
+
+  $("runMain").addEventListener("click", runMain);
+  $("runNullSingle").addEventListener("click", runNullSingle);
+  $("runMC").addEventListener("click", runMC);
+  $("runStab").addEventListener("click", runStability);
+  $("autoTune").addEventListener("click", autoTuneParams);
+
+  $("reset").addEventListener("click", ()=>{
+    $("inp").value="";
+    $("tok").value="digits";
+    $("cap").value=5000;
+    $("seed").value="42";
+    $("mcN").value=200;
+    $("stabN").value=7;
+    $("tau").value=42;
+    $("lam").value=2.0;
+    $("maxLag").value=140;
+    $("nullFamily").value="shuffle";
+    $("blockSize").value=20;
+    $("optACF").checked=true;
+    $("optSIM").checked=true;
+    $("optFast").checked=true;
+    $("optAutoScale").checked=true;
+    $("log").textContent = `[${now()}] ready: paste input → Run analysis.`;
+    $("exportPreview").textContent="No run yet.";
+    LAST=null;
+    showWarn("");
+    setStatus("ready");
+    setGate(NaN);
+    drawChart(new Array(141).fill(0), new Array(141).fill(0), NaN, 140);
+  });
+
+  // test feed buttons
+  document.querySelectorAll("[data-feed]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const kind = btn.dataset.feed;
+      const n = Math.min(8000, Number($("cap").value||5000));
+      const seedStr = $("seed").value || "42";
+      let s="";
+      if(kind==="random"){ s = genRandomDigits(n, seedStr+"|rnd"); $("tok").value="digits"; }
+      if(kind==="periodic"){ s = genPeriodic(n); $("tok").value="digits"; }
+      if(kind==="champer"){ s = genChampernowne(n); $("tok").value="digits"; }
+      if(kind==="fib10"){ s = genFibMod10(n); $("tok").value="digits"; }
+      if(kind==="a1z26"){
+        s = a1z26Pairs("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG");
+        $("tok").value="pairs";
+      }
+      if(kind==="vignum"){
+        s = vigenereNumericPairs("WE ARE PETS OF UNIVERSAL DESIGN NEW I CRAFT MY SOUL", "RAINMAN");
+        $("tok").value="pairs";
+      }
+      $("inp").value = s;
+      autoTuneParams();
+      logLine(`testfeed: loaded ${kind} (len=${s.length}).`);
+      setTab("main");
+    });
+  });
+
+  $("runSweep").addEventListener("click", runSweep);
+
+  $("copyJSON").addEventListener("click", async ()=>{
+    const s = JSON.stringify(buildExport(), null, 2);
+    try{
+      await navigator.clipboard.writeText(s);
+      logLine("export: JSON copied");
+    }catch(e){
+      logLine("export: clipboard failed (browser permissions).");
+    }
+  });
+
+  $("dlJSON").addEventListener("click", ()=>{
+    const s = JSON.stringify(buildExport(), null, 2);
+    download(`qds_number_coherence_v3_${Date.now()}.json`, s);
+    logLine("export: JSON downloaded");
+  });
+
+  $("dlTXT").addEventListener("click", ()=>{
+    const exp = buildExport();
+    const txt =
+`QDS Number Coherence Lab v3+ (instrument)
+when: ${exp.when || "—"}
+settings: ${exp.settings ? JSON.stringify(exp.settings) : "—"}
+
+main score: ${exp.main ? exp.main.score : "—"}
+mc null: ${exp.mc_null ? JSON.stringify(exp.mc_null) : "—"}
+
+log:
+${exp.log || ""}
+`;
+    download(`qds_number_coherence_v3_${Date.now()}.txt`, txt);
+    logLine("export: TXT downloaded");
+  });
+
+  // autoscale λ on token change
+  $("tok").addEventListener("change", ()=>{
+    if($("optAutoScale").checked) autoTuneParams();
+  });
+
+  setStatus("ready");
+}
+init();
+</script>
+</body>
+</html>

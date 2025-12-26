@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>DNA10+ — QDS Genomics Coherence Lab (Market Edition) 🧬</title>
+<style>
+  :root{
+    --bg:#07121c;
+    --panel:#0a1a28;
+    --panel2:#0b2234;
+    --line:rgba(255,255,255,.08);
+    --txt:#dbe7f3;
+    --muted:rgba(219,231,243,.72);
+    --good:#35e08b;
+    --aqua:#39d3ff;
+    --warn:#ffcc66;
+    --bad:#ff6b6b;
+    --shadow: 0 18px 45px rgba(0,0,0,.35);
+    --r:18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:var(--sans);
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(57,211,255,.18), transparent 55%),
+      radial-gradient(900px 520px at 90% 5%, rgba(53,224,139,.16), transparent 60%),
+      radial-gradient(1000px 800px at 50% 120%, rgba(57,211,255,.10), transparent 60%),
+      linear-gradient(180deg, #06101a 0%, #050b12 100%);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:16px 14px 22px}
+  header{
+    display:flex;gap:12px;align-items:flex-start;justify-content:space-between;
+    padding:14px 14px;border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(10,26,40,.92), rgba(8,18,28,.88));
+    box-shadow:var(--shadow);
+  }
+  .title{
+    display:flex;flex-direction:column;gap:6px;min-width:0
+  }
+  .title h1{
+    margin:0;font-size:18px;letter-spacing:.2px;line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .title .sub{
+    font-size:12.5px;color:var(--muted);line-height:1.35
+  }
+  .pillrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .pill{
+    font-size:11.5px;padding:5px 9px;border-radius:999px;border:1px solid var(--line);
+    background:rgba(255,255,255,.03); color:rgba(219,231,243,.86)
+  }
+  .pill b{color:#fff}
+  .rightcol{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .status{
+    font-size:12px;color:var(--muted);
+    padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+    background:rgba(0,0,0,.18);
+    max-width:360px; text-align:right;
+  }
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  button{
+    appearance:none;border:1px solid var(--line);
+    color:var(--txt); background:rgba(255,255,255,.04);
+    border-radius:14px; padding:10px 12px; font-weight:650;
+    letter-spacing:.2px; cursor:pointer;
+    box-shadow: 0 10px 26px rgba(0,0,0,.25);
+  }
+  button:active{transform:translateY(1px)}
+  button.primary{
+    border-color:rgba(57,211,255,.45);
+    background:linear-gradient(180deg, rgba(57,211,255,.18), rgba(57,211,255,.08));
+  }
+  button.good{
+    border-color:rgba(53,224,139,.45);
+    background:linear-gradient(180deg, rgba(53,224,139,.18), rgba(53,224,139,.08));
+  }
+  button[disabled]{opacity:.55;cursor:not-allowed}
+  .grid{
+    display:grid;gap:12px;margin-top:12px;
+    grid-template-columns: 1.05fr .95fr;
+  }
+  @media (max-width: 920px){ .grid{grid-template-columns:1fr} .rightcol{align-items:flex-start} .status{text-align:left} }
+  .card{
+    border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(10,26,40,.92), rgba(8,18,28,.88));
+    box-shadow:var(--shadow);
+    padding:12px 12px;
+  }
+  .card h2{margin:0 0 10px 0;font-size:13.5px;letter-spacing:.2px;color:rgba(219,231,243,.92)}
+  .row{display:grid;grid-template-columns: 1fr 1fr;gap:10px}
+  @media (max-width: 520px){ .row{grid-template-columns:1fr} }
+  .field{
+    border:1px solid var(--line);border-radius:14px;
+    background:rgba(255,255,255,.03);
+    padding:10px 10px;
+  }
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  input[type="file"]{width:100%; color:rgba(219,231,243,.9)}
+  .sliderline{display:flex;gap:10px;align-items:center}
+  input[type="range"]{width:100%}
+  .val{font-family:var(--mono);font-size:12px;color:#fff;min-width:78px;text-align:right}
+  .small{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:6px}
+  textarea{
+    width:100%; min-height:96px; resize:vertical;
+    border:1px solid var(--line); border-radius:14px;
+    background:rgba(0,0,0,.18); color:var(--txt);
+    padding:10px; font-family:var(--mono); font-size:12px; line-height:1.35;
+  }
+  .toggles{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .toggle{
+    display:flex;gap:8px;align-items:center;
+    padding:8px 10px;border:1px solid var(--line);border-radius:999px;
+    background:rgba(255,255,255,.03); font-size:12px;color:rgba(219,231,243,.88)
+  }
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width: 920px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+  .kpi{
+    border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(180deg, rgba(11,34,52,.85), rgba(7,18,28,.75));
+    padding:10px 10px;
+  }
+  .kpi .k{font-size:11.5px;color:var(--muted)}
+  .kpi .v{margin-top:6px;font-family:var(--mono);font-size:14px;color:#fff}
+  .kpi .v b{color:var(--aqua)}
+  .kpi .v i{color:var(--good);font-style:normal}
+  .plots{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+  canvas{
+    width:100%; height:190px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:rgba(0,0,0,.16);
+  }
+  .outbox{
+    width:100%; min-height:170px;
+    border:1px solid var(--line);border-radius:16px;
+    background:rgba(0,0,0,.22);
+    padding:10px;font-family:var(--mono);font-size:11.5px;line-height:1.35;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .foot{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.45}
+  .mono{font-family:var(--mono)}
+  a{color:var(--aqua);text-decoration:none;border-bottom:1px dashed rgba(57,211,255,.35)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>DNA10+ — QDS Genomics Coherence Lab (Market Edition) 🧬</h1>
+      <div class="sub">
+        Offline, phone-safe structure summariser for 23andMe raw TXT. <b>No PRS.</b> Not clinical. No external calls.
+        Mainstream counts SNPs; QDS prices correlation.
+      </div>
+      <div class="pillrow">
+        <div class="pill"><b>Signal</b> entropy + change + het</div>
+        <div class="pill"><b>Two-scale</b> λ<sub>g</sub> short/long</div>
+        <div class="pill"><b>Redundancy</b> abs-ρ + cutoff</div>
+        <div class="pill"><b>AutoTest</b> stability-first</div>
+      </div>
+    </div>
+
+    <div class="rightcol">
+      <div id="status" class="status">Ready. Load TXT, then Run or AutoTest.</div>
+      <div class="btnrow">
+        <!-- TWO BUTTONS, THAT'S IT -->
+        <button id="btnRun" class="primary" type="button">Run (Single)</button>
+        <button id="btnAuto" class="good" type="button">AutoTest (Stability-first)</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Inputs</h2>
+
+      <div class="field">
+        <label>1) 23andMe raw data (.txt)</label>
+        <input id="fileInput" type="file" accept=".txt,text/plain" />
+        <div class="small">Tip: paste Watchlist / Traits first if you want lookup during parse. Edits auto-rescan (no extra button).</div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label>Short window (kb) — LD-ish</label>
+          <div class="sliderline">
+            <input id="wShortKb" type="range" min="10" max="200" step="5" value="50" />
+            <div class="val" id="wShortKbV">50 kb</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Long window (Mb) — haplotype-ish</label>
+          <div class="sliderline">
+            <input id="wLongMb" type="range" min="0.25" max="4.00" step="0.25" value="1.00" />
+            <div class="val" id="wLongMbV">1.00 Mb</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Max lag (windows)</label>
+          <div class="sliderline">
+            <input id="maxLag" type="range" min="40" max="260" step="10" value="200" />
+            <div class="val" id="maxLagV">200</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>ρ cutoff (abs-ρ) for redundancy</label>
+          <div class="sliderline">
+            <input id="rhoCut" type="range" min="0.005" max="0.060" step="0.001" value="0.020" />
+            <div class="val" id="rhoCutV">0.020</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>High-pass window (hpWin, windows)</label>
+          <div class="sliderline">
+            <input id="hpWin" type="range" min="3" max="25" step="2" value="9" />
+            <div class="val" id="hpWinV">9</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Per-chr stability lag (windows)</label>
+          <div class="sliderline">
+            <input id="chrLag" type="range" min="10" max="80" step="5" value="30" />
+            <div class="val" id="chrLagV">30</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>SNP sanity step (keep ~1 in N SNPs)</label>
+          <div class="sliderline">
+            <input id="snpStep" type="range" min="2" max="20" step="1" value="8" />
+            <div class="val" id="snpStepV">8</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>AutoTest IQR tolerance (±%)</label>
+          <div class="sliderline">
+            <input id="tolPct" type="range" min="0" max="10" step="1" value="2" />
+            <div class="val" id="tolPctV">±2%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <div class="toggle">
+          <input id="useDiff" type="checkbox" />
+          <label for="useDiff">ΔX after HP (aggressive edge)</label>
+        </div>
+        <div class="toggle">
+          <input id="useAbsRho" type="checkbox" checked />
+          <label for="useAbsRho">λ cutoff uses |ρ| (robust)</label>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <div class="small" style="margin:0 0 6px 2px">Watchlist rsIDs (lookup-only) — rsID per line, no alleles, no betas.</div>
+          <textarea id="watchBox" spellcheck="false" placeholder="rs12913832&#10;rs4988235&#10;rs762551"></textarea>
+        </div>
+        <div>
+          <div class="small" style="margin:0 0 6px 2px">Trait weights (rsID effect_allele beta) — you supply allele + beta. Example: <span class="mono">rs12913832 G 0.10</span></div>
+          <textarea id="traitBox" spellcheck="false" placeholder="rs12913832 G 0.10&#10;rs4988235 T 0.10&#10;rs762551 A 0.10"></textarea>
+        </div>
+      </div>
+
+      <div class="foot">
+        Reality check: this is a <b>structure-aware summariser</b>. It quantifies correlation and an “effective independent” count (D<sub>eff</sub>). It is not a medical device, not ancestry truth-engine, not PRS.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Outputs</h2>
+      <div class="kpis" id="kpiGrid">
+        <div class="kpi"><div class="k">Mainstream D_raw (called)</div><div class="v" id="kDraw">—</div></div>
+        <div class="kpi"><div class="k">Missing rate</div><div class="v" id="kMiss">—</div></div>
+        <div class="kpi"><div class="k">QDS D_eff</div><div class="v" id="kDeff">—</div></div>
+        <div class="kpi"><div class="k">Redundancy (win / SNP)</div><div class="v" id="kRed">—</div></div>
+
+        <div class="kpi"><div class="k">λ_g short (LD-ish)</div><div class="v" id="kLamS">—</div></div>
+        <div class="kpi"><div class="k">λ_g long (haplotype-ish)</div><div class="v" id="kLamL">—</div></div>
+        <div class="kpi"><div class="k">Stability short (med/IQR/n)</div><div class="v" id="kStabS">—</div></div>
+        <div class="kpi"><div class="k">Stability long (med/IQR/n)</div><div class="v" id="kStabL">—</div></div>
+
+        <div class="kpi" style="grid-column:1/-1">
+          <div class="k">AutoTest decision 🧬</div>
+          <div class="v" id="kDecision">—</div>
+        </div>
+
+        <div class="kpi" style="grid-column:1/-1">
+          <div class="k">Watch / Trait (lookup-only)</div>
+          <div class="v" id="kLookup">—</div>
+        </div>
+      </div>
+
+      <div class="plots">
+        <canvas id="plotShort" width="1000" height="260"></canvas>
+        <canvas id="plotLong" width="1000" height="260"></canvas>
+      </div>
+
+      <div style="margin-top:10px; display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="flex:1 1 420px;">
+          <div class="small" style="margin:0 0 6px 2px">Readout (copy/paste) — JSON + AutoTest grid + watch/trait hits.</div>
+          <div id="out" class="outbox">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- helpers ----------
+  const $ = (id)=>document.getElementById(id);
+  const fmtInt = (n)=> (Number.isFinite(n) ? Math.round(n).toLocaleString() : "—");
+  const fmtPct = (x)=> (Number.isFinite(x) ? (100*x).toFixed(2)+"%" : "—");
+  const fmt = (x, d=1)=> (Number.isFinite(x) ? x.toFixed(d) : "—");
+  const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+  const nowISO = ()=> new Date().toISOString();
+
+  function setStatus(s, tone="muted"){
+    const el=$("status");
+    el.textContent=s;
+    el.style.color = tone==="good" ? "rgba(53,224,139,.92)"
+                 : tone==="warn" ? "rgba(255,204,102,.92)"
+                 : tone==="bad"  ? "rgba(255,107,107,.92)"
+                 : "rgba(219,231,243,.78)";
+  }
+
+  function parseWatchlist(txt){
+    return Array.from(new Set(
+      (txt||"").replace(/[,;\t]/g," ").split(/\s+/).map(s=>s.trim()).filter(s=>/^rs\d+$/i.test(s)).map(s=>s.toLowerCase())
+    ));
+  }
+
+  function parseTraits(txt){
+    const rows=[];
+    (txt||"").split(/\r?\n/).forEach(line=>{
+      const s=line.trim();
+      if(!s || s.startsWith("#")) return;
+      const p=s.replace(/[,;\t]/g," ").split(/\s+/).filter(Boolean);
+      if(p.length<3) return;
+      const rsid=(p[0]||"").toLowerCase();
+      const ea=(p[1]||"").toUpperCase();
+      const beta=Number(p[2]);
+      if(!/^rs\d+$/i.test(rsid)) return;
+      if(!/^[ACGT]$/.test(ea)) return;
+      if(!Number.isFinite(beta)) return;
+      rows.push({rsid, ea, beta});
+    });
+    return rows;
+  }
+
+  function doseEA(gt, ea){
+    if(!gt || gt.length!==2) return null;
+    if(gt.includes("-")) return null;
+    const a=gt[0].toUpperCase(), b=gt[1].toUpperCase();
+    return (a===ea) + (b===ea);
+  }
+
+  function median(arr){
+    if(!arr.length) return NaN;
+    const a=arr.slice().sort((x,y)=>x-y);
+    const m=a.length>>1;
+    return a.length%2 ? a[m] : 0.5*(a[m-1]+a[m]);
+  }
+  function quantile(arr, q){
+    if(!arr.length) return NaN;
+    const a=arr.slice().sort((x,y)=>x-y);
+    const pos=(a.length-1)*q;
+    const lo=Math.floor(pos), hi=Math.ceil(pos);
+    if(lo===hi) return a[lo];
+    return a[lo] + (a[hi]-a[lo])*(pos-lo);
+  }
+
+  // efficient moving average high-pass: xhp = x - MA(x)
+  function highPass(x, hpWin){
+    const n=x.length;
+    if(n<3) return x.slice();
+    const w = Math.max(1, hpWin|0);
+    const ps = new Float64Array(n+1);
+    for(let i=0;i<n;i++) ps[i+1]=ps[i]+x[i];
+    const y = new Float64Array(n);
+    for(let i=0;i<n;i++){
+      const lo = Math.max(0, i-w);
+      const hi = Math.min(n-1, i+w);
+      const sum = ps[hi+1]-ps[lo];
+      const mean = sum / (hi-lo+1);
+      y[i]=x[i]-mean;
+    }
+    return y;
+  }
+  function diff1(x){
+    const n=x.length;
+    if(n<2) return x.slice();
+    const y=new Float64Array(n-1);
+    for(let i=1;i<n;i++) y[i-1]=x[i]-x[i-1];
+    return y;
+  }
+
+  // autocorr rho(k) for k=0..maxLag
+  function autocorrRho(x, maxLag){
+    const n=x.length;
+    const L=Math.min(maxLag|0, n-1);
+    const rho=new Float64Array(L+1);
+    let denom=0;
+    for(let i=0;i<n;i++) denom += x[i]*x[i];
+    if(denom<=0){
+      rho[0]=1;
+      for(let k=1;k<=L;k++) rho[k]=0;
+      return rho;
+    }
+    rho[0]=1;
+    for(let k=1;k<=L;k++){
+      let num=0;
+      const m=n-k;
+      for(let i=0;i<m;i++) num += x[i]*x[i+k];
+      rho[k]=num/denom;
+    }
+    return rho;
+  }
+
+  function lambdaFromRho(rho, winBp, useAbs=true){
+    const target=Math.exp(-1);
+    const L=rho.length-1;
+    for(let k=1;k<=L;k++){
+      const rk = useAbs ? Math.abs(rho[k]) : rho[k];
+      if(rk <= target){
+        const r0 = useAbs ? Math.abs(rho[k-1]) : rho[k-1];
+        const r1 = rk;
+        const t = (r0===r1) ? 0 : (target - r0)/(r1 - r0);
+        const kx = (k-1) + clamp(t,0,1);
+        return kx * winBp;
+      }
+    }
+    return L * winBp;
+  }
+
+  function redundancyFromRho(rho, rhoCut, useAbs=true){
+    const L=rho.length-1;
+    let sum=0;
+    let streak=0;
+    const cut=rhoCut;
+    for(let k=1;k<=L;k++){
+      const rk = useAbs ? Math.abs(rho[k]) : rho[k];
+      sum += rk;
+      if(rk < cut) streak++; else streak=0;
+      if(streak>=3) break; // robust stop
+    }
+    return 1 + 2*sum;
+  }
+
+  function plotRho(canvas, rho, label){
+    const ctx=canvas.getContext("2d");
+    const W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    // grid
+    ctx.globalAlpha=1;
+    ctx.strokeStyle="rgba(255,255,255,.08)";
+    ctx.lineWidth=1;
+    for(let i=0;i<=5;i++){
+      const y = 18 + (H-40)*i/5;
+      ctx.beginPath(); ctx.moveTo(44,y); ctx.lineTo(W-10,y); ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const x = 44 + (W-54)*i/6;
+      ctx.beginPath(); ctx.moveTo(x,18); ctx.lineTo(x,H-22); ctx.stroke();
+    }
+
+    // axes labels
+    ctx.fillStyle="rgba(219,231,243,.85)";
+    ctx.font="12px " + getComputedStyle(document.documentElement).getPropertyValue('--mono');
+    ctx.fillText(label, 44, 14);
+
+    // axes
+    ctx.strokeStyle="rgba(255,255,255,.16)";
+    ctx.beginPath(); ctx.moveTo(44,18); ctx.lineTo(44,H-22); ctx.lineTo(W-10,H-22); ctx.stroke();
+
+    if(!rho || rho.length<2) return;
+
+    const L=rho.length-1;
+    const maxX=W-10, minX=44, minY=18, maxY=H-22;
+    const xScale=(maxX-minX)/L;
+
+    // 1/e line
+    const ye = minY + (maxY-minY)*(1-Math.exp(-1)); // since y maps 1->minY, 0->maxY
+    ctx.strokeStyle="rgba(255,204,102,.28)";
+    ctx.beginPath(); ctx.moveTo(minX,ye); ctx.lineTo(maxX,ye); ctx.stroke();
+    ctx.fillStyle="rgba(255,204,102,.85)";
+    ctx.fillText("1/e", minX+6, ye-4);
+
+    // curve
+    ctx.strokeStyle="rgba(57,211,255,.95)";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let k=0;k<=L;k++){
+      const r=rho[k];
+      const x=minX + k*xScale;
+      const y=minY + (maxY-minY)*(1-r); // r=1->top
+      if(k===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  // ---------- core state ----------
+  const STATE = {
+    file: null,
+    running: false,
+    lastResults: null,
+    lastLookup: { watchHits: [], trait: null },
+    debounceTimer: null
+  };
+
+  function readParams(){
+    const wShortKb=Number($("wShortKb").value);
+    const wLongMb=Number($("wLongMb").value);
+    return {
+      wShortBp: Math.round(wShortKb*1000),
+      wLongBp: Math.round(wLongMb*1000000),
+      maxLag: Number($("maxLag").value)|0,
+      rhoCut: Number($("rhoCut").value),
+      hpWin: Number($("hpWin").value)|0,
+      chrLag: Number($("chrLag").value)|0,
+      snpStep: Number($("snpStep").value)|0,
+      tolPct: Number($("tolPct").value)|0,
+      useDiff: !!$("useDiff").checked,
+      useAbsRho: !!$("useAbsRho").checked,
+    };
+  }
+
+  function updateParamLabels(){
+    $("wShortKbV").textContent = `${$("wShortKb").value} kb`;
+    $("wLongMbV").textContent  = `${Number($("wLongMb").value).toFixed(2)} Mb`;
+    $("maxLagV").textContent   = `${$("maxLag").value}`;
+    $("rhoCutV").textContent   = `${Number($("rhoCut").value).toFixed(3)}`;
+    $("hpWinV").textContent    = `${$("hpWin").value}`;
+    $("chrLagV").textContent   = `${$("chrLag").value}`;
+    $("snpStepV").textContent  = `${$("snpStep").value}`;
+    $("tolPctV").textContent   = `±${$("tolPct").value}%`;
+  }
+
+  function setButtons(disabled){
+    $("btnRun").disabled = disabled;
+    $("btnAuto").disabled = disabled;
+  }
+
+  // ---------- parsing & metrics ----------
+  const CHRS = Array.from({length:22},(_,i)=>String(i+1)).concat(["X","Y"]);
+  const CHR_INDEX = Object.fromEntries(CHRS.map((c,i)=>[c,i]));
+  function isValidChr(c){ return CHR_INDEX[c]!=null; }
+
+  function gtIsCalled(gt){
+    if(!gt || gt.length!==2) return false;
+    if(gt.includes("-")) return false;
+    const a=gt[0], b=gt[1];
+    return "ACGT".includes(a) && "ACGT".includes(b);
+  }
+  function isHet(gt){ return gtIsCalled(gt) && gt[0]!==gt[1]; }
+
+  function binaryEntropy(p){
+    if(!(p>0 && p<1)) return 0;
+    return -(p*Math.log2(p) + (1-p)*Math.log2(1-p));
+  }
+
+  async function parseAndCompute(file, params, mode="single", autotestGrid=null){
+    // Parse requested lookup sets first
+    const watchIds = parseWatchlist($("watchBox").value);
+    const traits = parseTraits($("traitBox").value);
+    const wanted = new Set([...watchIds, ...traits.map(t=>t.rsid)]);
+
+    const wS=params.wShortBp, wL=params.wLongBp;
+    const snpStep=params.snpStep;
+
+    // per chr window aggregates
+    const agg = CHRS.map(()=>({
+      nS:[], hetS:[], homS:[],
+      nL:[], hetL:[], homL:[],
+      // sampled for change + SNP sanity
+      sampPos:[], sampHet:[]
+    }));
+
+    // lookup hits found during parse
+    const hitMap = new Map();
+
+    let called=0, missing=0;
+
+    setStatus(mode==="auto" ? "AutoTest: parsing file (single pass)…" : "Parsing file…", "warn");
+
+    const reader = file.stream().getReader();
+    const dec = new TextDecoder();
+    let carry="";
+    let lineCount=0;
+    let sampCounter=0;
+
+    while(true){
+      const {value, done} = await reader.read();
+      if(done) break;
+      carry += dec.decode(value, {stream:true});
+      const lines = carry.split(/\r?\n/);
+      carry = lines.pop() || "";
+      for(const line of lines){
+        lineCount++;
+        if(!line || line[0]==="#") continue;
+        // rsid chr pos gt (space or tab)
+        const p = line.split(/\s+/);
+        if(p.length<4) continue;
+        const rsid = (p[0]||"").toLowerCase();
+        const chr = (p[1]||"").toUpperCase();
+        if(chr==="MT" || chr==="M") continue;
+        if(!isValidChr(chr)) continue;
+        const pos = Number(p[2]);
+        const gt = (p[3]||"").toUpperCase();
+
+        // lookup hit capture
+        if(wanted.size && wanted.has(rsid) && !hitMap.has(rsid)){
+          hitMap.set(rsid, {rsid, chr, pos, gt});
+        }
+
+        if(!Number.isFinite(pos)) continue;
+
+        if(gtIsCalled(gt)){
+          called++;
+          const ai = CHR_INDEX[chr];
+          const A = agg[ai];
+
+          const ws = (pos / wS) | 0;
+          const wl = (pos / wL) | 0;
+
+          // ensure arrays long enough
+          if(A.nS.length<=ws){
+            const need = ws+1 - A.nS.length;
+            for(let j=0;j<need;j++){ A.nS.push(0); A.hetS.push(0); A.homS.push(0); }
+          }
+          if(A.nL.length<=wl){
+            const need = wl+1 - A.nL.length;
+            for(let j=0;j<need;j++){ A.nL.push(0); A.hetL.push(0); A.homL.push(0); }
+          }
+
+          A.nS[ws]++; A.nL[wl]++;
+          if(gt[0]!==gt[1]){ A.hetS[ws]++; A.hetL[wl]++; }
+          else { A.homS[ws]++; A.homL[wl]++; }
+
+          // sampling for change + SNP sanity (pos+het flag)
+          sampCounter++;
+          if((sampCounter % snpStep)===0){
+            A.sampPos.push(pos);
+            A.sampHet.push(gt[0]!==gt[1] ? 1 : 0);
+          }
+        }else{
+          missing++;
+        }
+      }
+      // lightweight progress updates
+      if((lineCount % 120000)===0){
+        setStatus(`Parsing… processed ~${(lineCount/1000)|0}k lines | called=${fmtInt(called)} | missing=${fmtInt(missing)}`, "warn");
+        await new Promise(r=>setTimeout(r,0));
+      }
+    }
+
+    // flush last carry line
+    if(carry && carry[0]!=="#"){
+      const p = carry.split(/\s+/);
+      if(p.length>=4){
+        const rsid = (p[0]||"").toLowerCase();
+        const chr  = (p[1]||"").toUpperCase();
+        if(isValidChr(chr)){
+          const pos = Number(p[2]);
+          const gt = (p[3]||"").toUpperCase();
+          if(wanted.size && wanted.has(rsid) && !hitMap.has(rsid)){
+            hitMap.set(rsid, {rsid, chr, pos, gt});
+          }
+          if(Number.isFinite(pos)){
+            if(gtIsCalled(gt)){
+              called++;
+              const ai = CHR_INDEX[chr];
+              const A = agg[ai];
+              const ws = (pos / wS) | 0;
+              const wl = (pos / wL) | 0;
+              if(A.nS.length<=ws){
+                const need = ws+1 - A.nS.length;
+                for(let j=0;j<need;j++){ A.nS.push(0); A.hetS.push(0); A.homS.push(0); }
+              }
+              if(A.nL.length<=wl){
+                const need = wl+1 - A.nL.length;
+                for(let j=0;j<need;j++){ A.nL.push(0); A.hetL.push(0); A.homL.push(0); }
+              }
+              A.nS[ws]++; A.nL[wl]++;
+              if(gt[0]!==gt[1]){ A.hetS[ws]++; A.hetL[wl]++; }
+              else { A.homS[ws]++; A.homL[wl]++; }
+              sampCounter++;
+              if((sampCounter % snpStep)===0){
+                A.sampPos.push(pos);
+                A.sampHet.push(gt[0]!==gt[1] ? 1 : 0);
+              }
+            }else missing++;
+          }
+        }
+      }
+    }
+
+    const missRate = (called+missing)>0 ? missing/(called+missing) : NaN;
+
+    // compute change density by sorting sampled SNPs by position per chr
+    setStatus(mode==="auto" ? "AutoTest: computing window signals…" : "Computing window signals…", "warn");
+    await new Promise(r=>setTimeout(r,0));
+
+    const buildSignals = (hpWinLocal) => {
+      // returns per-chr signals for short/long + SNP sanity redundancy
+      const sigS=[], sigL=[];
+      const lamS=[], lamL=[];
+      const rhoS_byChr=[], rhoL_byChr=[];
+      const snpReds=[];
+
+      for(let ci=0; ci<agg.length; ci++){
+        const A=agg[ci];
+        if(A.nS.length<20) continue; // skip too short
+        // sort samples
+        const idx = Array.from({length:A.sampPos.length}, (_,i)=>i);
+        idx.sort((i,j)=>A.sampPos[i]-A.sampPos[j]);
+
+        // windowed change counts for short/long
+        const chS = new Float64Array(A.nS.length);
+        const adS = new Float64Array(A.nS.length);
+        const chL = new Float64Array(A.nL.length);
+        const adL = new Float64Array(A.nL.length);
+
+        let prevHet=null, prevPos=null;
+        for(let t=0; t<idx.length; t++){
+          const i=idx[t];
+          const pos=A.sampPos[i], het=A.sampHet[i];
+          if(prevHet!==null){
+            // adjacent pair; attribute to current pos window
+            const ws=(pos / wS)|0;
+            const wl=(pos / wL)|0;
+            if(ws>=0 && ws<adS.length) adS[ws]+=1;
+            if(wl>=0 && wl<adL.length) adL[wl]+=1;
+            if(het!==prevHet){
+              if(ws>=0 && ws<chS.length) chS[ws]+=1;
+              if(wl>=0 && wl<chL.length) chL[wl]+=1;
+            }
+          }
+          prevHet=het; prevPos=pos;
+        }
+
+        // build X per window (short & long)
+        const XS = new Float64Array(A.nS.length);
+        for(let w=0; w<A.nS.length; w++){
+          const n=A.nS[w];
+          if(n<=0){ XS[w]=0; continue; }
+          const het=A.hetS[w];
+          const p=het/n;
+          const H=binaryEntropy(p);         // 0..1 bits
+          const hetRate=p;                  // 0..1
+          const changeDen = adS[w]>0 ? (chS[w]/adS[w]) : 0; // 0..1
+          XS[w] = 0.45*H + 0.35*changeDen + 0.20*hetRate;
+        }
+        const XL = new Float64Array(A.nL.length);
+        for(let w=0; w<A.nL.length; w++){
+          const n=A.nL[w];
+          if(n<=0){ XL[w]=0; continue; }
+          const het=A.hetL[w];
+          const p=het/n;
+          const H=binaryEntropy(p);
+          const hetRate=p;
+          const changeDen = adL[w]>0 ? (chL[w]/adL[w]) : 0;
+          XL[w] = 0.45*H + 0.35*changeDen + 0.20*hetRate;
+        }
+
+        // detrend
+        let XShp = highPass(XS, hpWinLocal);
+        let XLhp = highPass(XL, hpWinLocal);
+        if(params.useDiff){
+          XShp = diff1(XShp);
+          XLhp = diff1(XLhp);
+        }
+
+        // autocorr
+        const rhoS = autocorrRho(XShp, params.maxLag);
+        const rhoL = autocorrRho(XLhp, params.maxLag);
+
+        const lamShort = lambdaFromRho(rhoS, wS, params.useAbsRho);
+        const lamLong  = lambdaFromRho(rhoL, wL, params.useAbsRho);
+
+        // SNP sanity redundancy: use sampled het signal (sorted)
+        // build y array in sorted order
+        const y = new Float64Array(idx.length);
+        for(let t=0;t<idx.length;t++) y[t]=A.sampHet[idx[t]];
+        // center y
+        let mean=0; for(let i=0;i<y.length;i++) mean+=y[i]; mean/=Math.max(1,y.length);
+        for(let i=0;i<y.length;i++) y[i]-=mean;
+        const rhoY = autocorrRho(y, Math.min(220, y.length-1));
+        const redSnp = redundancyFromRho(rhoY, params.rhoCut, true);
+
+        sigS.push(XShp); sigL.push(XLhp);
+        lamS.push(lamShort); lamL.push(lamLong);
+        rhoS_byChr.push(rhoS); rhoL_byChr.push(rhoL);
+        snpReds.push(redSnp);
+      }
+
+      return { lamS, lamL, rhoS_byChr, rhoL_byChr, snpReds };
+    };
+
+    // compute once for current hpWin, then (if AutoTest) reuse raw agg but vary hpWin cheaply
+    const base = buildSignals(params.hpWin);
+
+    function summarizeWith(hpWinLocal, rhoCutLocal){
+      const tmpParams = {...params, rhoCut: rhoCutLocal};
+      // build signals for this hpWinLocal
+      // (hpWin affects detrend; rhoCut affects redundancy only)
+      const B = (hpWinLocal===params.hpWin) ? base : buildSignals(hpWinLocal);
+
+      const lamS = B.lamS.slice();
+      const lamL = B.lamL.slice();
+
+      // stability stats
+      const medS = quantile(lamS, 0.50);
+      const p25S = quantile(lamS, 0.25);
+      const p75S = quantile(lamS, 0.75);
+      const iqrS = p75S - p25S;
+
+      const medL = quantile(lamL, 0.50);
+      const p25L = quantile(lamL, 0.25);
+      const p75L = quantile(lamL, 0.75);
+      const iqrL = p75L - p25L;
+
+      // median rho across chromosomes for plotting
+      const maxK = tmpParams.maxLag;
+      const rhoSmed = new Float64Array(maxK+1);
+      const rhoLmed = new Float64Array(maxK+1);
+      for(let k=0;k<=maxK;k++){
+        const aS=[], aL=[];
+        for(let i=0;i<B.rhoS_byChr.length;i++){
+          aS.push(B.rhoS_byChr[i][k] ?? 0);
+          aL.push(B.rhoL_byChr[i][k] ?? 0);
+        }
+        rhoSmed[k]=median(aS);
+        rhoLmed[k]=median(aL);
+      }
+
+      // redundancy from median rho (window lane)
+      const redWin = redundancyFromRho(rhoSmed, rhoCutLocal, true);
+
+      // SNP sanity redundancy (median across chrs)
+      const redSnp = median(B.snpReds);
+
+      const dEff = called / redWin;
+
+      return {
+        hpWin: hpWinLocal, rhoCut: rhoCutLocal,
+        called, missing, missRate,
+        lambda_short_bp: lambdaFromRho(rhoSmed, wS, tmpParams.useAbsRho),
+        lambda_long_bp:  lambdaFromRho(rhoLmed, wL, tmpParams.useAbsRho),
+        redundancy_window: redWin,
+        redundancy_snp: redSnp,
+        d_eff: dEff,
+        stability_short_q: { n: lamS.length, p25: p25S, p50: medS, p75: p75S },
+        stability_long_q:  { n: lamL.length, p25: p25L, p50: medL, p75: p75L },
+        rho_short_med: rhoSmed,
+        rho_long_med: rhoLmed,
+        iqr_short_bp: iqrS,
+        iqr_long_bp: iqrL
+      };
+    }
+
+    // Lookup compute (from hitMap)
+    function computeLookup(){
+      const watchHits=[];
+      for(const rsid of watchIds){
+        const h=hitMap.get(rsid);
+        if(h) watchHits.push(`${rsid}: ${h.gt} (chr${h.chr}:${h.pos})`);
+      }
+      const winShort = new Set(), winLong = new Set();
+      let score=0, found=0;
+      const top=[];
+      for(const t of traits){
+        const h=hitMap.get(t.rsid);
+        if(!h) continue;
+        const d = doseEA(h.gt, t.ea);
+        if(d===null) continue;
+        found++;
+        const val=d*t.beta;
+        score+=val;
+        winShort.add(`${h.chr}:${Math.floor(h.pos/wS)}`);
+        winLong.add(`${h.chr}:${Math.floor(h.pos/wL)}`);
+        top.push({rsid:t.rsid, chr:h.chr, pos:h.pos, gt:h.gt, ea:t.ea, beta:t.beta, dose:d, val});
+      }
+      top.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+      const uniqS = winShort.size || 0;
+      const traitRed = uniqS>0 ? (found/uniqS) : 1;
+      return {
+        watchHits,
+        trait: {
+          provided: traits.length,
+          found,
+          score,
+          unique_windows_short: winShort.size,
+          unique_windows_long: winLong.size,
+          trait_redundancy_short: traitRed,
+          top: top.slice(0, 8)
+        }
+      };
+    }
+
+    // Single run result
+    let chosen = summarizeWith(params.hpWin, params.rhoCut);
+    let decisionLine = "single run";
+
+    // AutoTest grid
+    let gridText="";
+    if(mode==="auto"){
+      setStatus("AutoTest: running parameter grid…", "warn");
+      await new Promise(r=>setTimeout(r,0));
+
+      const rhoCuts = [0.010, 0.020, 0.030];
+      // hpWin candidates around current hpWin (odd steps)
+      const baseHp = params.hpWin|0;
+      const hpCands = Array.from(new Set([
+        baseHp-4, baseHp-2, baseHp, baseHp+2, baseHp+4, baseHp+6
+      ].map(x=>clamp(x,3,25)).map(x=>(x%2?x:x+1)).map(x=>clamp(x,3,25))));
+
+      const rows=[];
+      for(const rc of rhoCuts){
+        for(const hw of hpCands){
+          const r = summarizeWith(hw, rc);
+          rows.push({
+            rhoCut: rc, hpWin: hw,
+            lambda_short_bp: r.lambda_short_bp,
+            lambda_long_bp: r.lambda_long_bp,
+            red_win: r.redundancy_window,
+            red_snp: r.redundancy_snp,
+            d_eff: r.d_eff,
+            iqrS: r.iqr_short_bp,
+            iqrL: r.iqr_long_bp
+          });
+        }
+      }
+
+      // Decision rule:
+      // 1) pick hpWin that minimizes per-chr λ IQR (short) [stability-first]
+      // 2) tolerance bucket (±tolPct) around min IQR
+      // 3) tie-breaker: D_eff closest to median D_eff of bucket (anti-extremes)
+      const minIQR = Math.min(...rows.map(r=>r.iqrS));
+      const tol = params.tolPct/100;
+      const bucket = rows.filter(r=> r.iqrS <= minIQR*(1+tol));
+      const medDeff = median(bucket.map(r=>r.d_eff));
+
+      bucket.sort((a,b)=>{
+        const da = Math.abs(a.d_eff - medDeff);
+        const db = Math.abs(b.d_eff - medDeff);
+        if(da!==db) return da-db;
+        // then prefer rhoCut closest to 0.020
+        const ra = Math.abs(a.rhoCut-0.020);
+        const rb = Math.abs(b.rhoCut-0.020);
+        if(ra!==rb) return ra-rb;
+        // then hpWin closest to baseHp
+        return Math.abs(a.hpWin-baseHp) - Math.abs(b.hpWin-baseHp);
+      });
+
+      const best = bucket[0];
+      chosen = summarizeWith(best.hpWin, best.rhoCut);
+      decisionLine = `AutoTest decision 🧬 hpWin=${best.hpWin}, rhoCut=${best.rhoCut.toFixed(3)} (min IQR_short=${Math.round(minIQR)} bp; tol=±${params.tolPct}%; |D_eff-med|=${Math.round(Math.abs(best.d_eff-medDeff))})`;
+
+      // grid output (tab-separated)
+      const header = ["rhoCut","hpWin","lambda_short_bp","red_win","D_eff","red_snp","IQR_short_bp","IQR_long_bp"].join("\t");
+      const lines = rows.map(r=>[
+        r.rhoCut.toFixed(3),
+        r.hpWin,
+        Math.round(r.lambda_short_bp),
+        r.red_win.toFixed(3),
+        Math.round(r.d_eff),
+        r.red_snp.toFixed(3),
+        Math.round(r.iqrS),
+        Math.round(r.iqrL)
+      ].join("\t"));
+      gridText = header+"\n"+lines.join("\n");
+    }
+
+    // lookup results (from hitMap)
+    const lookup = computeLookup();
+    STATE.lastLookup = lookup;
+
+    // Assemble final JSON
+    const outJSON = {
+      version: "DNA10_market_edition",
+      timestamp: nowISO(),
+      mode,
+      called,
+      missing,
+      missing_rate: missRate,
+      w_short_bp: params.wShortBp,
+      w_long_bp: params.wLongBp,
+      detrend: "hp" + (params.useDiff ? "+diff" : ""),
+      hpWin: chosen.hpWin,
+      rhoCut: chosen.rhoCut,
+      maxLag: params.maxLag,
+      chrLag: params.chrLag,
+      snpStep: params.snpStep,
+      lambda_short_bp: chosen.lambda_short_bp,
+      lambda_long_bp: chosen.lambda_long_bp,
+      redundancy_window: chosen.redundancy_window,
+      redundancy_snp: chosen.redundancy_snp,
+      d_eff: chosen.d_eff,
+      stability_short_q: chosen.stability_short_q,
+      stability_long_q: chosen.stability_long_q,
+      decision: decisionLine,
+      trait: lookup.trait,
+      watchlist_hits: lookup.watchHits
+    };
+
+    return { outJSON, chosen, decisionLine, gridText, lookup };
+  }
+
+  // ---------- UI rendering ----------
+  function renderAll(result){
+    const { outJSON, chosen, decisionLine, gridText, lookup } = result;
+
+    $("kDraw").innerHTML = `<b>${fmtInt(outJSON.called)}</b>`;
+    $("kMiss").innerHTML = `${fmtInt(outJSON.missing)} <span style="color:rgba(219,231,243,.72)">(${fmtPct(outJSON.missing_rate)})</span>`;
+    $("kDeff").innerHTML = `<i>${fmtInt(outJSON.d_eff)}</i>`;
+    $("kRed").innerHTML  = `${fmt(outJSON.redundancy_window,3)}× / ${fmt(outJSON.redundancy_snp,3)}×`;
+
+    $("kLamS").innerHTML = `${fmt(outJSON.lambda_short_bp/1000,1)} kb`;
+    $("kLamL").innerHTML = `${fmt(outJSON.lambda_long_bp/1000,1)} kb`;
+
+    const ss=outJSON.stability_short_q;
+    $("kStabS").innerHTML = `med ${fmt(ss.p50/1000,1)} kb | IQR ${fmt(ss.p25/1000,1)}–${fmt(ss.p75/1000,1)} kb | n=${ss.n}`;
+
+    const sl=outJSON.stability_long_q;
+    $("kStabL").innerHTML = `med ${fmt(sl.p50/1000,1)} kb | IQR ${fmt(sl.p25/1000,1)}–${fmt(sl.p75/1000,1)} kb | n=${sl.n}`;
+
+    $("kDecision").textContent = (decisionLine || "—");
+
+    const tr=outJSON.trait;
+    const wHits=outJSON.watchlist_hits || [];
+    $("kLookup").textContent =
+      `Traits: provided ${tr.provided} | found ${tr.found} | score ${fmt(tr.score,4)} | uniq win(short/long) ${tr.unique_windows_short}/${tr.unique_windows_long} | trait red(short) ${fmt(tr.trait_redundancy_short,2)}×  ·  Watch hits: ${wHits.length}`;
+
+    // plots (median rho)
+    plotRho($("plotShort"), chosen.rho_short_med, "Autocorrelation ρ(k) — short (median across chromosomes)");
+    plotRho($("plotLong"), chosen.rho_long_med, "Autocorrelation ρ(k) — long (median across chromosomes)");
+
+    // readout
+    let text = "";
+    text += `DNA10+ — QDS Genomics Coherence Lab (Market Edition) 🧬\n`;
+    text += `Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.\n\n`;
+    text += `${decisionLine}\n\n`;
+    text += JSON.stringify(outJSON, null, 2);
+
+    if(gridText){
+      text += `\n\nAutoTest grid (tab-separated)\n` + gridText;
+    }
+
+    if(wHits.length){
+      text += `\n\nWatchlist\n` + wHits.join("\n");
+    } else {
+      text += `\n\nWatchlist\n(no hits)`;
+    }
+
+    if(tr && tr.top && tr.top.length){
+      text += `\n\nTrait contributions (top)\n`;
+      for(const t of tr.top){
+        text += `${t.rsid}\tchr${t.chr}:${t.pos}\tgt=${t.gt}\tea=${t.ea}\tbeta=${t.beta}\tdose=${t.dose}\tval=${fmt(t.val,6)}\n`;
+      }
+    } else {
+      text += `\n\nTrait contributions (top)\n(none)`;
+    }
+
+    $("out").textContent = text;
+  }
+
+  // ---------- auto-rescan on paste (NO BUTTON) ----------
+  async function fastRescanLookup(){
+    // no file => nothing
+    if(!STATE.file) return;
+    // do a tiny stream scan just for wanted rsids
+    const watchIds = parseWatchlist($("watchBox").value);
+    const traits = parseTraits($("traitBox").value);
+    const wanted = new Set([...watchIds, ...traits.map(t=>t.rsid)]);
+    if(!wanted.size) return;
+
+    // stream scan for wanted only
+    const hitMap = new Map();
+    const reader = STATE.file.stream().getReader();
+    const dec = new TextDecoder();
+    let carry="";
+    while(true){
+      const {value, done} = await reader.read();
+      if(done) break;
+      carry += dec.decode(value, {stream:true});
+      const lines = carry.split(/\r?\n/);
+      carry = lines.pop() || "";
+      for(const line of lines){
+        if(!line || line[0]==="#") continue;
+        const p=line.split(/\s+/);
+        if(p.length<4) continue;
+        const rsid=(p[0]||"").toLowerCase();
+        if(!wanted.has(rsid) || hitMap.has(rsid)) continue;
+        const chr=(p[1]||"").toUpperCase();
+        if(chr==="MT" || chr==="M") continue;
+        const pos=Number(p[2]);
+        const gt=(p[3]||"").toUpperCase();
+        hitMap.set(rsid, {rsid, chr, pos, gt});
+        if(hitMap.size===wanted.size){
+          try{ reader.cancel(); }catch(e){}
+          break;
+        }
+      }
+      if(hitMap.size===wanted.size) break;
+    }
+
+    const params = readParams();
+    const wS=params.wShortBp, wL=params.wLongBp;
+
+    // compute watch hits
+    const watchHits=[];
+    for(const rsid of watchIds){
+      const h=hitMap.get(rsid);
+      if(h) watchHits.push(`${rsid}: ${h.gt} (chr${h.chr}:${h.pos})`);
+    }
+
+    // compute trait
+    let score=0, found=0;
+    const winShort=new Set(), winLong=new Set();
+    const top=[];
+    for(const t of traits){
+      const h=hitMap.get(t.rsid);
+      if(!h) continue;
+      const d=doseEA(h.gt, t.ea);
+      if(d===null) continue;
+      found++;
+      const val=d*t.beta;
+      score+=val;
+      winShort.add(`${h.chr}:${Math.floor(h.pos/wS)}`);
+      winLong.add(`${h.chr}:${Math.floor(h.pos/wL)}`);
+      top.push({rsid:t.rsid, chr:h.chr, pos:h.pos, gt:h.gt, ea:t.ea, beta:t.beta, dose:d, val});
+    }
+    top.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+    const uniqS=winShort.size||0;
+    const traitRed = uniqS>0 ? (found/uniqS) : 1;
+
+    STATE.lastLookup = {
+      watchHits,
+      trait: {
+        provided: traits.length, found, score,
+        unique_windows_short: winShort.size,
+        unique_windows_long: winLong.size,
+        trait_redundancy_short: traitRed,
+        top: top.slice(0,8)
+      }
+    };
+
+    // Update only the lookup KPI line if results exist
+    if(STATE.lastResults){
+      const outJSON = STATE.lastResults.outJSON;
+      outJSON.trait = STATE.lastLookup.trait;
+      outJSON.watchlist_hits = STATE.lastLookup.watchHits;
+      // update small line
+      const tr=outJSON.trait;
+      $("kLookup").textContent =
+        `Traits: provided ${tr.provided} | found ${tr.found} | score ${fmt(tr.score,4)} | uniq win(short/long) ${tr.unique_windows_short}/${tr.unique_windows_long} | trait red(short) ${fmt(tr.trait_redundancy_short,2)}×  ·  Watch hits: ${outJSON.watchlist_hits.length}`;
+      // refresh readout box only (don’t redraw heavy plots)
+      $("out").textContent = $("out").textContent.replace(/\n\nWatchlist[\s\S]*$/,""); // quick trim
+      // (cheap rebuild of tail)
+      let tail = "";
+      tail += `\n\nWatchlist\n` + (outJSON.watchlist_hits.length ? outJSON.watchlist_hits.join("\n") : "(no hits)");
+      tail += `\n\nTrait contributions (top)\n`;
+      if(tr.top && tr.top.length){
+        for(const t of tr.top){
+          tail += `${t.rsid}\tchr${t.chr}:${t.pos}\tgt=${t.gt}\tea=${t.ea}\tbeta=${t.beta}\tdose=${t.dose}\tval=${fmt(t.val,6)}\n`;
+        }
+      } else {
+        tail += "(none)";
+      }
+      $("out").textContent += tail;
+      setStatus(`Lookup updated: watchHits=${outJSON.watchlist_hits.length}, traitFound=${tr.found}/${tr.provided}.`, "good");
+    } else {
+      setStatus(`Lookup ready (will show after Run): watchHits=${watchHits.length}, traitFound=${found}/${traits.length}.`, "good");
+    }
+  }
+
+  function scheduleLookupRescan(){
+    clearTimeout(STATE.debounceTimer);
+    STATE.debounceTimer = setTimeout(()=>{
+      if(STATE.running) return;
+      fastRescanLookup().catch(()=>{});
+    }, 450);
+  }
+
+  // ---------- events ----------
+  function wire(){
+    updateParamLabels();
+    ["wShortKb","wLongMb","maxLag","rhoCut","hpWin","chrLag","snpStep","tolPct"].forEach(id=>{
+      $(id).addEventListener("input", ()=>{ updateParamLabels(); scheduleLookupRescan(); });
+    });
+    $("useDiff").addEventListener("change", scheduleLookupRescan);
+    $("useAbsRho").addEventListener("change", scheduleLookupRescan);
+
+    $("watchBox").addEventListener("input", scheduleLookupRescan);
+    $("traitBox").addEventListener("input", scheduleLookupRescan);
+
+    $("fileInput").addEventListener("change", ()=>{
+      STATE.file = $("fileInput").files && $("fileInput").files[0] ? $("fileInput").files[0] : null;
+      if(STATE.file){
+        setStatus("File selected. You can Run now. (Lookup will auto-rescan on edits.)", "good");
+        scheduleLookupRescan();
+      } else {
+        setStatus("No file selected.", "warn");
+      }
+    });
+
+    $("btnRun").addEventListener("click", async ()=>{
+      if(STATE.running) return;
+      if(!STATE.file){ setStatus("Load a 23andMe TXT first.", "bad"); return; }
+      STATE.running=true; setButtons(true);
+      try{
+        const params=readParams();
+        const result = await parseAndCompute(STATE.file, params, "single");
+        STATE.lastResults = result;
+        renderAll(result);
+        setStatus("Done. Single run complete.", "good");
+      } catch(e){
+        console.error(e);
+        setStatus("Error: run failed. Check console.", "bad");
+      } finally{
+        STATE.running=false; setButtons(false);
+      }
+    });
+
+    $("btnAuto").addEventListener("click", async ()=>{
+      if(STATE.running) return;
+      if(!STATE.file){ setStatus("Load a 23andMe TXT first.", "bad"); return; }
+      STATE.running=true; setButtons(true);
+      try{
+        const params=readParams();
+        const result = await parseAndCompute(STATE.file, params, "auto");
+        STATE.lastResults = result;
+        renderAll(result);
+        setStatus("Done. AutoTest complete (stability-first).", "good");
+      } catch(e){
+        console.error(e);
+        setStatus("Error: AutoTest failed. Check console.", "bad");
+      } finally{
+        STATE.running=false; setButtons(false);
+      }
+    });
+  }
+
+  wire();
+})();
+</script>
+</body>
+</html>

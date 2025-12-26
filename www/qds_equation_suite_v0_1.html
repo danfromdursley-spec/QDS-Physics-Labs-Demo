@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Equation Lab — QDS Kernel</title>
+<style>
+  :root{
+    --bg:#070A12; --panel:#0E1426; --panel2:#0B1020; --stroke:rgba(255,255,255,.09);
+    --text:rgba(255,255,255,.88); --muted:rgba(255,255,255,.62);
+    --accent:#7CF7FF; --accent2:#A7FF83; --warn:#FFC857;
+    --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.45);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:var(--sans); color:var(--text);
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(124,247,255,.16), transparent 55%),
+                radial-gradient(900px 520px at 120% 10%, rgba(167,255,131,.12), transparent 55%),
+                radial-gradient(1200px 700px at 50% 120%, rgba(255,200,87,.08), transparent 55%),
+                var(--bg);
+  }
+  .wrap{max-width:1150px; margin:0 auto; padding:16px 14px 22px;}
+  .topbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:12px 12px; border:1px solid var(--stroke); background:rgba(14,20,38,.72);
+    border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter: blur(10px);
+  }
+  .brand{display:flex; flex-direction:column; gap:2px; min-width:240px;}
+  .brand .t{font-weight:700; letter-spacing:.2px; font-size:15px}
+  .brand .s{color:var(--muted); font-size:12px}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px; padding:8px 10px;
+    border:1px solid var(--stroke); border-radius:999px; background:rgba(11,16,32,.55);
+    color:var(--muted); font-size:12px;
+  }
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--accent2); box-shadow:0 0 0 4px rgba(167,255,131,.12)}
+  .btn{
+    padding:9px 11px; border-radius:12px; border:1px solid var(--stroke);
+    background:rgba(11,16,32,.65); color:var(--text); font-weight:600; font-size:12px;
+    cursor:pointer; user-select:none;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{color:var(--muted); font-weight:600}
+  .spacer{flex:1}
+  .grid{
+    display:grid; gap:12px; margin-top:12px;
+    grid-template-columns: 1.05fr .95fr 1.2fr;
+  }
+  @media (max-width: 980px){ .grid{grid-template-columns: 1fr; } }
+  .card{
+    border:1px solid var(--stroke); background:rgba(14,20,38,.62); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:12px;
+  }
+  .card h3{
+    margin:0 0 8px 0; font-size:13px; letter-spacing:.18px; color:rgba(255,255,255,.84);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .sub{color:var(--muted); font-size:12px; line-height:1.25}
+  .eq{
+    margin-top:10px; padding:12px; border-radius:14px;
+    background:linear-gradient(180deg, rgba(11,16,32,.8), rgba(11,16,32,.55));
+    border:1px solid var(--stroke);
+    font-family:var(--mono); font-size:13px; line-height:1.5;
+    overflow:auto;
+  }
+  .sym{
+    display:inline-block; padding:1px 5px; border-radius:10px; border:1px solid transparent;
+    cursor:pointer;
+  }
+  .sym:hover{border-color:rgba(124,247,255,.35); background:rgba(124,247,255,.08)}
+  .sym.active{border-color:rgba(167,255,131,.6); background:rgba(167,255,131,.10); color:rgba(255,255,255,.95)}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .kpi{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;
+  }
+  .kpi .box{
+    border:1px solid var(--stroke); background:rgba(11,16,32,.55); border-radius:14px; padding:10px;
+  }
+  .kpi .lab{color:var(--muted); font-size:11px}
+  .kpi .val{font-family:var(--mono); font-size:16px; margin-top:4px}
+  .ctrl{margin-top:10px; padding:10px; border-radius:14px; border:1px solid var(--stroke); background:rgba(11,16,32,.55)}
+  .ctrl label{display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:12px}
+  .ctrl .v{font-family:var(--mono); color:var(--text)}
+  input[type="range"]{width:100%}
+  input[type="number"]{
+    width:120px; border-radius:10px; border:1px solid var(--stroke);
+    background:rgba(7,10,18,.65); color:var(--text); padding:7px 8px; font-family:var(--mono);
+  }
+  .plot{display:grid; gap:10px; margin-top:10px}
+  canvas{
+    width:100%; height:240px; border-radius:14px; border:1px solid var(--stroke);
+    background:rgba(7,10,18,.55);
+  }
+  .table{
+    margin-top:10px; border:1px solid var(--stroke); border-radius:14px; overflow:hidden;
+    background:rgba(11,16,32,.55);
+  }
+  .table table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12px}
+  .table th,.table td{padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
+  .table th{color:var(--muted); font-weight:700; text-align:left; background:rgba(14,20,38,.45)}
+  .table tr:last-child td{border-bottom:none}
+  footer{
+    margin-top:14px; padding:10px 12px; border-radius:14px; border:1px solid var(--stroke);
+    background:rgba(14,20,38,.45); color:var(--muted); font-size:12px; display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center; justify-content:space-between;
+  }
+  .tiny{font-size:11px; color:rgba(255,255,255,.48)}
+  .link{color:rgba(124,247,255,.85); text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="t">Equation Lab — QDS Kernel</div>
+        <div class="s">Offline • Interactive symbols • Numbers + charts • Single-file</div>
+      </div>
+
+      <span class="pill" id="offlinePill"><span class="dot"></span><span id="offlineTxt">Offline OK</span></span>
+      <button class="btn secondary" id="btnReset">Reset</button>
+      <button class="btn secondary" id="btnSave">Save preset</button>
+      <button class="btn secondary" id="btnLoad">Load preset</button>
+      <button class="btn" id="btnExport">Export JSON</button>
+
+      <div class="spacer"></div>
+      <span class="pill">Active symbol: <b id="activeSym" style="color:var(--text); font-family:var(--mono)">—</b></span>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: equation -->
+      <section class="card">
+        <h3>
+          <span>Kernel equation (click symbols)</span>
+          <span class="pill">K(t,r)</span>
+        </h3>
+        <div class="sub">
+          Tap a symbol to highlight it everywhere and jump to its control. Term toggles are in v2 (unless you demand them, then we ship them).
+        </div>
+
+        <div class="eq" id="eqBox" aria-label="Equation">
+          K(t,r) = <span class="sym" data-var="sigma2">σ²</span>
+          · exp( - |t| / <span class="sym" data-var="tau">τ<sub>c</sub></span> )
+          · exp( - r² / ( 2 · <span class="sym" data-var="lambda">λ<sub>c</sub>²</span> ) )
+        </div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="lab">K(t,r) @ current sliders</div>
+            <div class="val" id="kNow">—</div>
+          </div>
+          <div class="box">
+            <div class="lab">Sensitivity (rough)</div>
+            <div class="val" id="sensNow">—</div>
+          </div>
+        </div>
+
+        <div class="table">
+          <table>
+            <thead><tr><th>Item</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>σ²</td><td id="tSigma">—</td></tr>
+              <tr><td>τ<sub>c</sub></td><td id="tTau">—</td></tr>
+              <tr><td>λ<sub>c</sub></td><td id="tLambda">—</td></tr>
+              <tr><td>t</td><td id="tT">—</td></tr>
+              <tr><td>r</td><td id="tR">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MIDDLE: controls -->
+      <section class="card">
+        <h3><span>Controls</span><span class="pill">Live update</span></h3>
+        <div class="sub">Designed for phone. Sliders are primary; number boxes are for precise “no excuses” values.</div>
+
+        <div class="ctrl" id="ctrl_sigma2">
+          <label><span>σ² (variance)</span><span class="v"><span id="v_sigma2"></span></span></label>
+          <input type="range" id="s_sigma2" min="0.01" max="5" step="0.01" value="1">
+          <div class="row">
+            <span class="tiny">Range: 0.01 → 5.00</span>
+            <div class="spacer"></div>
+            <input type="number" id="n_sigma2" min="0.01" max="5" step="0.01" value="1">
+          </div>
+        </div>
+
+        <div class="ctrl" id="ctrl_tau">
+          <label><span>τ<sub>c</sub> (time corr)</span><span class="v"><span id="v_tau"></span></span></label>
+          <input type="range" id="s_tau" min="0.05" max="10" step="0.01" value="1">
+          <div class="row">
+            <span class="tiny">Units: arbitrary (set your scale)</span>
+            <div class="spacer"></div>
+            <input type="number" id="n_tau" min="0.05" max="10" step="0.01" value="1">
+          </div>
+        </div>
+
+        <div class="ctrl" id="ctrl_lambda">
+          <label><span>λ<sub>c</sub> (space corr)</span><span class="v"><span id="v_lambda"></span></span></label>
+          <input type="range" id="s_lambda" min="0.05" max="10" step="0.01" value="1">
+          <div class="row">
+            <span class="tiny">Tip: sweep λ<sub>c</sub> to watch width change</span>
+            <div class="spacer"></div>
+            <input type="number" id="n_lambda" min="0.05" max="10" step="0.01" value="1">
+          </div>
+        </div>
+
+        <div class="ctrl" id="ctrl_t">
+          <label><span>t (time)</span><span class="v"><span id="v_t"></span></span></label>
+          <input type="range" id="s_t" min="-10" max="10" step="0.01" value="1.2">
+          <div class="row">
+            <span class="tiny">|t| is used in the kernel</span>
+            <div class="spacer"></div>
+            <input type="number" id="n_t" min="-10" max="10" step="0.01" value="1.2">
+          </div>
+        </div>
+
+        <div class="ctrl" id="ctrl_r">
+          <label><span>r (distance)</span><span class="v"><span id="v_r"></span></span></label>
+          <input type="range" id="s_r" min="0" max="10" step="0.01" value="2.0">
+          <div class="row">
+            <span class="tiny">r ≥ 0</span>
+            <div class="spacer"></div>
+            <input type="number" id="n_r" min="0" max="10" step="0.01" value="2.0">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnCopy">Copy results</button>
+          <span class="tiny" id="copyMsg"></span>
+        </div>
+      </section>
+
+      <!-- RIGHT: plots -->
+      <section class="card">
+        <h3><span>Charts</span><span class="pill">Canvas</span></h3>
+        <div class="sub">Plot A: K vs t (holding r). Plot B: K vs r (holding t). Clean, offline, and fast.</div>
+
+        <div class="plot">
+          <div>
+            <div class="row">
+              <span class="pill">Plot A</span><span class="tiny">K(t,r₀), r₀ = current r</span>
+            </div>
+            <canvas id="cA" width="980" height="320"></canvas>
+          </div>
+          <div>
+            <div class="row">
+              <span class="pill">Plot B</span><span class="tiny">K(t₀,r), t₀ = current t</span>
+            </div>
+            <canvas id="cB" width="980" height="320"></canvas>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <footer>
+      <div>
+        <b>Built by Darkside</b> • <span>Quantum Dynamic Systems</span>
+        <span class="tiny">— offline-first equation lab (v0.1)</span>
+      </div>
+      <div class="tiny">
+        Presets stored locally • Export is JSON • No internet required
+      </div>
+    </footer>
+  </div>
+
+<script>
+(() => {
+  // ---------- state ----------
+  const state = {
+    sigma2: 1.0,
+    tau: 1.0,
+    lambda: 1.0,
+    t: 1.2,
+    r: 2.0,
+    active: null,
+  };
+
+  // ---------- helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const fmt = (x) => {
+    if (!isFinite(x)) return "—";
+    const ax = Math.abs(x);
+    if (ax === 0) return "0";
+    if (ax >= 1000) return x.toExponential(3);
+    if (ax < 0.001) return x.toExponential(3);
+    return (Math.round(x * 1e6) / 1e6).toString();
+  };
+
+  function K(t, r, sigma2, tau, lambda){
+    const at = Math.abs(t);
+    const e1 = Math.exp(-at / Math.max(1e-12, tau));
+    const e2 = Math.exp(-(r*r) / (2 * Math.max(1e-12, lambda*lambda)));
+    return sigma2 * e1 * e2;
+  }
+
+  // finite-diff sensitivity norm (rough)
+  function sensitivity(){
+    const base = K(state.t, state.r, state.sigma2, state.tau, state.lambda);
+    const eps = 1e-3;
+    const d = {};
+    d.sigma2 = (K(state.t, state.r, state.sigma2+eps, state.tau, state.lambda) - base)/eps;
+    d.tau    = (K(state.t, state.r, state.sigma2, state.tau+eps, state.lambda) - base)/eps;
+    d.lambda = (K(state.t, state.r, state.sigma2, state.tau, state.lambda+eps) - base)/eps;
+    // compact: pick dominant
+    let best = {k:"σ²", v: d.sigma2};
+    if (Math.abs(d.tau) > Math.abs(best.v)) best = {k:"τc", v:d.tau};
+    if (Math.abs(d.lambda) > Math.abs(best.v)) best = {k:"λc", v:d.lambda};
+    return {base, best, d};
+  }
+
+  // ---------- UI wiring ----------
+  const pairs = [
+    ["sigma2", "s_sigma2", "n_sigma2", "v_sigma2", 0.01, 5],
+    ["tau",    "s_tau",    "n_tau",    "v_tau",    0.05, 10],
+    ["lambda", "s_lambda", "n_lambda", "v_lambda", 0.05, 10],
+    ["t",      "s_t",      "n_t",      "v_t",      -10, 10],
+    ["r",      "s_r",      "n_r",      "v_r",      0, 10],
+  ];
+
+  function setVal(key, x){
+    const [min,max] = (() => {
+      const p = pairs.find(z => z[0]===key);
+      return [p[4], p[5]];
+    })();
+    state[key] = clamp(+x, min, max);
+    requestRender();
+  }
+
+  pairs.forEach(([key, sid, nid, vid]) => {
+    const s = $(sid), n = $(nid), v = $(vid);
+    const sync = () => {
+      s.value = state[key];
+      n.value = state[key];
+      v.textContent = fmt(state[key]);
+    };
+    s.addEventListener("input", () => { setVal(key, s.value); sync(); });
+    n.addEventListener("input", () => { setVal(key, n.value); sync(); });
+    sync();
+  });
+
+  // symbol highlight + jump
+  const activeSym = $("activeSym");
+  function clearActive(){
+    document.querySelectorAll(".sym").forEach(el => el.classList.remove("active"));
+    state.active = null;
+    activeSym.textContent = "—";
+  }
+  function activate(varKey){
+    clearActive();
+    state.active = varKey;
+    activeSym.textContent = varKey;
+    document.querySelectorAll(`.sym[data-var="${varKey}"]`).forEach(el => el.classList.add("active"));
+    const target = $(`ctrl_${varKey}`);
+    if (target) target.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+  document.querySelectorAll(".sym").forEach(el => {
+    el.addEventListener("click", () => activate(el.dataset.var));
+  });
+  $("eqBox").addEventListener("dblclick", clearActive);
+
+  // ---------- plots ----------
+  const cA = $("cA"), cB = $("cB");
+  const ctxA = cA.getContext("2d");
+  const ctxB = cB.getContext("2d");
+
+  function clear(ctx, w, h){
+    ctx.clearRect(0,0,w,h);
+    // grid
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,.07)";
+    for (let i=1;i<10;i++){
+      const x = (w*i)/10;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let j=1;j<6;j++){
+      const y = (h*j)/6;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+  }
+
+  function drawLine(ctx, w, h, xs, ys){
+    // normalize y to [0,1] via min/max for plotting
+    let ymin = Infinity, ymax = -Infinity;
+    for (const y of ys){ ymin = Math.min(ymin, y); ymax = Math.max(ymax, y); }
+    if (!isFinite(ymin) || !isFinite(ymax) || ymax === ymin){ ymin = 0; ymax = 1; }
+
+    const x0 = 32, y0 = 14, pw = w-46, ph = h-34;
+
+    // axes
+    ctx.strokeStyle = "rgba(255,255,255,.16)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0, y0+ph);
+    ctx.lineTo(x0+pw, y0+ph);
+    ctx.stroke();
+
+    // path
+    ctx.strokeStyle = "rgba(124,247,255,.9)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let i=0;i<xs.length;i++){
+      const x = x0 + (xs[i] - xs[0])/(xs[xs.length-1]-xs[0]) * pw;
+      const y = y0 + (1 - (ys[i]-ymin)/(ymax-ymin)) * ph;
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = "rgba(255,255,255,.60)";
+    ctx.font = "12px ui-monospace, Menlo, Consolas, monospace";
+    ctx.fillText("min " + fmt(ymin), x0+6, y0+ph-6);
+    ctx.fillText("max " + fmt(ymax), x0+6, y0+14);
+  }
+
+  function renderPlots(){
+    // Plot A: K vs t, holding r
+    const wA = cA.width, hA = cA.height;
+    clear(ctxA, wA, hA);
+    const xsA = [], ysA = [];
+    const tMin = -10, tMax = 10;
+    const N = 240;
+    for (let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin) * i / N;
+      xsA.push(t);
+      ysA.push(K(t, state.r, state.sigma2, state.tau, state.lambda));
+    }
+    drawLine(ctxA, wA, hA, xsA, ysA);
+
+    // Plot B: K vs r, holding t
+    const wB = cB.width, hB = cB.height;
+    clear(ctxB, wB, hB);
+    const xsB = [], ysB = [];
+    const rMin = 0, rMax = 10;
+    for (let i=0;i<=N;i++){
+      const r = rMin + (rMax - rMin) * i / N;
+      xsB.push(r);
+      ysB.push(K(state.t, r, state.sigma2, state.tau, state.lambda));
+    }
+    // use accent2 for second plot for quick differentiation
+    ctxB.strokeStyle = "rgba(167,255,131,.9)";
+    drawLine(ctxB, wB, hB, xsB, ysB);
+  }
+
+  // ---------- numbers table / KPIs ----------
+  function renderNumbers(){
+    const {base, best} = sensitivity();
+    $("kNow").textContent = fmt(base);
+    $("sensNow").textContent = `${best.k}: ${fmt(best.v)}`;
+    $("tSigma").innerHTML = fmt(state.sigma2);
+    $("tTau").innerHTML = fmt(state.tau);
+    $("tLambda").innerHTML = fmt(state.lambda);
+    $("tT").innerHTML = fmt(state.t);
+    $("tR").innerHTML = fmt(state.r);
+  }
+
+  // ---------- save/load/export ----------
+  const KEY = "QDS_EQ_LAB_PRESET_V01";
+  function savePreset(){
+    const payload = { ...state, savedAt: new Date().toISOString() };
+    localStorage.setItem(KEY, JSON.stringify(payload));
+  }
+  function loadPreset(){
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return false;
+    try{
+      const p = JSON.parse(raw);
+      ["sigma2","tau","lambda","t","r"].forEach(k => { if (p[k]!=null) state[k] = +p[k]; });
+      pairs.forEach(([key, sid, nid, vid]) => {
+        $(sid).value = state[key];
+        $(nid).value = state[key];
+        $(vid).textContent = fmt(state[key]);
+      });
+      return true;
+    }catch(e){ return false; }
+  }
+  function exportJSON(){
+    const payload = {
+      title:"Equation Lab — QDS Kernel",
+      builtBy:"Darkside",
+      company:"Quantum Dynamic Systems",
+      exportedAt: new Date().toISOString(),
+      equation:"K(t,r)=σ² exp(-|t|/τc) exp(-r²/(2λc²))",
+      state:{sigma2:state.sigma2, tau:state.tau, lambda:state.lambda, t:state.t, r:state.r},
+      K_now: K(state.t, state.r, state.sigma2, state.tau, state.lambda)
+    };
+    const txt = JSON.stringify(payload, null, 2);
+    const blob = new Blob([txt], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "qds_equation_lab_export.json";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 250);
+  }
+
+  // ---------- copy results ----------
+  $("btnCopy").addEventListener("click", async () => {
+    const s = sensitivity();
+    const msg =
+`Equation Lab — QDS Kernel
+K(t,r)=σ² exp(-|t|/τc) exp(-r²/(2λc²))
+
+σ²=${state.sigma2}
+τc=${state.tau}
+λc=${state.lambda}
+t=${state.t}
+r=${state.r}
+
+K_now=${K(state.t,state.r,state.sigma2,state.tau,state.lambda)}
+Dominant sensitivity ≈ ${s.best.k}: ${s.best.v}
+
+Built by Darkside — Quantum Dynamic Systems`;
+    try{
+      await navigator.clipboard.writeText(msg);
+      $("copyMsg").textContent = "Copied ✅";
+      setTimeout(()=> $("copyMsg").textContent = "", 1200);
+    }catch(e){
+      $("copyMsg").textContent = "Clipboard blocked (Android sometimes).";
+      setTimeout(()=> $("copyMsg").textContent = "", 1600);
+    }
+  });
+
+  // buttons
+  $("btnReset").addEventListener("click", () => {
+    state.sigma2=1; state.tau=1; state.lambda=1; state.t=1.2; state.r=2.0;
+    pairs.forEach(([key, sid, nid, vid]) => {
+      $(sid).value = state[key];
+      $(nid).value = state[key];
+      $(vid).textContent = fmt(state[key]);
+    });
+    clearActive();
+    requestRender(true);
+  });
+
+  $("btnSave").addEventListener("click", () => { savePreset(); flash("Saved ✅"); });
+  $("btnLoad").addEventListener("click", () => {
+    const ok = loadPreset();
+    flash(ok ? "Loaded ✅" : "No preset yet");
+    requestRender(true);
+  });
+  $("btnExport").addEventListener("click", exportJSON);
+
+  function flash(text){
+    const el = $("copyMsg");
+    el.textContent = text;
+    setTimeout(()=> el.textContent="", 1200);
+  }
+
+  // offline indicator
+  function offlineBadge(){
+    const pill = $("offlinePill");
+    const txt = $("offlineTxt");
+    const ok = (navigator.onLine === false) ? true : true; // we are designed offline regardless
+    txt.textContent = ok ? "Offline OK" : "Online";
+    pill.querySelector(".dot").style.background = ok ? "rgba(167,255,131,1)" : "rgba(255,200,87,1)";
+  }
+  window.addEventListener("online", offlineBadge);
+  window.addEventListener("offline", offlineBadge);
+  offlineBadge();
+
+  // ---------- render loop (throttled) ----------
+  let pending = false;
+  function requestRender(force=false){
+    if (pending && !force) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      renderNumbers();
+      renderPlots();
+    });
+  }
+
+  // initial render
+  requestRender(true);
+})();
+</script>
+</body>
+</html>

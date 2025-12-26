@@ -1,0 +1,1003 @@
+cd "$HOME/OMEGA_EMPIRE/UV_QDS/www"
+
+cat <<'EOF' > qds_ngc3198_distance_lab_v1.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS NGC3198 Distance Probe Lab v1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050617;
+      --card: #0b1024;
+      --card-soft: rgba(11, 16, 36, 0.9);
+      --border: rgba(130, 160, 255, 0.55);
+      --accent: #4af2ff;
+      --accent-soft: rgba(74, 242, 255, 0.15);
+      --accent-warm: #ff7ee5;
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --danger: #ff4d6a;
+      --shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
+      --radius-lg: 20px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0 0, rgba(74, 242, 255, 0.16), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(255, 126, 229, 0.18), transparent 55%),
+        #050617;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden; /* bleed guard */
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 12px 32px;
+    }
+
+    header {
+      background:
+        linear-gradient(135deg, rgba(255, 126, 229, 0.16), rgba(74, 242, 255, 0.1)),
+        var(--card-soft);
+      border-radius: 24px;
+      padding: 16px 16px 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 720px) {
+      header { padding: 20px 22px 16px; }
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, var(--accent));
+      box-shadow: 0 0 18px rgba(74, 242, 255, 0.9);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+      margin: 4px 0 0;
+      max-width: 720px;
+    }
+
+    .subtitle strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    main {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.02), transparent 50%),
+        var(--card);
+      border-radius: 20px;
+      padding: 14px 12px 16px;
+      border: 1px solid rgba(95, 125, 220, 0.6);
+      box-shadow: var(--shadow);
+    }
+
+    @media (min-width: 720px) {
+      .card { padding: 16px 18px 18px; }
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      margin: 0 0 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pill.badge-warn strong {
+      color: var(--accent-warm);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+      box-shadow: 0 0 10px rgba(250, 255, 255, 0.7);
+    }
+
+    .grid-controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 720px) {
+      .grid-controls {
+        grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr);
+        align-items: flex-start;
+      }
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+
+    .field-sub {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      opacity: 0.9;
+    }
+
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      background: rgba(6, 10, 32, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(130, 160, 255, 0.6);
+      color: var(--text);
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      min-width: 0;
+      flex: 0 0 auto;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(74, 242, 255, 0.5);
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    button {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(130, 160, 255, 0.7);
+      background: linear-gradient(135deg, rgba(74, 242, 255, 0.2), rgba(3, 8, 32, 0.95));
+      color: var(--text);
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease, transform 0.1s ease, box-shadow 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(74, 242, 255, 0.45);
+    }
+
+    button.secondary {
+      background: rgba(6, 10, 32, 0.95);
+      border-color: rgba(120, 150, 255, 0.6);
+    }
+
+    .metrics-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      margin-top: 6px;
+    }
+
+    .metric {
+      background: rgba(8, 11, 32, 0.96);
+      border-radius: 14px;
+      padding: 8px 9px;
+      border: 1px solid rgba(90, 120, 230, 0.7);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .metric-value {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.83rem;
+      word-break: break-all;
+    }
+
+    .metric-value.bad {
+      color: var(--danger);
+    }
+
+    .metric-value.good {
+      color: var(--accent);
+    }
+
+    .metric-note {
+      font-size: 0.68rem;
+      color: var(--text-soft);
+      margin-top: 1px;
+    }
+
+    .summary-note {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .summary-note strong {
+      color: var(--accent-warm);
+    }
+
+    .log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      font-size: 0.72rem;
+      max-height: 180px;
+      overflow: auto;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(4, 6, 18, 0.96);
+      border: 1px solid rgba(70, 100, 210, 0.8);
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    footer {
+      margin-top: 12px;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      opacity: 0.9;
+    }
+
+    footer strong { color: var(--accent); }
+  
+  /* LAB_HDR_TOGGLE_V1 */
+  [data-lab-intro="1"] {
+    transition:
+      max-height 0.2s ease,
+      padding 0.2s ease,
+      margin 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  [data-lab-intro="1"].lab-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 4px !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lab-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border-radius: 999px;
+    background: rgba(3, 5, 25, 0.96);
+    border: 1px solid rgba(255, 120, 140, 0.85);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  }
+
+  .lab-hdr-label {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+
+  .lab-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+</style>
+
+    <!-- QDS_LAB_HEADER_STRIP_V1 -->
+    <style>
+      .qds-lab-strip {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px;
+        margin: 0 0 8px 0;
+        border-radius: 999px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: radial-gradient(circle at 0% 0%, rgba(0,255,255,0.16), rgba(0,0,0,0.8));
+        border: 1px solid rgba(255,255,255,0.16);
+        color: #f5f5ff;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        backdrop-filter: blur(20px);
+      }
+      .qds-lab-strip-label {
+        padding-right: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .qds-lab-strip-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(90deg,#ff6b6b,#ffb347);
+        color: #160016;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+      }
+      .qds-lab-strip-btn:active {
+        transform: translateY(1px);
+      }
+    </style>
+
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="header-top">
+        <div class="dot"></div>
+        <div>
+          <h1>QDS NGC3198 Distance Probe Lab v1</h1>
+          <p class="subtitle">
+            Assumption mode: the <strong>QDS kernel</strong> is fixed from cosmology.
+            Here we let <strong>NGC3198</strong> tell us which
+            <strong>distance scale</strong> makes its rotation curve most consistent
+            with that kernel.
+          </p>
+        </div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Data:</strong> ROTMOD public CSV &bull; NGC3198</span>
+        </div>
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Kernel:</strong> Yukawa (α, λ<sub>c</sub>) fixed globally</span>
+        </div>
+        <div class="pill badge-warn">
+          <span class="pill-dot"></span>
+          <span><strong>Exploratory only:</strong> not a formal distance ladder… yet.</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Controls + current metrics -->
+      <section class="card">
+        <h2>1. Distance &amp; kernel controls</h2>
+        <div class="grid-controls">
+          <div>
+            <div class="field-group">
+              <div class="field-label">Distance scale factor s = D / D₀</div>
+              <div class="field-sub">
+                s = 1 uses the catalog distance baked into the ROTMOD file.
+                Move s to mimic distance shifts while keeping the QDS kernel fixed.
+              </div>
+              <div class="field-row" style="margin-top:4px;">
+                <input id="distFactorInput" type="number" step="0.01" min="0.4" max="1.6" value="1.00" />
+                <span style="font-size:0.78rem;color:var(--text-soft);">× current D₀</span>
+              </div>
+              <div style="margin-top:6px;">
+                <input id="distFactorRange" type="range" min="0.6" max="1.4" step="0.01" value="1.00" />
+              </div>
+              <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="btnReset" type="button" class="secondary">Reset to s = 1.00</button>
+                <button id="btnScan" type="button">Scan distance range (QDS χ²)</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">QDS kernel parameters (fixed for this lab)</div>
+              <div class="field-sub">
+                These are the same (α, λ<sub>c</sub>) used across DDO154/NGC2403 in the rotation evidence tests.
+              </div>
+              <div class="field-row" style="margin-top:4px;">
+                <label style="font-size:0.75rem;color:var(--text-soft);">
+                  α&nbsp;
+                  <input id="alphaInput" type="number" step="0.05" value="0.8" />
+                </label>
+                <label style="font-size:0.75rem;color:var(--text-soft);">
+                  λ<sub>c</sub> [kpc]&nbsp;
+                  <input id="lambdaInput" type="number" step="0.5" value="10" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Current fit metrics (this s, this kernel)</div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <div class="metric-label">Points used</div>
+                <div id="metricN" class="metric-value">–</div>
+                <div class="metric-note">Rows with finite r, Vobs, err &gt; 0</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">χ² baseline</div>
+                <div id="metricChi2Base" class="metric-value">–</div>
+                <div class="metric-note">Baryons only (scaled with s)</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">χ² QDS</div>
+                <div id="metricChi2QDS" class="metric-value">–</div>
+                <div class="metric-note">Baryons × [1 + α e<sup>-r/λc</sup>]</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Δχ² (QDS − base)</div>
+                <div id="metricDeltaChi2" class="metric-value">–</div>
+                <div class="metric-note">Negative = QDS better; positive = worse</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">χ² per point (base / QDS)</div>
+                <div id="metricChi2PerN" class="metric-value">–</div>
+                <div class="metric-note">Quick feel for fit quality</div>
+              </div>
+            </div>
+            <div id="currentSummary" class="summary-note">
+              Waiting for data…
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scan results -->
+      <section class="card">
+        <h2>2. Distance scan (QDS view)</h2>
+        <div class="field-sub">
+          When you hit <strong>Scan</strong>, we sweep s from 0.6 → 1.4 in 0.01 steps,
+          keep α and λ<sub>c</sub> fixed, and find the s that minimises χ²<sub>QDS</sub>(s).
+          This is “where QDS would like NGC3198 to sit” under these assumptions.
+        </div>
+        <div class="metrics-grid" style="margin-top:8px;">
+          <div class="metric">
+            <div class="metric-label">Best s (QDS)</div>
+            <div id="scanBestS" class="metric-value">–</div>
+            <div class="metric-note">Distance factor D / D₀</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">χ² QDS @ best s</div>
+            <div id="scanBestChi2" class="metric-value">–</div>
+            <div class="metric-note">Absolute χ² at that distance factor</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Δχ² vs s = 1</div>
+            <div id="scanDeltaVsOne" class="metric-value">–</div>
+            <div class="metric-note">QDS(s*) − QDS(s = 1)</div>
+          </div>
+        </div>
+        <div id="scanSummary" class="summary-note">
+          No scan run yet. Hit <strong>Scan distance range</strong> above to let QDS have an opinion.
+        </div>
+        <div id="scanLog" class="log"></div>
+        <div id="scanStatus" class="status"></div>
+      </section>
+
+      <footer>
+        <div><strong>Reality check:</strong> This lab treats the QDS kernel as “given” by cosmology and uses NGC3198 as a toy distance probe.</div>
+        <div>In a proper paper we’d fold in distance priors, M/L, inclination, and compare against Cepheids / TRGB. For now this is a structured “what if” sandbox.</div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const CSV_PATH = "data/rotmod_public/rotmod_csv/NGC3198.csv";
+
+      let rows = [];
+      let lastScan = null;
+
+      const elDistRange = document.getElementById("distFactorRange");
+      const elDistInput = document.getElementById("distFactorInput");
+      const elAlpha = document.getElementById("alphaInput");
+      const elLambda = document.getElementById("lambdaInput");
+      const elBtnReset = document.getElementById("btnReset");
+      const elBtnScan = document.getElementById("btnScan");
+
+      const elN = document.getElementById("metricN");
+      const elChi2Base = document.getElementById("metricChi2Base");
+      const elChi2QDS = document.getElementById("metricChi2QDS");
+      const elDeltaChi2 = document.getElementById("metricDeltaChi2");
+      const elChi2PerN = document.getElementById("metricChi2PerN");
+      const elCurrentSummary = document.getElementById("currentSummary");
+
+      const elBestS = document.getElementById("scanBestS");
+      const elBestChi2 = document.getElementById("scanBestChi2");
+      const elDeltaVsOne = document.getElementById("scanDeltaVsOne");
+      const elScanSummary = document.getElementById("scanSummary");
+      const elScanLog = document.getElementById("scanLog");
+      const elScanStatus = document.getElementById("scanStatus");
+
+      function parseCSV(text) {
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (!lines.length) return [];
+
+        const header = lines[0].split(",").map(h => h.trim());
+        const idx = {
+          r: header.indexOf("r_kpc"),
+          vobs: header.indexOf("Vobs"),
+          err: header.indexOf("err"),
+          vgas: header.indexOf("Vgas"),
+          vdisk: header.indexOf("Vdisk"),
+          vbul: header.indexOf("Vbul"),
+        };
+
+        return lines.slice(1).map(line => {
+          const cols = line.split(",").map(c => c.trim());
+          const get = (i) =>
+            i >= 0 && i < cols.length ? parseFloat(cols[i]) : NaN;
+          return {
+            r_kpc: get(idx.r),
+            Vobs: get(idx.vobs),
+            err: get(idx.err),
+            Vgas: get(idx.vgas),
+            Vdisk: get(idx.vdisk),
+            Vbul: get(idx.vbul),
+          };
+        }).filter(r => Number.isFinite(r.r_kpc) && Number.isFinite(r.Vobs));
+      }
+
+      function fmt(x, digits) {
+        if (!Number.isFinite(x)) return "–";
+        return x.toFixed(digits);
+      }
+
+      function computeMetrics(s, alpha, lambdaC) {
+        if (!rows.length) {
+          return {
+            n: 0,
+            chi2Base: NaN,
+            chi2Qds: NaN,
+            chi2PerNBase: NaN,
+            chi2PerNQds: NaN,
+            delta: NaN,
+            deltaPerN: NaN,
+          };
+        }
+
+        let n = 0;
+        let chi2Base = 0;
+        let chi2Qds = 0;
+
+        const lam = lambdaC;
+
+        for (const row of rows) {
+          const { r_kpc, Vobs, err, Vgas, Vdisk, Vbul } = row;
+          if (!Number.isFinite(r_kpc) || !Number.isFinite(Vobs) || !Number.isFinite(err)) continue;
+          if (err <= 0) continue;
+
+          const rScaled = s * r_kpc;
+
+          const VgasScaled = s * (Number.isFinite(Vgas) ? Vgas : 0);
+          const VdiskScaled = s * (Number.isFinite(Vdisk) ? Vdisk : 0);
+          const VbulScaled = s * (Number.isFinite(Vbul) ? Vbul : 0);
+
+          const Vbase2 =
+            VgasScaled * VgasScaled +
+            VdiskScaled * VdiskScaled +
+            VbulScaled * VbulScaled;
+
+          if (!Number.isFinite(Vbase2) || Vbase2 < 0) continue;
+
+          const Vbase = Math.sqrt(Vbase2);
+
+          const factor = 1 + alpha * Math.exp(-rScaled / lam);
+          const Vqds2 = Vbase2 * factor;
+          const Vqds = Math.sqrt(Math.max(Vqds2, 0));
+
+          const residBase = Vobs - Vbase;
+          const residQds = Vobs - Vqds;
+          const invVar = 1.0 / (err * err);
+
+          chi2Base += residBase * residBase * invVar;
+          chi2Qds += residQds * residQds * invVar;
+          n += 1;
+        }
+
+        const chi2PerNBase = n > 0 ? chi2Base / n : NaN;
+        const chi2PerNQds = n > 0 ? chi2Qds / n : NaN;
+        const delta = chi2Qds - chi2Base;
+        const deltaPerN = n > 0 ? delta / n : NaN;
+
+        return {
+          n,
+          chi2Base,
+          chi2Qds,
+          chi2PerNBase,
+          chi2PerNQds,
+          delta,
+          deltaPerN,
+        };
+      }
+
+      function updateMetricsDisplay() {
+        const s = parseFloat(elDistInput.value) || 1.0;
+        const alpha = parseFloat(elAlpha.value) || 0.8;
+        const lambdaC = parseFloat(elLambda.value) || 10;
+
+        const m = computeMetrics(s, alpha, lambdaC);
+
+        elN.textContent = m.n ? String(m.n) : "0";
+        elChi2Base.textContent = fmt(m.chi2Base, 1);
+        elChi2QDS.textContent = fmt(m.chi2Qds, 1);
+
+        elDeltaChi2.textContent = fmt(m.delta, 1);
+        elDeltaChi2.classList.remove("bad", "good");
+        if (Number.isFinite(m.delta)) {
+          if (m.delta < 0) {
+            elDeltaChi2.classList.add("good");
+          } else if (m.delta > 0) {
+            elDeltaChi2.classList.add("bad");
+          }
+        }
+
+        if (Number.isFinite(m.chi2PerNBase) && Number.isFinite(m.chi2PerNQds)) {
+          elChi2PerN.textContent =
+            fmt(m.chi2PerNBase, 2) + " / " + fmt(m.chi2PerNQds, 2);
+        } else {
+          elChi2PerN.textContent = "–";
+        }
+
+        if (!m.n) {
+          elCurrentSummary.textContent = "No valid points yet. Check data or parameters.";
+          return;
+        }
+
+        const better = m.delta < 0 ? "better" : (m.delta > 0 ? "worse" : "same");
+        const signWord = m.delta < 0 ? "reduces" : (m.delta > 0 ? "increases" : "leaves");
+
+        elCurrentSummary.textContent =
+          "For s = " + fmt(s, 2) +
+          " and kernel (α = " + fmt(alpha, 2) +
+          ", λc = " + fmt(lambdaC, 1) +
+          " kpc), the QDS tweak " + signWord +
+          " χ² by " + fmt(Math.abs(m.delta), 1) +
+          " (" + better + " vs baryons-only) over n = " + m.n + " points.";
+      }
+
+      async function loadData() {
+        try {
+          elCurrentSummary.textContent = "Loading NGC3198 ROTMOD CSV…";
+          const res = await fetch(CSV_PATH);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const text = await res.text();
+          rows = parseCSV(text);
+          if (!rows.length) {
+            elCurrentSummary.textContent = "CSV loaded, but no usable rows found.";
+            return;
+          }
+          elCurrentSummary.textContent =
+            "Loaded " + rows.length + " raw rows from NGC3198 CSV. Use the controls above to explore s and the QDS kernel.";
+          updateMetricsDisplay();
+        } catch (err) {
+          console.error("Failed to load CSV", err);
+          elCurrentSummary.textContent =
+            "Error loading CSV from " + CSV_PATH + ". Check that the file exists and is reachable.";
+        }
+      }
+
+      function syncDistInputs(fromRange) {
+        if (fromRange) {
+          elDistInput.value = elDistRange.value;
+        } else {
+          let v = parseFloat(elDistInput.value);
+          if (!Number.isFinite(v)) v = 1.0;
+          v = Math.max(0.4, Math.min(1.6, v));
+          elDistInput.value = v.toFixed(2);
+          elDistRange.value = String(v);
+        }
+        updateMetricsDisplay();
+      }
+
+      async function runScan() {
+        if (!rows.length) {
+          elScanStatus.textContent = "No data loaded yet.";
+          elScanStatus.classList.add("error");
+          return;
+        }
+
+        elScanStatus.classList.remove("error");
+        elScanStatus.textContent = "Scanning s from 0.60 → 1.40 (step 0.01)…";
+        elScanLog.textContent = "";
+
+        const alpha = parseFloat(elAlpha.value) || 0.8;
+        const lambdaC = parseFloat(elLambda.value) || 10;
+
+        const sMin = 0.60;
+        const sMax = 1.40;
+        const step = 0.01;
+
+        let bestS = null;
+        let bestChi2 = Infinity;
+        let chi2AtOne = null;
+        let nRef = 0;
+
+        for (let s = sMin; s <= sMax + 1e-9; s += step) {
+          const m = computeMetrics(s, alpha, lambdaC);
+          if (!m.n || !Number.isFinite(m.chi2Qds)) continue;
+
+          if (Math.abs(s - 1.0) < 1e-6) {
+            chi2AtOne = m.chi2Qds;
+            nRef = m.n;
+          }
+
+          if (m.chi2Qds < bestChi2) {
+            bestChi2 = m.chi2Qds;
+            bestS = s;
+          }
+        }
+
+        if (bestS === null) {
+          elScanStatus.textContent = "Scan failed: no valid χ² values across range.";
+          elScanStatus.classList.add("error");
+          return;
+        }
+
+        lastScan = { bestS, bestChi2, chi2AtOne, alpha, lambdaC, n: nRef };
+
+        elBestS.textContent = fmt(bestS, 3);
+        elBestChi2.textContent = fmt(bestChi2, 1);
+
+        if (Number.isFinite(chi2AtOne)) {
+          const deltaVsOne = bestChi2 - chi2AtOne;
+          elDeltaVsOne.textContent = fmt(deltaVsOne, 1);
+          elDeltaVsOne.classList.remove("bad", "good");
+          if (deltaVsOne < 0) elDeltaVsOne.classList.add("good");
+          else if (deltaVsOne > 0) elDeltaVsOne.classList.add("bad");
+
+          const better = deltaVsOne < 0 ? "lower" : (deltaVsOne > 0 ? "higher" : "the same");
+          elScanSummary.textContent =
+            "Best QDS fit occurs at s ≈ " + fmt(bestS, 3) +
+            " with χ²_QDS ≈ " + fmt(bestChi2, 1) +
+            ". Compared to s = 1.00, this is " + better +
+            " by " + fmt(Math.abs(deltaVsOne), 1) + " in χ².";
+        } else {
+          elDeltaVsOne.textContent = "–";
+          elScanSummary.textContent =
+            "Best QDS fit occurs at s ≈ " + fmt(bestS, 3) +
+            " with χ²_QDS ≈ " + fmt(bestChi2, 1) +
+            ". χ² at s = 1.00 was not available in this scan.";
+        }
+
+        let log = "";
+        log += "Scan summary (α = " + fmt(alpha, 2) +
+               ", λc = " + fmt(lambdaC, 1) + " kpc)\n";
+        log += "Range: s ∈ [" + fmt(sMin,2) + ", " + fmt(sMax,2) + "], step " + step + "\n\n";
+        log += "Best s: " + fmt(bestS, 3) + "  → χ²_QDS ≈ " + fmt(bestChi2, 2) + "\n";
+        if (Number.isFinite(chi2AtOne)) {
+          log += "s = 1.000: χ²_QDS ≈ " + fmt(chi2AtOne, 2) + "\n";
+          log += "Δχ² (best − s=1): " + fmt(bestChi2 - chi2AtOne, 2) + "\n";
+        }
+        elScanLog.textContent = log;
+
+        elScanStatus.textContent = "Scan complete.";
+      }
+
+      elDistRange.addEventListener("input", () => syncDistInputs(true));
+      elDistInput.addEventListener("change", () => syncDistInputs(false));
+      elAlpha.addEventListener("change", updateMetricsDisplay);
+      elLambda.addEventListener("change", updateMetricsDisplay);
+
+      elBtnReset.addEventListener("click", () => {
+        elDistRange.value = "1.00";
+        elDistInput.value = "1.00";
+        updateMetricsDisplay();
+      });
+
+      elBtnScan.addEventListener("click", () => {
+        runScan();
+      });
+
+      syncDistInputs(true);
+      loadData();
+    })();
+  </script>
+
+  <!-- LAB_HDR_TOGGLE_V1 -->
+  <script>
+  (function () {
+    try {
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+
+      var intro = h1.closest('header') ||
+                  h1.closest('section') ||
+                  h1.closest('.card') ||
+                  h1.closest('article') ||
+                  h1.parentElement;
+      if (!intro) return;
+
+      intro.setAttribute('data-lab-intro', '1');
+      intro.classList.add('lab-expanded');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'lab-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'lab-hdr-label';
+      label.textContent = 'QDS lab header';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = intro.classList.toggle('lab-collapsed');
+        intro.classList.toggle('lab-expanded', !collapsed);
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(label);
+      toolbar.appendChild(btn);
+
+      var shell = document.querySelector('.shell') || document.body;
+      if (shell.parentNode) {
+        shell.parentNode.insertBefore(toolbar, shell);
+      } else {
+        document.body.insertBefore(toolbar, document.body.firstChild);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('LAB_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+
+    <!-- QDS_LAB_HEADER_STRIP_V1_SCRIPT -->
+    <script>
+      (function(){
+        try {
+          // Find something that looks like the top hero/header block
+          var target =
+            document.querySelector('[data-qds-header]') ||
+            document.querySelector('.page-hero, .hero, .hero-card') ||
+            document.querySelector('main section') ||
+            document.querySelector('.card, .shell, section');
+
+          if (!target) return;
+
+          // Build strip
+          var strip = document.createElement('div');
+          strip.className = 'qds-lab-strip';
+
+          var label = document.createElement('div');
+          label.className = 'qds-lab-strip-label';
+          var title = document.title || 'QDS Lab';
+          label.textContent = title.toUpperCase();
+
+          var btn = document.createElement('button');
+          btn.className = 'qds-lab-strip-btn';
+          btn.textContent = 'Collapse header ▲';
+
+          strip.appendChild(label);
+          strip.appendChild(btn);
+
+          // Insert before the header block
+          target.parentNode.insertBefore(strip, target);
+
+          var collapsed = false;
+          btn.addEventListener('click', function(){
+            collapsed = !collapsed;
+            target.style.display = collapsed ? 'none' : '';
+            btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+          });
+        } catch(e){
+          console && console.warn && console.warn('QDS lab strip failed:', e);
+        }
+      })();
+    </script>
+
+</body>
+</html>
+EOF

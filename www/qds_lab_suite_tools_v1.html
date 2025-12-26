@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>QDS Lab Suite · Panel B · Ω / OS Tools</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="_os/qds_os.css">
+  <style>
+    .card-grid{max-width:980px;margin:16px auto 40px;display:grid;grid-template-columns:1fr;gap:14px;}
+    @media(min-width:720px){.card-grid{grid-template-columns:1fr 1fr;}}
+    .lab-card{
+      position:relative;padding:14px 16px 16px;border-radius:22px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:radial-gradient(circle at top left,#172642,#090615);
+      box-shadow:0 0 18px rgba(0,0,0,0.7);
+    }
+    .lab-pill{
+      position:absolute;top:10px;right:12px;
+      font-size:0.70rem;text-transform:uppercase;
+      padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.35);
+      background:rgba(5,5,20,0.9);letter-spacing:0.08em;
+    }
+    h1{max-width:960px;margin:14px auto 4px;font-size:1.2rem;letter-spacing:0.08em;text-transform:uppercase;}
+    .subtitle{max-width:960px;margin:0 auto 14px;font-size:0.85rem;opacity:0.85;}
+    .lab-card h2{margin:4px 0 4px;font-size:1.02rem;letter-spacing:0.05em;text-transform:uppercase;}
+    .lab-card p{margin:4px 0 6px;font-size:0.86rem;line-height:1.35;}
+    .lab-links a{
+      display:inline-block;margin-top:6px;margin-right:8px;
+      font-size:0.8rem;text-decoration:none;
+      padding:5px 10px;border-radius:999px;
+      border:1px solid rgba(140,200,255,0.7);
+      background:rgba(12,25,45,0.95);
+    }
+    .backlink{max-width:960px;margin:10px auto 0;font-size:0.82rem;}
+  </style>
+</head>
+<body>
+<div class="backlink">
+  ⬅ <a href="qds_lab_suite_frontdoor_v1.html">Back to Lab Suite Front Door</a>
+</div>
+<h1>Panel B · Ω / OS Dashboards</h1>
+<p class="subtitle">
+  High-level launchpads that pull multiple labs together and
+  make the system feel like a tiny local operating system.
+</p>
+
+<main class="card-grid">
+  <article class="lab-card">
+    <div class="lab-pill">multi-test harness</div>
+    <h2>QDS Test Platform</h2>
+    <p>
+      General sandbox for running several QDS tests in one place.
+      Good for quick sanity checks and “does this blow up?” passes.
+    </p>
+    <p><strong>File:</strong> qds_test_platform.html</p>
+    <div class="lab-links">
+      <a href="qds_test_platform.html">Open test platform</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">combined lab dash</div>
+    <h2>Ω–QDS Lab</h2>
+    <p>
+      Aggregated view of multiple QDS tools. Think “mission control”
+      for physics experiments: one place to hop between labs.
+    </p>
+    <p><strong>File:</strong> omega_qds_lab.html</p>
+    <div class="lab-links">
+      <a href="omega_qds_lab.html">Open Ω–QDS Lab</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">OS-style index</div>
+    <h2>Ω–OS Index v2</h2>
+    <p>
+      OS-style launcher for your Ω engines and QDS tools. Shows that
+      this is more like an embedded OS than a single webpage.
+    </p>
+    <p><strong>File:</strong> omega_os_index_v2.html</p>
+    <div class="lab-links">
+      <a href="omega_os_index_v2.html">Open Ω–OS Index v2</a>
+    </div>
+  </article>
+
+  <article class="lab-card">
+    <div class="lab-pill">showcase door</div>
+    <h2>QDS Showcase Index v1.1</h2>
+    <p>
+      General-purpose index of polished QDS demos and pages. Good
+      first stop for people who don’t yet know which lab they want.
+    </p>
+    <p><strong>File:</strong> qds_showcase_index_v1_1.html</p>
+    <div class="lab-links">
+      <a href="qds_showcase_index_v1_1.html">Open showcase index</a>
+    </div>
+  </article>
+</main>
+</body>
+</html>

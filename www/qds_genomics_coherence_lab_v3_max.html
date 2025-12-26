@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QDS Genomics Coherence Lab v3 MAX</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111826; --ink:#e7eef7; --muted:#9fb0c3;
+    --line:#213045; --hot:#ffcc66; --ok:#90ee90; --bad:#ff7b7b;
+    --radius:16px;
+  }
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
+  header{padding:16px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0f1620,transparent);}
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.35}
+  .wrap{padding:14px;max-width:1200px;margin:0 auto;}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media (min-width:980px){ .grid{grid-template-columns:1.2fr .8fr;} }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:0 12px 26px rgba(0,0,0,.25);}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  label{font-size:12px;color:var(--muted)}
+  input[type="file"]{width:100%;}
+  input[type="number"], input[type="text"], textarea, select{
+    background:#0c1320;border:1px solid var(--line);border-radius:12px;color:var(--ink);
+    padding:10px 10px;outline:none;width:100%;
+  }
+  textarea{min-height:110px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+  button{background:#0c1320;border:1px solid var(--line);border-radius:12px;color:var(--ink);padding:10px 12px;cursor:pointer}
+  button:hover{border-color:#2d4666}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+  .pill strong{color:var(--ink)}
+  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .k{background:#0c1320;border:1px solid var(--line);border-radius:14px;padding:10px}
+  .k .t{color:var(--muted);font-size:12px}
+  .k .v{font-size:18px;margin-top:4px}
+  .k .s{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.25}
+  hr{border:none;border-top:1px solid var(--line);margin:10px 0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .small{font-size:12px;color:var(--muted);line-height:1.35}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;font-size:13px;text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  .good{color:var(--ok)} .warn{color:var(--hot)} .bad{color:var(--bad)}
+  canvas{width:100%;height:190px;background:#0c1320;border:1px solid var(--line);border-radius:14px}
+  .status{white-space:pre-wrap;font-size:12px;color:var(--muted);line-height:1.35}
+  .two{display:grid;grid-template-columns:1fr;gap:10px}
+  @media (min-width:980px){ .two{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>QDS Genomics Coherence Lab v3 MAX</h1>
+  <div class="sub">
+    v3 fixes v2’s “smooth signal inflates redundancy” by <b>detrending</b> window signals (ΔX or high-pass),
+    then computes two-scale <span class="mono">λ₍g₎</span> + redundancy using a robust correlation-time cutoff.
+    Also keeps SNP-level sanity check (v1-style) in parallel. 🦺🎩💥
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <div class="card">
+      <div class="row">
+        <div class="pill">Signal: <strong>Entropy + Change + Het</strong></div>
+        <div class="pill">Detrend: <strong>ΔX / High-pass</strong></div>
+        <div class="pill">Validation: <strong>Window + SNP</strong></div>
+      </div>
+
+      <hr/>
+
+      <label>1) Load 23andMe raw data (.txt)</label>
+      <input id="file" type="file" accept=".txt,.tsv,.csv" />
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>Short window (bp) — LD-ish</label>
+          <input id="wShort" type="number" min="10000" max="200000" value="50000" />
+          <div class="small">Default 50kb.</div>
+        </div>
+        <div>
+          <label>Long window (bp) — haplotype-ish</label>
+          <input id="wLong" type="number" min="200000" max="5000000" value="1000000" />
+          <div class="small">Default 1Mb.</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>Detrend method</label>
+          <select id="detrend">
+            <option value="diff" selected>ΔX (first difference) — robust & fast</option>
+            <option value="hp">High-pass (subtract moving average)</option>
+            <option value="both">Both (HP then ΔX) — max stability</option>
+          </select>
+          <div class="small">This stops “smoothness” being misread as genetic redundancy.</div>
+        </div>
+        <div>
+          <label>HP window (windows)</label>
+          <input id="hpWin" type="number" min="3" max="51" value="9" />
+          <div class="small">Only used if High-pass enabled.</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>Autocorr max lag (windows)</label>
+          <input id="maxLag" type="number" min="20" max="240" value="160" />
+          <div class="small">More lag = slower + smoother curves.</div>
+        </div>
+        <div>
+          <label>Correlation cutoff for redundancy sum</label>
+          <input id="rhoCut" type="number" min="0" max="0.2" step="0.01" value="0.05" />
+          <div class="small">We stop adding when ρ(k) falls below this (prevents inflation).</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>SNP-level sanity check: sampling step (v1 style)</label>
+          <input id="snpStep" type="number" min="1" max="30" value="8" />
+          <div class="small">Keeps ~1 in N SNPs per chromosome for SNP-autocorr.</div>
+        </div>
+        <div>
+          <label>Trait weights (rsID effect_allele beta)</label>
+          <textarea id="traits" spellcheck="false" placeholder=
+"# Example:
+rs4988235 T 0.40
+rs762551 A 0.25
+# format: rsID   EFFECT_ALLELE(A/C/G/T)   BETA(number)
+"></textarea>
+          <div class="small">Toy weights ok. You control effect allele + beta.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Optional: Watchlist rsIDs (lookup-only)</label>
+        <input id="watch" type="text" placeholder="rs4988235 rs762551 rs12913832" />
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="run">🦺 Build v3 MAX</button>
+        <button id="demo">Load tiny demo</button>
+        <button id="copy">Copy summary</button>
+      </div>
+
+      <div style="margin-top:10px" class="status" id="status">Waiting for file…</div>
+
+      <hr/>
+
+      <div class="kpi">
+        <div class="k">
+          <div class="t">Mainstream D_raw</div>
+          <div class="v mono" id="k_raw">—</div>
+          <div class="s">Called genotypes (non-missing)</div>
+        </div>
+        <div class="k">
+          <div class="t">Missing rate</div>
+          <div class="v mono" id="k_miss">—</div>
+          <div class="s">Missing genotype fraction</div>
+        </div>
+
+        <div class="k">
+          <div class="t">QDS λ₍g₎ short</div>
+          <div class="v mono" id="k_lshort">—</div>
+          <div class="s">Interpolated crossing of 1/e</div>
+        </div>
+        <div class="k">
+          <div class="t">QDS λ₍g₎ long</div>
+          <div class="v mono" id="k_llong">—</div>
+          <div class="s">Interpolated crossing of 1/e</div>
+        </div>
+
+        <div class="k">
+          <div class="t">Redundancy (window short)</div>
+          <div class="v mono" id="k_rwin">—</div>
+          <div class="s">Robust correlation-time sum with cutoff</div>
+        </div>
+        <div class="k">
+          <div class="t">Redundancy (SNP sanity)</div>
+          <div class="v mono" id="k_rsnp">—</div>
+          <div class="s">v1-style SNP autocorr redundancy</div>
+        </div>
+
+        <div class="k">
+          <div class="t">D_eff (window short)</div>
+          <div class="v mono" id="k_deff">—</div>
+          <div class="s">Called SNPs / redundancy_window</div>
+        </div>
+        <div class="k">
+          <div class="t">Viking Confetti Index</div>
+          <div class="v mono" id="k_vci">—</div>
+          <div class="s">For morale, not journals 🪓</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <div class="small">ρ(k) short (detrended window signal)</div>
+          <canvas id="plotShort" width="900" height="260"></canvas>
+        </div>
+        <div>
+          <div class="small">ρ(k) long (detrended window signal)</div>
+          <canvas id="plotLong" width="900" height="260"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 8px 0;font-size:16px">Outputs</h2>
+      <div class="small">
+        v3 uses a window signal per chromosome:
+        <span class="mono">X = 0.45·H(genotype) + 0.35·change_density + 0.20·het_rate</span>.
+        Then it detrends (ΔX / HP) to avoid “smoothness inflation”.
+      </div>
+
+      <hr/>
+
+      <table>
+        <thead><tr><th>Metric</th><th>Mainstream</th><th>QDS (v3)</th></tr></thead>
+        <tbody id="cmp">
+          <tr><td>D_raw</td><td class="mono">—</td><td class="mono">—</td></tr>
+          <tr><td>λ₍g₎ short / long</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>Redundancy window / SNP</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>D_eff</td><td>—</td><td class="mono">—</td></tr>
+          <tr><td>Coherence note</td><td>LD corrections</td><td id="note">—</td></tr>
+        </tbody>
+      </table>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Trait-weight panel</h3>
+      <div id="traitOut" class="small">No trait weights yet.</div>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Watchlist</h3>
+      <div id="watchOut" class="small">No watchlist yet.</div>
+
+      <hr/>
+
+      <h3 style="margin:0 0 6px 0;font-size:14px">Per-chromosome counts</h3>
+      <div id="chromOut" class="small mono">—</div>
+
+      <hr/>
+      <div class="small">
+        <b>Why v3 is better:</b> window signals are naturally smooth → raw ρ(k) exaggerates redundancy.
+        Detrending makes ρ(k) track <i>block structure</i>, not “slow drift”.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const el = (id)=>document.getElementById(id);
+function status(msg){ el("status").textContent = msg; }
+function fmtInt(x){ if(!isFinite(x)) return "—"; return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+function fmtPct(x){ if(!isFinite(x)) return "—"; return (x*100).toFixed(2)+"%"; }
+function fmtBp(x){
+  if(!isFinite(x)||x<=0) return "—";
+  if(x>=1e6) return (x/1e6).toFixed(2)+" Mb";
+  if(x>=1e3) return (x/1e3).toFixed(1)+" kb";
+  return Math.round(x)+" bp";
+}
+function safeChrom(ch){
+  const c=(ch||"").toUpperCase();
+  if(c==="X"||c==="Y"||c==="MT"||c==="M") return c==="M"?"MT":c;
+  const n=parseInt(c,10);
+  if(isFinite(n)&&n>=1&&n<=22) return String(n);
+  return null;
+}
+function parseWatchlist(txt){
+  const s=(txt||"").trim(); if(!s) return new Set();
+  const items=s.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  return new Set(items.filter(x=>x.startsWith("rs")));
+}
+function parseTraits(txt){
+  const map=new Map();
+  const lines=(txt||"").split(/\r?\n/);
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line||line.startsWith("#")) continue;
+    const p=line.split(/\s+/);
+    if(p.length<3) continue;
+    const rs=p[0].toLowerCase(), ea=p[1].toUpperCase(), beta=parseFloat(p[2]);
+    if(!rs.startsWith("rs")) continue;
+    if(!"ACGT".includes(ea)) continue;
+    if(!isFinite(beta)) continue;
+    map.set(rs,{ea,beta});
+  }
+  return map;
+}
+function gtDosage(gt, ea){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0], b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a===ea)+(b===ea);
+}
+function sortGt(gt){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0], b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a<=b)?gt:(b+a);
+}
+function entropyFromCounts(counts){
+  let n=0; for(const k in counts) n+=counts[k];
+  if(n<=0) return 0;
+  let H=0;
+  for(const k in counts){
+    const c=counts[k]; if(c<=0) continue;
+    const p=c/n; H -= p*Math.log2(p);
+  }
+  return H;
+}
+function zscoreInPlace(a){
+  const n=a.length; if(n<2) return a;
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  const s=Math.sqrt(v)||1;
+  for(let i=0;i<n;i++) a[i]=(a[i]-m)/s;
+  return a;
+}
+function highPass(a, win){
+  // subtract moving average (odd/even ok). returns new array.
+  const n=a.length;
+  const out=new Array(n).fill(0);
+  const w=Math.max(1, Math.floor(win));
+  let sum=0;
+  const q=[];
+  for(let i=0;i<n;i++){
+    sum += a[i]; q.push(a[i]);
+    if(q.length>w) sum -= q.shift();
+    const ma = sum/q.length;
+    out[i] = a[i] - ma;
+  }
+  return out;
+}
+function diff(a){
+  const n=a.length;
+  if(n<2) return [];
+  const out=new Array(n-1);
+  for(let i=1;i<n;i++) out[i-1]=a[i]-a[i-1];
+  return out;
+}
+function autocorr(a, maxLag){
+  const n=a.length;
+  if(n<maxLag+10) return null;
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  if(v<=1e-12) return null;
+  const r=new Array(maxLag+1).fill(0);
+  r[0]=1;
+  for(let k=1;k<=maxLag;k++){
+    const m2=n-k;
+    let cov=0;
+    for(let i=0;i<m2;i++){
+      cov += (a[i]-m)*(a[i+k]-m);
+    }
+    cov/=m2;
+    r[k]=cov/v;
+  }
+  return r;
+}
+function combineAutocorr(perChr, maxLag){
+  const r=new Array(maxLag+1).fill(0);
+  const w=new Array(maxLag+1).fill(0);
+  r[0]=1; w[0]=1;
+  for(const chr of Object.keys(perChr)){
+    const a=perChr[chr];
+    if(!a||a.length<maxLag+12) continue;
+    const rr=autocorr(a, maxLag);
+    if(!rr) continue;
+    const n=a.length;
+    for(let k=1;k<=maxLag;k++){
+      const pairs=Math.max(0,n-k);
+      r[k]+=rr[k]*pairs;
+      w[k]+=pairs;
+    }
+  }
+  for(let k=1;k<=maxLag;k++){
+    r[k]=(w[k]>0)?(r[k]/w[k]):0;
+  }
+  return r;
+}
+function estimateLambdaInterp(rhos){
+  // find crossing of 1/e using interpolation between k-1 and k
+  const thr=1/Math.E;
+  for(let k=1;k<rhos.length;k++){
+    const a=rhos[k-1], b=rhos[k];
+    if(a>=thr && b<=thr){
+      // linear interpolation in k
+      const t=(thr-a)/(b-a);
+      return (k-1)+t;
+    }
+  }
+  // fallback: if rho(1) exists and <1, use log interpolation from k=0 to 1
+  if(rhos.length>1 && rhos[1]>0 && rhos[1]<1){
+    const kstar = -1/Math.log(rhos[1]);
+    if(isFinite(kstar) && kstar>0) return kstar;
+  }
+  return rhos.length-1;
+}
+function redundancyFromRhos(rhos, rhoCut){
+  // tau = 1 + 2 sum_{k>=1} rho(k) for rho>rhoCut until it falls below cutoff
+  let s=0;
+  for(let k=1;k<rhos.length;k++){
+    const rk=rhos[k];
+    if(rk<=rhoCut) break;
+    if(rk>0) s+=rk;
+    else break;
+  }
+  return 1 + 2*s;
+}
+function drawPlot(canvasId, rhos, lam){
+  const c=el(canvasId), ctx=c.getContext("2d"), W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="#213045"; ctx.lineWidth=1;
+  for(let i=0;i<=8;i++){
+    const y=(H-20)-i*(H-40)/8; ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(W-10,y); ctx.stroke();
+  }
+  for(let i=0;i<=10;i++){
+    const x=40+i*(W-60)/10; ctx.beginPath(); ctx.moveTo(x,10); ctx.lineTo(x,H-20); ctx.stroke();
+  }
+  ctx.fillStyle="#9fb0c3"; ctx.font="13px ui-monospace, Menlo, Consolas, monospace";
+  ctx.fillText("ρ(k)", 10, 22); ctx.fillText("lag k", W-90, H-6);
+  if(!rhos||rhos.length<2) return;
+  const maxK=rhos.length-1, minY=-0.2, maxY=1.0;
+  const X=(k)=>40+(k/maxK)*(W-60);
+  const Y=(v)=>(H-20)-((v-minY)/(maxY-minY))*(H-40);
+
+  ctx.strokeStyle="#e7eef7"; ctx.lineWidth=2; ctx.beginPath();
+  for(let k=1;k<=maxK;k++){
+    const x=X(k), y=Y(rhos[k]);
+    if(k===1) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  const thr=1/Math.E;
+  ctx.strokeStyle="#ffcc66"; ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(40,Y(thr)); ctx.lineTo(W-10,Y(thr)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  if(isFinite(lam)){
+    ctx.strokeStyle="#90ee90";
+    ctx.beginPath(); ctx.moveTo(X(lam),10); ctx.lineTo(X(lam),H-20); ctx.stroke();
+    ctx.fillStyle="#90ee90";
+    ctx.fillText("λ≈"+lam.toFixed(2), X(lam)+6, 22);
+  }
+}
+
+class WinAgg {
+  constructor(wbp){
+    this.wbp=wbp;
+    this.curChr=null; this.winIdx=null;
+    this.counts={}; this.n=0;
+    this.changes=0; this.hets=0;
+    this.prevGt=null;
+  }
+  resetWindow(){
+    this.counts={}; this.n=0; this.changes=0; this.hets=0; this.prevGt=null;
+  }
+  flush(outByChr){
+    if(this.curChr===null) return;
+    if(!outByChr[this.curChr]) outByChr[this.curChr]=[];
+    if(this.n>0){
+      const H = entropyFromCounts(this.counts);              // bits
+      const cd = (this.n>1) ? (this.changes/(this.n-1)) : 0; // 0..1
+      const hr = this.hets/this.n;                           // 0..1
+      const X  = 0.45*H + 0.35*cd + 0.20*hr;                 // blended
+      outByChr[this.curChr].push(X);
+    }
+    this.resetWindow();
+  }
+  push(chr,pos,gt,outByChr){
+    if(this.curChr!==chr){
+      if(this.curChr!==null) this.flush(outByChr);
+      this.curChr=chr; this.winIdx=null; this.resetWindow();
+    }
+    const wi=Math.floor(pos/this.wbp);
+    if(this.winIdx===null) this.winIdx=wi;
+    if(wi!==this.winIdx){
+      this.flush(outByChr);
+      this.winIdx=wi;
+    }
+
+    const g=sortGt(gt);
+    if(!g) return;
+    this.counts[g]=(this.counts[g]||0)+1;
+    if(g[0]!==g[1]) this.hets++;
+
+    if(this.prevGt!==null && g!==this.prevGt) this.changes++;
+    this.prevGt=g;
+    this.n++;
+  }
+  finish(outByChr){
+    this.flush(outByChr);
+    this.curChr=null;
+  }
+}
+
+function tinyDemoText(){
+  return `# 23andMe raw data demo (tiny)
+# rsid\tchromosome\tposition\tgenotype
+rs1\t1\t1000\tAA
+rs2\t1\t2000\tAG
+rs3\t1\t3000\tGG
+rs4\t1\t4000\tCC
+rs5\t1\t5000\tCT
+rs6\t1\t6000\tTT
+rs7\t1\t70000\tAA
+rs8\t1\t120000\tAG
+rs9\t2\t1000\tAA
+rs10\t2\t2000\t--
+rs11\t2\t3000\tAG
+rs12\t2\t4000\tGG
+`;
+}
+
+async function runOnText(text){
+  const wShort=Math.max(10000,Math.min(200000,parseInt(el("wShort").value||"50000",10)));
+  const wLong =Math.max(200000,Math.min(5000000,parseInt(el("wLong").value||"1000000",10)));
+  const detr = (el("detrend").value||"diff");
+  const hpWin = Math.max(3,Math.min(51,parseInt(el("hpWin").value||"9",10)));
+  const maxLag=Math.max(20,Math.min(240,parseInt(el("maxLag").value||"160",10)));
+  const rhoCut=Math.max(0,Math.min(0.2,parseFloat(el("rhoCut").value||"0.05")));
+  const snpStep=Math.max(1,Math.min(30,parseInt(el("snpStep").value||"8",10)));
+
+  const watch=parseWatchlist(el("watch").value);
+  const traits=parseTraits(el("traits").value);
+
+  // counts
+  let total=0, called=0, missing=0;
+  const chromCounts={}, chromMissing={};
+
+  // window signals
+  const perS={}, perL={};
+  const aggS=new WinAgg(wShort);
+  const aggL=new WinAgg(wLong);
+
+  // SNP-level heterozygosity sampled for sanity
+  const hetSnpByChr={};
+  let snpSeenByChr={};
+
+  // watch + trait
+  const watchHits={};
+  let traitFound=0, traitScore=0;
+  const traitDetails=[];
+  const traitWinS=new Set(), traitWinL=new Set();
+
+  const lines=text.split(/\r?\n/);
+  status(`Parsing… (${lines.length.toLocaleString()} lines)`);
+
+  for(let idx=0; idx<lines.length; idx++){
+    const line=lines[idx];
+    if(!line||line[0]==="#") continue;
+    const p=line.split(/\t|,/);
+    if(p.length<4) continue;
+    const rsid=(p[0]||"").trim().toLowerCase();
+    const chr=safeChrom((p[1]||"").trim());
+    const pos=parseInt((p[2]||"").trim(),10);
+    const gt =(p[3]||"").trim().toUpperCase();
+    if(!chr||!isFinite(pos)) continue;
+
+    total++;
+
+    const isMissing=(gt==="--"||gt.length<2);
+    if(isMissing){
+      missing++;
+      chromMissing[chr]=(chromMissing[chr]||0)+1;
+      continue;
+    }
+    called++;
+    chromCounts[chr]=(chromCounts[chr]||0)+1;
+
+    // window aggregators
+    aggS.push(chr,pos,gt,perS);
+    aggL.push(chr,pos,gt,perL);
+
+    // SNP-level sampling (heterozygosity 0/1)
+    snpSeenByChr[chr]=(snpSeenByChr[chr]||0)+1;
+    if((snpSeenByChr[chr] % snpStep)===0){
+      if(!hetSnpByChr[chr]) hetSnpByChr[chr]=[];
+      const g=sortGt(gt);
+      if(g) hetSnpByChr[chr].push(g[0]!==g[1]?1:0);
+    }
+
+    // watchlist
+    if(watch.size && watch.has(rsid)){
+      watchHits[rsid]={chr,pos,gt};
+    }
+
+    // traits
+    if(traits.size && traits.has(rsid)){
+      const {ea,beta}=traits.get(rsid);
+      const d=gtDosage(gt,ea);
+      if(d!==null){
+        traitFound++;
+        const contrib=beta*d;
+        traitScore+=contrib;
+        traitDetails.push({rsid,chr,pos,gt,ea,beta,dosage:d,contrib});
+        traitWinS.add(chr+":"+Math.floor(pos/wShort));
+        traitWinL.add(chr+":"+Math.floor(pos/wLong));
+      }
+    }
+
+    if(idx % 120000 === 0 && idx>0) status(`Parsing… line ${idx.toLocaleString()} / ${lines.length.toLocaleString()}`);
+  }
+
+  aggS.finish(perS);
+  aggL.finish(perL);
+
+  const missRate=total>0 ? missing/total : NaN;
+
+  // detrend per chromosome arrays
+  function detrendSeries(perChr){
+    const out={};
+    for(const chr of Object.keys(perChr)){
+      let a=perChr[chr].slice();
+      if(a.length<12) continue;
+      // normalise first (stable across chromosomes)
+      zscoreInPlace(a);
+      if(detr==="hp"||detr==="both"){
+        a = highPass(a, hpWin);
+      }
+      if(detr==="diff"||detr==="both"){
+        a = diff(a);
+      }
+      if(a.length<12) continue;
+      zscoreInPlace(a);
+      out[chr]=a;
+    }
+    return out;
+  }
+
+  const perSd = detrendSeries(perS);
+  const perLd = detrendSeries(perL);
+
+  // autocorr + lambda
+  const rS = combineAutocorr(perSd, maxLag);
+  const rL = combineAutocorr(perLd, Math.min(maxLag,160));
+  const lamS = estimateLambdaInterp(rS);
+  const lamL = estimateLambdaInterp(rL);
+
+  const lambdaShortBp = lamS*wShort;
+  const lambdaLongBp  = lamL*wLong;
+
+  // redundancy (window)
+  const tauWin = redundancyFromRhos(rS, rhoCut); // tau ~= redundancy
+  const redWin = tauWin;
+
+  // D_eff window -> SNP scale proxy
+  const Deff = (isFinite(redWin) && redWin>0) ? (called/redWin) : NaN;
+
+  // SNP-level redundancy sanity (v1 style, positive sum until rhoCut)
+  const rSnp = combineAutocorr(hetSnpByChr, Math.min(200, maxLag));
+  const tauSnp = redundancyFromRhos(rSnp, rhoCut);
+  const redSnp = tauSnp;
+
+  // UI plots
+  drawPlot("plotShort", rS, lamS);
+  drawPlot("plotLong",  rL, lamL);
+
+  // KPIs
+  el("k_raw").textContent = fmtInt(called);
+  el("k_miss").textContent = fmtPct(missRate);
+  el("k_lshort").textContent = `${fmtBp(lambdaShortBp)} (w=${fmtBp(wShort)}, lag≈${lamS.toFixed(2)})`;
+  el("k_llong").textContent  = `${fmtBp(lambdaLongBp)} (w=${fmtBp(wLong)}, lag≈${lamL.toFixed(2)})`;
+  el("k_rwin").textContent   = isFinite(redWin)? redWin.toFixed(2)+"×" : "—";
+  el("k_rsnp").textContent   = isFinite(redSnp)? redSnp.toFixed(2)+"×" : "—";
+  el("k_deff").textContent   = fmtInt(Deff);
+
+  const vci = (isFinite(redWin) ? (redWin*(1-missRate)*10) : NaN);
+  el("k_vci").textContent = isFinite(vci) ? vci.toFixed(2) : "—";
+
+  // Notes + comparison table
+  const cmp=el("cmp");
+  const note = (!isFinite(redWin)) ? "Couldn’t estimate redundancy (try smaller windows or lower lag)." :
+    (redWin < 1.5 ? "Low redundancy (rare). Your detrended window signal is very ‘independent’." :
+     redWin < 3.0 ? "Moderate redundancy → typical LD/block structure." :
+     "High redundancy → strong block coherence (but sanity-check vs SNP redundancy).");
+
+  el("note").textContent = note;
+
+  cmp.innerHTML = `
+    <tr><td>D_raw</td><td class="mono">${fmtInt(called)}</td><td class="mono">${fmtInt(Deff)}</td></tr>
+    <tr><td>λ₍g₎ short / long</td><td>—</td><td class="mono">${fmtBp(lambdaShortBp)} / ${fmtBp(lambdaLongBp)}</td></tr>
+    <tr><td>Redundancy window / SNP</td><td>—</td><td class="mono">${isFinite(redWin)?redWin.toFixed(2):"—"}× / ${isFinite(redSnp)?redSnp.toFixed(2):"—"}×</td></tr>
+    <tr><td>D_eff</td><td class="mono">${fmtInt(called)}</td><td class="mono">${fmtInt(Deff)}</td></tr>
+    <tr><td>Coherence note</td><td>LD corrections</td><td>${note}</td></tr>
+  `;
+
+  // Watch output
+  if(!watch.size){
+    el("watchOut").textContent="No watchlist yet.";
+  }else{
+    const items=[...watch].sort();
+    el("watchOut").innerHTML = items.map(rs=>{
+      const hit=watchHits[rs];
+      if(!hit) return `<div class="mono">${rs}: <span class="warn">not found</span></div>`;
+      return `<div class="mono">${rs}: ${hit.gt} (chr${hit.chr}:${hit.pos})</div>`;
+    }).join("");
+  }
+
+  // Trait output
+  if(!traits.size){
+    el("traitOut").textContent="No trait weights yet.";
+  }else{
+    const totalT=traits.size;
+    const cov = totalT>0 ? traitFound/totalT : 0;
+    const uniqS=traitWinS.size, uniqL=traitWinL.size;
+    const redTraitS = (uniqS>0) ? (traitFound/uniqS) : NaN;
+
+    traitDetails.sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+    const top=traitDetails.slice(0,12).map(d=>{
+      const c=d.contrib;
+      const cls=(Math.abs(c)<0.05)?"small":(c>0?"good":"bad");
+      return `<div class="mono">${d.rsid} chr${d.chr}:${d.pos} gt=${d.gt} ea=${d.ea} β=${d.beta} dose=${d.dosage} → <span class="${cls}">${c.toFixed(4)}</span></div>`;
+    }).join("");
+
+    el("traitOut").innerHTML = `
+      <div><b>Trait SNPs provided:</b> <span class="mono">${totalT}</span></div>
+      <div><b>Found (non-missing):</b> <span class="mono">${traitFound}</span> (<span class="mono">${fmtPct(cov)}</span>)</div>
+      <div><b>Trait score (Σ β·dosage):</b> <span class="mono">${isFinite(traitScore)?traitScore.toFixed(6):"—"}</span></div>
+      <div><b>QDS “effective trait degrees”:</b> <span class="mono">${uniqS}</span> (short) / <span class="mono">${uniqL}</span> (long)</div>
+      <div><b>Trait redundancy (short):</b> <span class="mono">${isFinite(redTraitS)?redTraitS.toFixed(2)+"×":"—"}</span></div>
+      <hr/>
+      <div><b>Top contributions:</b></div>
+      ${top || "<div class='small'>No usable trait hits.</div>"}
+      <div class="small" style="margin-top:8px"><b>Note:</b> effect allele + β must come from your chosen reference; wrong allele flips sign.</div>
+    `;
+  }
+
+  // Per-chrom counts
+  const keys=Object.keys(chromCounts).sort((a,b)=>{
+    const na=parseInt(a,10), nb=parseInt(b,10);
+    if(isFinite(na)&&isFinite(nb)) return na-nb;
+    return a.localeCompare(b);
+  });
+  let out="";
+  for(const k of keys){
+    out += `chr${k}: called=${chromCounts[k]||0} missing=${chromMissing[k]||0}\n`;
+  }
+  el("chromOut").textContent = out || "—";
+
+  status(
+`Done v3 MAX.
+Called SNPs: ${fmtInt(called)} | Missing: ${fmtInt(missing)} (${fmtPct(missRate)})
+
+Detrend: ${detr}${(detr==="hp"||detr==="both")?(" (HP win="+hpWin+")"):""}
+Short: w=${fmtBp(wShort)} | λ≈${fmtBp(lambdaShortBp)} | redundancy(win)≈${isFinite(redWin)?redWin.toFixed(2)+"×":"—"} | D_eff≈${fmtInt(Deff)}
+Long : w=${fmtBp(wLong)}  | λ≈${fmtBp(lambdaLongBp)} | redundancy(SNP sanity)≈${isFinite(redSnp)?redSnp.toFixed(2)+"×":"—"}
+
+Viking Confetti Index: ${isFinite(vci)?vci.toFixed(2):"—"}
+`
+  );
+
+  window.__QDS_SUMMARY__ = {
+    called_snp: called,
+    missing: missing,
+    missing_rate: missRate,
+    short_window_bp: wShort,
+    long_window_bp: wLong,
+    detrend: detr,
+    hp_window_windows: hpWin,
+    rho_cut: rhoCut,
+    lambda_short_bp: lambdaShortBp,
+    lambda_long_bp: lambdaLongBp,
+    redundancy_window_short: redWin,
+    redundancy_snp_sanity: redSnp,
+    d_eff: Deff,
+    viking_confetti_index: vci,
+    trait: traits.size ? {
+      provided: traits.size,
+      found: traitFound,
+      coverage: traitFound/traits.size,
+      score: traitScore,
+      unique_windows_short: traitWinS.size,
+      unique_windows_long: traitWinL.size
+    } : null
+  };
+}
+
+el("demo").addEventListener("click", async ()=>{ await runOnText(tinyDemoText()); });
+
+el("run").addEventListener("click", async ()=>{
+  const f=el("file").files && el("file").files[0];
+  if(!f){ status("No file selected. Pick your 23andMe raw .txt first (or hit Demo)."); return; }
+  status(`Loading: ${f.name} (${Math.round(f.size/1024/1024)} MB)…`);
+  const reader=new FileReader();
+  reader.onload=async()=>{ try{ await runOnText(String(reader.result||"")); }catch(e){ status("Error: "+(e?.message||String(e))); } };
+  reader.onerror=()=>status("File read error. Try re-downloading the raw data file.");
+  reader.readAsText(f);
+});
+
+el("copy").addEventListener("click", async ()=>{
+  const s = window.__QDS_SUMMARY__ ? JSON.stringify(window.__QDS_SUMMARY__, null, 2) : "No summary yet. Run metrics first.";
+  try{ await navigator.clipboard.writeText(s); status("Copied summary JSON to clipboard. 🎩"); }
+  catch(e){ status("Clipboard blocked. Summary:\n\n"+s); }
+});
+</script>
+</body>
+</html>

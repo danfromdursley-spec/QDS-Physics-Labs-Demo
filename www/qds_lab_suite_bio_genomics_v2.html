@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS Lab Suite · Bio & Genomics v2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg:#030515;
+      --bg-alt:#06091f;
+      --card:#0b1024;
+      --card-soft:rgba(11,16,36,0.9);
+      --border-soft:rgba(120,150,255,0.55);
+      --accent:#4af2ff;
+      --accent-warm:#ff7ee5;
+      --accent-strong:#ff3366;
+      --text:#f5f5ff;
+      --text-soft:#a8b0d8;
+      --pill-bg:rgba(255,255,255,0.05);
+      --shadow-soft:0 22px 60px rgba(0,0,0,0.8);
+      --radius-lg:22px;
+      --radius-pill:999px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      padding:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%,rgba(90,255,210,0.18) 0,transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(120,140,255,0.22) 0,transparent 55%),
+        radial-gradient(circle at 0% 100%,rgba(255,126,229,0.18) 0,transparent 50%),
+        var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+    .shell{max-width:1120px;margin:0 auto;padding:18px 14px 28px;}
+    header{
+      background:linear-gradient(135deg,rgba(255,126,229,0.18),rgba(74,242,255,0.12)),
+                 radial-gradient(circle at 0 0,rgba(255,255,255,0.06),transparent 55%),
+                 var(--card-soft);
+      border-radius:26px;
+      padding:18px 16px 14px;
+      border:1px solid rgba(145,180,255,0.55);
+      box-shadow:var(--shadow-soft);
+      position:sticky;top:0;z-index:5;
+      backdrop-filter:blur(16px);
+      display:flex;flex-direction:column;gap:10px;
+    }
+    @media(min-width:720px){header{padding:20px 24px 14px;}}
+    .header-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+    h1{font-size:1.15rem;margin:0;letter-spacing:0.05em;text-transform:uppercase;}
+    .subtitle{margin:0;font-size:0.84rem;color:var(--text-soft);max-width:640px;}
+    .subtitle span{color:var(--accent);}
+    .pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+    .pill{
+      font-size:0.74rem;padding:4px 12px;border-radius:var(--radius-pill);
+      background:var(--pill-bg);border:1px solid rgba(255,255,255,0.06);
+      color:var(--text-soft);display:inline-flex;align-items:center;gap:6px;
+    }
+    .pill strong{color:var(--accent);}
+    .pill.hot strong{color:var(--accent-warm);}
+    .pill.core strong{color:var(--accent-strong);}
+    .pill-dot{
+      width:7px;height:7px;border-radius:999px;
+      background:linear-gradient(135deg,#4af2ff,#ff7ee5);
+      box-shadow:0 0 10px rgba(250,255,255,0.7);
+    }
+    .toggle-btn{
+      border-radius:var(--radius-pill);
+      border:1px solid rgba(255,255,255,0.45);
+      background:rgba(3,4,20,0.7);
+      color:var(--text);padding:5px 12px;font-size:0.78rem;
+      display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    }
+    .toggle-btn span{font-size:0.9rem;}
+    header.collapsed .header-body{display:none;}
+    main{margin-top:18px;display:flex;flex-direction:column;gap:18px;}
+    section{
+      background:linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0)),var(--bg-alt);
+      border-radius:20px;padding:14px 12px 14px;
+      border:1px solid rgba(90,118,220,0.8);
+      box-shadow:0 18px 40px rgba(0,0,0,0.9);
+    }
+    @media(min-width:720px){section{padding:16px 18px 16px;}}
+    section h2{font-size:0.98rem;margin:0 0 4px;letter-spacing:0.05em;text-transform:uppercase;}
+    section p.meta{margin:0 0 10px;font-size:0.8rem;color:var(--text-soft);}
+    .lab-list{
+      list-style:none;margin:0;padding:0;
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;
+    }
+    .lab-item a{
+      display:block;text-decoration:none;padding:9px 11px;
+      border-radius:16px;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.05),transparent 60%),var(--card);
+      border:1px solid rgba(120,150,255,0.55);
+      font-size:0.8rem;color:var(--text);min-height:46px;
+      transition:background 0.15s ease,transform 0.13s ease,box-shadow 0.15s ease,border-color 0.15s ease;
+    }
+    .lab-item a:hover{
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,0.09),transparent 60%),var(--card-soft);
+      transform:translateY(-1px);
+      box-shadow:0 0 0 1px rgba(74,242,255,0.6);
+      border-color:rgba(74,242,255,0.9);
+    }
+    .lab-name{font-weight:600;font-size:0.82rem;margin-bottom:2px;}
+    .lab-file{font-size:0.72rem;color:var(--text-soft);}
+    footer{
+      margin-top:18px;font-size:0.72rem;color:var(--text-soft);
+      border-top:1px solid rgba(120,140,220,0.45);padding-top:10px;
+    }
+    footer strong{color:var(--accent);}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header id="top-header">
+      <div class="header-row">
+        <div>
+          <h1>QDS Lab Suite · Bio & Genomics v2</h1>
+          <p class="subtitle">Avian navigation, magnetoreception and genomics coherence — same substrate, different domain.</p>
+        </div>
+        <button class="toggle-btn" type="button" id="header-toggle">
+          <span>▴</span> Collapse header
+        </button>
+      </div>
+      <div class="header-body">
+        <div class="pill-row">
+          <div class="pill"><span class="pill-dot"></span><span><strong>Quantum Dynamic Systems™</strong></span></div>
+          <div class="pill hot"><span class="pill-dot"></span><span>Offline · localhost · Termux</span></div>
+          <div class="pill core"><span class="pill-dot"></span><span>Evidence-first · not advice</span></div>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section>
+        <h2>Avian & navigation labs</h2>
+        <p class="meta">Bird migration and avian magnetoreception — coherence, reliability, and factor sweeps.</p>
+        <ul class="lab-list">
+          <li class="lab-item"><a href="bird_migration_lab.html"><div class="lab-name">bird_migration_lab</div><div class="lab-file">bird_migration_lab.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_lab_latest.html"><div class="lab-name">qds_avian_lab_latest</div><div class="lab-file">qds_avian_lab_latest.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_lab_v2.html"><div class="lab-name">qds_avian_lab_v2</div><div class="lab-file">qds_avian_lab_v2.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_lab_v3_pro.html"><div class="lab-name">qds_avian_lab_v3_pro</div><div class="lab-file">qds_avian_lab_v3_pro.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_lab_v4_pro.html"><div class="lab-name">qds_avian_lab_v4_pro</div><div class="lab-file">qds_avian_lab_v4_pro.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_magnetoreception_lab_v5_fairplus.html"><div class="lab-name">qds_avian_magnetoreception_lab_v5_fairplus</div><div class="lab-file">qds_avian_magnetoreception_lab_v5_fairplus.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_magnetoreception_lab_v6_omega_pro.html"><div class="lab-name">qds_avian_magnetoreception_lab_v6_omega_pro</div><div class="lab-file">qds_avian_magnetoreception_lab_v6_omega_pro.html</div></a></li>
+          <li class="lab-item"><a href="qds_avian_navigation_lab.html"><div class="lab-name">qds_avian_navigation_lab</div><div class="lab-file">qds_avian_navigation_lab.html</div></a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>DNA & genomics coherence labs</h2>
+        <p class="meta">DNA / genomics coherence, AutoTest flows, and market-friendly variants wired into the same kernel story.</p>
+        <ul class="lab-list">
+          <li class="lab-item"><a href="dna10_qds_genomics_coherence_lab_market.html"><div class="lab-name">dna10_qds_genomics_coherence_lab_market</div><div class="lab-file">dna10_qds_genomics_coherence_lab_market.html</div></a></li>
+          <li class="lab-item"><a href="dna11_qds_genomics_coherence_lab_pro.html"><div class="lab-name">dna11_qds_genomics_coherence_lab_pro</div><div class="lab-file">dna11_qds_genomics_coherence_lab_pro.html</div></a></li>
+          <li class="lab-item"><a href="dna9_qds_genomics_coherence_lab_market.html"><div class="lab-name">dna9_qds_genomics_coherence_lab_market</div><div class="lab-file">dna9_qds_genomics_coherence_lab_market.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v1.html"><div class="lab-name">qds_genomics_coherence_lab_v1</div><div class="lab-file">qds_genomics_coherence_lab_v1.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v2_plus.html"><div class="lab-name">qds_genomics_coherence_lab_v2_plus</div><div class="lab-file">qds_genomics_coherence_lab_v2_plus.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v3_max.html"><div class="lab-name">qds_genomics_coherence_lab_v3_max</div><div class="lab-file">qds_genomics_coherence_lab_v3_max.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v4_lite.html"><div class="lab-name">qds_genomics_coherence_lab_v4_lite</div><div class="lab-file">qds_genomics_coherence_lab_v4_lite.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v5_autotest.html"><div class="lab-name">qds_genomics_coherence_lab_v5_autotest</div><div class="lab-file">qds_genomics_coherence_lab_v5_autotest.html</div></a></li>
+          <li class="lab-item"><a href="qds_genomics_coherence_lab_v6_market.html"><div class="lab-name">qds_genomics_coherence_lab_v6_market</div><div class="lab-file">qds_genomics_coherence_lab_v6_market.html</div></a></li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <div><strong>Quantum Dynamic Systems™</strong> — local QDS lab mesh running on a phone.</div>
+      <div>This suite is for exploratory physics / engineering thinking only. No financial, medical, or operational advice. All labs run offline on localhost; refresh if anything looks stuck.</div>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      var header = document.getElementById('top-header');
+      var btn = document.getElementById('header-toggle');
+      if (!header || !btn) return;
+      btn.addEventListener('click', function () {
+        var collapsed = header.classList.toggle('collapsed');
+        btn.innerHTML = collapsed
+          ? '<span>▾</span> Expand header'
+          : '<span>▴</span> Collapse header';
+      });
+    })();
+  </script>
+</body>
+</html>

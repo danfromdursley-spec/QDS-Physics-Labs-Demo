@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>QDS Genomics Coherence Lab v6 — Market Edition</title>
+<style>
+:root{
+  --bg:#070b10; --panel:#0c1420; --panel2:#0a111b;
+  --ink:#e9f1fb; --muted:#9fb0c3;
+  --line:#1d2b3e; --line2:#243850;
+  --neon:#1ef7d2; --neon2:#4aa3ff;
+  --r:16px;
+  --mono: ui-monospace, Menlo, Consolas, "SFMono-Regular", monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+header{
+  padding:14px 12px 12px 12px;
+  border-bottom:1px solid rgba(30,247,210,.28);
+  background:linear-gradient(180deg,#0b121c 0%, #070b10 100%);
+}
+h1{margin:0;font-size:16.5px;letter-spacing:.2px}
+.sub{margin-top:6px;color:var(--muted);font-size:12.5px;line-height:1.35}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+.card{
+  background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:12px;
+  box-shadow:0 0 0 1px rgba(30,247,210,.06) inset;
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:900px){ .grid{grid-template-columns:1fr 1fr} }
+label{display:block;color:var(--muted);font-size:12px;margin:2px 0 6px}
+input,select,textarea,button{
+  width:100%;
+  background:#08101a;
+  color:var(--ink);
+  border:1px solid var(--line2);
+  border-radius:12px;
+  padding:10px;
+  outline:none;
+}
+input[type="range"]{padding:6px}
+textarea{
+  min-height:116px;
+  font-family:var(--mono);
+  font-size:12px;
+  resize:vertical;
+}
+button{cursor:pointer}
+button:hover{border-color:rgba(30,247,210,.5)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  flex:1 1 180px;
+  background:linear-gradient(180deg,#0b1420,#08101a);
+}
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border:1px solid rgba(30,247,210,.35);
+  border-radius:999px;
+  color:var(--muted);
+  font-size:12px;
+  font-family:var(--mono);
+}
+.hr{height:1px;background:var(--line);margin:10px 0}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.k{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#07101a;
+  padding:10px;
+}
+.kt{color:var(--muted);font-size:12px}
+.kv{margin-top:4px;font-family:var(--mono);font-size:15.5px}
+.ks{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.25}
+small{color:var(--muted)}
+pre{white-space:pre-wrap;margin:0}
+canvas{
+  width:100%;
+  height:180px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#07101a;
+}
+details{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#07101a;
+  padding:10px;
+}
+summary{cursor:pointer;color:var(--muted);font-size:13px}
+.pill{
+  display:inline-block;
+  padding:3px 9px;
+  border-radius:999px;
+  border:1px solid rgba(74,163,255,.35);
+  color:rgba(74,163,255,.9);
+  font-size:12px;
+  margin-left:6px;
+}
+.note{
+  padding:10px;
+  border:1px solid rgba(74,163,255,.25);
+  border-radius:14px;
+  background:rgba(74,163,255,.06);
+  color:var(--muted);
+  font-size:12.5px;
+  line-height:1.35;
+}
+.neonline{
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg, rgba(30,247,210,.0), rgba(30,247,210,.65), rgba(74,163,255,.45), rgba(30,247,210,.0));
+  margin:10px 0 0 0;
+}
+.mono{font-family:var(--mono)}
+</style>
+</head>
+<body>
+<header>
+  <h1>QDS Genomics Coherence Lab v6 <span class="pill">Market Edition</span></h1>
+  <div class="sub">
+    Structure-aware genome summary: two-scale λ<sub>g</sub> + robust redundancy + D<sub>eff</sub>.
+    AutoTest picks <b>hpWin</b> using stability-first IQR, then tie-breaks by closeness to median D<sub>eff</sub> (avoids chasing extremes). 🧬
+  </div>
+  <div class="neonline"></div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="row">
+      <div style="flex:2 1 360px">
+        <label>1) Load 23andMe raw data (.txt)</label>
+        <input id="file" type="file" accept=".txt,.tsv,.csv"/>
+      </div>
+      <div style="flex:1 1 220px">
+        <label>Mode</label>
+        <select id="mode">
+          <option value="balanced" selected>Balanced (recommended)</option>
+          <option value="conservative">Conservative (stability-first)</option>
+          <option value="rawloose">Raw/Loose (fast, less strict)</option>
+        </select>
+      </div>
+      <div style="flex:1 1 200px">
+        <label>Status</label>
+        <div class="badge" id="stBadge">idle</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <label>Short window (bp) — LD-ish</label>
+        <input id="wShort" type="number" min="10000" max="200000" value="50000"/>
+      </div>
+      <div>
+        <label>Long window (bp) — haplotype-ish</label>
+        <input id="wLong" type="number" min="200000" max="5000000" value="1000000"/>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <label>Detrend</label>
+        <select id="detrend">
+          <option value="hp" selected>High-pass (recommended)</option>
+          <option value="diff">ΔX (edge detector)</option>
+          <option value="both">HP then ΔX (aggressive)</option>
+          <option value="none">None (may inflate)</option>
+        </select>
+      </div>
+      <div>
+        <label>SNP sanity lane: sampling step</label>
+        <input id="snpStep" type="number" min="1" max="30" value="8"/>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="grid">
+      <div>
+        <label>hpWin (windows): <span class="badge" id="hpLbl">13</span></label>
+        <input id="hpWin" type="range" min="5" max="31" step="2" value="13"/>
+      </div>
+      <div>
+        <label>ρCut (abs-ρ tail cutoff): <span class="badge" id="rhoLbl">0.02</span></label>
+        <input id="rhoCut" type="range" min="0.00" max="0.08" step="0.01" value="0.02"/>
+      </div>
+      <div>
+        <label>maxLag (windows): <span class="badge" id="lagLbl">200</span></label>
+        <input id="maxLag" type="range" min="60" max="260" step="20" value="200"/>
+      </div>
+      <div>
+        <label>Per-chrom stability lag (windows)</label>
+        <input id="chrLag" type="number" min="20" max="120" value="60"/>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <details open>
+      <summary>Traits & Watchlist (optional)</summary>
+      <div class="grid" style="margin-top:10px">
+        <div>
+          <label>Trait weights (rsID effect_allele beta)</label>
+          <textarea id="traits" spellcheck="false" placeholder="rs4988235 T 0.40&#10;rs762551 A 0.25"></textarea>
+          <small>Offline. You supply effect allele + beta. Wrong allele flips sign.</small>
+        </div>
+        <div>
+          <label>Watchlist rsIDs (lookup-only)</label>
+          <input id="watch" type="text" placeholder="rs4988235 rs762551 rs12913832"/>
+          <div class="note" style="margin-top:10px">
+            <b>AutoTest grid:</b> ρCut = {0.01, 0.02, 0.03} × hpWin = {9, 13, 17}.<br/>
+            <b>Decision:</b> pick hpWin with smallest per-chr λ<sub>short</sub> IQR; tie-break by closest to median D<sub>eff</sub>.
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="btns" style="margin-top:10px">
+      <button class="btn" id="build">Build (current sliders)</button>
+      <button class="btn" id="auto">AutoTest (one-button)</button>
+      <button class="btn" id="copy">Copy readout</button>
+    </div>
+
+    <pre id="status" style="margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.35">Waiting for file…</pre>
+
+    <div class="kpi">
+      <div class="k"><div class="kt">D_raw</div><div class="kv" id="k_raw">—</div><div class="ks">called SNPs</div></div>
+      <div class="k"><div class="kt">Missing</div><div class="kv" id="k_miss">—</div><div class="ks">missing rate</div></div>
+      <div class="k"><div class="kt">λ short / long</div><div class="kv" id="k_lam">—</div><div class="ks">interp 1/e crossing</div></div>
+      <div class="k"><div class="kt">Red(win) / Red(SNP)</div><div class="kv" id="k_red">—</div><div class="ks">abs-ρ tail cutoff</div></div>
+      <div class="k"><div class="kt">D_eff</div><div class="kv" id="k_deff">—</div><div class="ks">called / Red(win)</div></div>
+      <div class="k"><div class="kt">Decision (AutoTest)</div><div class="kv" id="k_dec">—</div><div class="ks">stability-first + anti-extremes tie-break</div></div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="grid">
+      <div>
+        <div class="mono" style="color:var(--muted);font-size:12.5px;margin-bottom:6px">
+          Graph 1 — ρ(k) short (detrended)
+        </div>
+        <canvas id="cRho"></canvas>
+      </div>
+      <div>
+        <div class="mono" style="color:var(--muted);font-size:12.5px;margin-bottom:6px">
+          Graph 2 — AutoTest D_eff sweep
+        </div>
+        <canvas id="cSweep"></canvas>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <details open>
+      <summary>Readout (copy/paste)</summary>
+      <textarea id="readout" spellcheck="false"></textarea>
+    </details>
+
+    <div class="hr"></div>
+
+    <details>
+      <summary>Trait panel output</summary>
+      <pre id="traitOut" style="color:var(--muted);font-size:12.5px;line-height:1.35">No traits yet.</pre>
+    </details>
+
+    <details>
+      <summary>Watchlist output</summary>
+      <pre id="watchOut" class="mono" style="color:var(--muted);font-size:12.5px;line-height:1.35">No watchlist yet.</pre>
+    </details>
+
+    <details>
+      <summary>Per-chrom counts</summary>
+      <pre id="chromOut" class="mono" style="color:var(--muted);font-size:12.5px;line-height:1.35">—</pre>
+    </details>
+
+  </div>
+</div>
+
+<script>
+const el = id => document.getElementById(id);
+const setBadge = (txt)=>{ el("stBadge").textContent = txt; };
+const status = (t)=>{ el("status").textContent = t; };
+
+const fmtInt = x => isFinite(x) ? Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,",") : "—";
+const fmtPct = x => isFinite(x) ? (x*100).toFixed(2)+"%" : "—";
+function fmtBp(x){
+  if(!isFinite(x)||x<=0) return "—";
+  if(x>=1e6) return (x/1e6).toFixed(2)+" Mb";
+  if(x>=1e3) return (x/1e3).toFixed(1)+" kb";
+  return Math.round(x)+" bp";
+}
+function median(arr){
+  const a=arr.filter(x=>isFinite(x)).slice().sort((x,y)=>x-y);
+  if(!a.length) return NaN;
+  const m=(a.length-1)/2, lo=Math.floor(m), hi=Math.ceil(m);
+  return lo===hi ? a[lo] : (a[lo]+a[hi])/2;
+}
+function iqrWidth(q){
+  if(!q||!isFinite(q.p25)||!isFinite(q.p75)) return Infinity;
+  return (q.p75-q.p25);
+}
+function quantiles(arr){
+  const a=arr.filter(x=>isFinite(x)).slice().sort((x,y)=>x-y);
+  if(!a.length) return null;
+  const q=p=>{
+    const i=(a.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i);
+    if(lo===hi) return a[lo];
+    const t=i-lo; return a[lo]*(1-t)+a[hi]*t;
+  };
+  return {n:a.length, p25:q(0.25), p50:q(0.5), p75:q(0.75)};
+}
+
+function safeChrom(ch){
+  const c=(ch||"").toUpperCase();
+  if(c==="X"||c==="Y"||c==="MT"||c==="M") return c==="M"?"MT":c;
+  const n=parseInt(c,10);
+  if(isFinite(n)&&n>=1&&n<=22) return String(n);
+  return null;
+}
+function sortGt(gt){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0], b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a<=b)?gt:(b+a);
+}
+function gtDosage(gt, ea){
+  if(!gt||gt.length<2) return null;
+  const a=gt[0], b=gt[1];
+  if(!"ACGT".includes(a)||!"ACGT".includes(b)) return null;
+  return (a===ea)+(b===ea);
+}
+function entropyFromCounts(counts){
+  let n=0; for(const k in counts) n+=counts[k];
+  if(n<=0) return 0;
+  let H=0;
+  for(const k in counts){
+    const c=counts[k]; if(c<=0) continue;
+    const p=c/n; H -= p*Math.log2(p);
+  }
+  return H;
+}
+function zscore(a){
+  const n=a.length; if(n<2) return a.slice();
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  const s=Math.sqrt(v)||1;
+  const out=new Array(n);
+  for(let i=0;i<n;i++) out[i]=(a[i]-m)/s;
+  return out;
+}
+function highPass(a, win){
+  const n=a.length, w=Math.max(1, Math.floor(win));
+  const out=new Array(n).fill(0);
+  let sum=0; const q=[];
+  for(let i=0;i<n;i++){
+    sum+=a[i]; q.push(a[i]);
+    if(q.length>w) sum-=q.shift();
+    out[i]=a[i]-(sum/q.length);
+  }
+  return out;
+}
+function diff(a){
+  const n=a.length; if(n<2) return [];
+  const out=new Array(n-1);
+  for(let i=1;i<n;i++) out[i-1]=a[i]-a[i-1];
+  return out;
+}
+function autocorr(a, maxLag){
+  const n=a.length;
+  if(n<maxLag+10) return null;
+  let m=0; for(let i=0;i<n;i++) m+=a[i]; m/=n;
+  let v=0; for(let i=0;i<n;i++){ const d=a[i]-m; v+=d*d; } v/=n;
+  if(v<=1e-12) return null;
+  const r=new Array(maxLag+1).fill(0); r[0]=1;
+  for(let k=1;k<=maxLag;k++){
+    const m2=n-k; let cov=0;
+    for(let i=0;i<m2;i++) cov+=(a[i]-m)*(a[i+k]-m);
+    r[k]=(cov/m2)/v;
+  }
+  return r;
+}
+function combineAutocorr(perChr, maxLag){
+  const r=new Array(maxLag+1).fill(0), w=new Array(maxLag+1).fill(0);
+  r[0]=1; w[0]=1;
+  for(const chr of Object.keys(perChr)){
+    const a=perChr[chr];
+    if(!a||a.length<maxLag+12) continue;
+    const rr=autocorr(a,maxLag); if(!rr) continue;
+    const n=a.length;
+    for(let k=1;k<=maxLag;k++){
+      const pairs=Math.max(0,n-k);
+      r[k]+=rr[k]*pairs; w[k]+=pairs;
+    }
+  }
+  for(let k=1;k<=maxLag;k++) r[k]=(w[k]>0)?(r[k]/w[k]):0;
+  return r;
+}
+function estimateLambdaInterp(rhos){
+  const thr=1/Math.E;
+  for(let k=1;k<rhos.length;k++){
+    const a=rhos[k-1], b=rhos[k];
+    if(a>=thr && b<=thr){
+      const t=(thr-a)/(b-a);
+      return (k-1)+t;
+    }
+  }
+  if(rhos.length>1 && rhos[1]>0 && rhos[1]<1){
+    const kstar=-1/Math.log(rhos[1]);
+    if(isFinite(kstar)&&kstar>0) return kstar;
+  }
+  return rhos.length-1;
+}
+function redundancyAbs(rhos, rhoCut){
+  let s=0;
+  for(let k=1;k<rhos.length;k++){
+    const rk=Math.abs(rhos[k]);
+    if(rk<=rhoCut) break;
+    s += rk;
+  }
+  return 1 + 2*s;
+}
+function parseWatchlist(txt){
+  const s=(txt||"").trim(); if(!s) return new Set();
+  return new Set(s.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(x=>x.startsWith("rs")));
+}
+function parseTraits(txt){
+  const map=new Map();
+  for(const raw of (txt||"").split(/\r?\n/)){
+    const line=raw.trim();
+    if(!line||line.startsWith("#")) continue;
+    const p=line.split(/\s+/); if(p.length<3) continue;
+    const rs=p[0].toLowerCase(), ea=p[1].toUpperCase(), beta=parseFloat(p[2]);
+    if(!rs.startsWith("rs")) continue;
+    if(!"ACGT".includes(ea)) continue;
+    if(!isFinite(beta)) continue;
+    map.set(rs,{ea,beta});
+  }
+  return map;
+}
+class WinAgg{
+  constructor(wbp){ this.wbp=wbp; this.cur=null; this.wi=null; this.reset(); }
+  reset(){ this.counts={}; this.n=0; this.ch=0; this.het=0; this.prev=null; }
+  flush(out){
+    if(this.cur===null) return;
+    if(!out[this.cur]) out[this.cur]=[];
+    if(this.n>0){
+      const H=entropyFromCounts(this.counts);
+      const cd=(this.n>1)?(this.ch/(this.n-1)):0;
+      const hr=this.het/this.n;
+      out[this.cur].push(0.45*H + 0.35*cd + 0.20*hr);
+    }
+    this.reset();
+  }
+  push(chr,pos,gt,out){
+    if(this.cur!==chr){ if(this.cur!==null) this.flush(out); this.cur=chr; this.wi=null; this.reset(); }
+    const wi=Math.floor(pos/this.wbp);
+    if(this.wi===null) this.wi=wi;
+    if(wi!==this.wi){ this.flush(out); this.wi=wi; }
+    const g=sortGt(gt); if(!g) return;
+    this.counts[g]=(this.counts[g]||0)+1;
+    if(g[0]!==g[1]) this.het++;
+    if(this.prev!==null && g!==this.prev) this.ch++;
+    this.prev=g; this.n++;
+  }
+  finish(out){ this.flush(out); this.cur=null; }
+}
+function applyDetrend(series, mode, hpWin){
+  let a=zscore(series);
+  if(mode==="hp") a=highPass(a,hpWin);
+  else if(mode==="diff") a=diff(a);
+  else if(mode==="both"){ a=highPass(a,hpWin); a=diff(a); }
+  else if(mode==="none"){}
+  if(a.length>=2) a=zscore(a);
+  return a;
+}
+
+// ---------- Caching layer (parse once) ----------
+const CACHE = {
+  parsed:false,
+  called:0, missing:0, total:0,
+  chromC:{}, chromM:{},
+  perS_raw:{}, perL_raw:{},
+  hetByChr:{},
+  watchHits:{},
+  traitDetails:[]
+};
+function clearCache(){
+  CACHE.parsed=false;
+  CACHE.called=0; CACHE.missing=0; CACHE.total=0;
+  CACHE.chromC={}; CACHE.chromM={};
+  CACHE.perS_raw={}; CACHE.perL_raw={};
+  CACHE.hetByChr={};
+  CACHE.watchHits={};
+  CACHE.traitDetails=[];
+}
+
+function uiApplyMode(){
+  const m=el("mode").value;
+  if(m==="balanced"){
+    el("detrend").value="hp";
+    el("hpWin").value="13";
+    el("rhoCut").value="0.02";
+    el("maxLag").value="200";
+    el("chrLag").value="60";
+    el("snpStep").value="8";
+  }else if(m==="conservative"){
+    el("detrend").value="hp";
+    el("hpWin").value="13";
+    el("rhoCut").value="0.03";
+    el("maxLag").value="220";
+    el("chrLag").value="80";
+    el("snpStep").value="10";
+  }else if(m==="rawloose"){
+    el("detrend").value="none";
+    el("hpWin").value="9";
+    el("rhoCut").value="0.01";
+    el("maxLag").value="160";
+    el("chrLag").value="50";
+    el("snpStep").value="6";
+  }
+  updateSliderLabels();
+}
+el("mode").addEventListener("change", uiApplyMode);
+
+function updateSliderLabels(){
+  el("hpLbl").textContent = el("hpWin").value;
+  el("rhoLbl").textContent = (+el("rhoCut").value).toFixed(2);
+  el("lagLbl").textContent = el("maxLag").value;
+}
+["hpWin","rhoCut","maxLag"].forEach(id=>el(id).addEventListener("input", updateSliderLabels));
+updateSliderLabels();
+
+async function parseTextOnce(text){
+  clearCache();
+
+  const wS=+el("wShort").value||50000;
+  const wL=+el("wLong").value||1000000;
+  const snpStep=+el("snpStep").value||8;
+
+  const watch=parseWatchlist(el("watch").value);
+  const traits=parseTraits(el("traits").value);
+
+  const aggS=new WinAgg(wS);
+  const aggL=new WinAgg(wL);
+  const snpSeen={};
+
+  const lines=text.split(/\r?\n/);
+
+  setBadge("parsing");
+  status("Parsing once… "+lines.length.toLocaleString()+" lines");
+
+  // chunked loop: yields to UI every ~120k lines
+  for(let i=0;i<lines.length;i++){
+    const line=lines[i];
+    if(!line||line[0]==="#") continue;
+
+    const p=line.split(/\t|,/);
+    if(p.length<4) continue;
+
+    const rs=(p[0]||"").trim().toLowerCase();
+    const chr=safeChrom((p[1]||"").trim());
+    const pos=parseInt((p[2]||"").trim(),10);
+    const gt=(p[3]||"").trim().toUpperCase();
+    if(!chr||!isFinite(pos)) continue;
+
+    CACHE.total++;
+
+    if(gt==="--"||gt.length<2){
+      CACHE.missing++;
+      CACHE.chromM[chr]=(CACHE.chromM[chr]||0)+1;
+      continue;
+    }
+
+    CACHE.called++;
+    CACHE.chromC[chr]=(CACHE.chromC[chr]||0)+1;
+
+    aggS.push(chr,pos,gt,CACHE.perS_raw);
+    aggL.push(chr,pos,gt,CACHE.perL_raw);
+
+    snpSeen[chr]=(snpSeen[chr]||0)+1;
+    if((snpSeen[chr]%snpStep)===0){
+      const g=sortGt(gt);
+      if(g){
+        if(!CACHE.hetByChr[chr]) CACHE.hetByChr[chr]=[];
+        CACHE.hetByChr[chr].push(g[0]!==g[1]?1:0);
+      }
+    }
+
+    if(watch.size && watch.has(rs)) CACHE.watchHits[rs]={chr,pos,gt};
+
+    if(traits.size && traits.has(rs)){
+      const {ea,beta}=traits.get(rs);
+      const d=gtDosage(gt,ea);
+      if(d!==null){
+        CACHE.traitDetails.push({rs,chr,pos,gt,ea,beta,d,contrib:beta*d});
+      }
+    }
+
+    if(i>0 && i%120000===0){
+      status("Parsing… line "+i.toLocaleString());
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+  aggS.finish(CACHE.perS_raw);
+  aggL.finish(CACHE.perL_raw);
+
+  CACHE.parsed=true;
+  setBadge("ready");
+  status("Parsed once. Ready for fast compute + AutoTest. 🧬");
+}
+
+function computeFromCache(params){
+  if(!CACHE.parsed) return null;
+
+  const detr=params.detrend;
+  const hpWin=params.hpWin;
+  const rhoCut=params.rhoCut;
+  const maxLag=params.maxLag;
+  const chrLag=params.chrLag;
+
+  const wS=+el("wShort").value||50000;
+  const wL=+el("wLong").value||1000000;
+
+  const perSd={}, perLd={};
+  for(const chr of Object.keys(CACHE.perS_raw)){
+    const a=CACHE.perS_raw[chr]; if(!a||a.length<15) continue;
+    const d=applyDetrend(a,detr,hpWin); if(d.length<15) continue;
+    perSd[chr]=d;
+  }
+  for(const chr of Object.keys(CACHE.perL_raw)){
+    const a=CACHE.perL_raw[chr]; if(!a||a.length<15) continue;
+    const d=applyDetrend(a,detr,hpWin); if(d.length<15) continue;
+    perLd[chr]=d;
+  }
+
+  const rS = combineAutocorr(perSd, Math.min(260, Math.max(40, maxLag)));
+  const rL = combineAutocorr(perLd, Math.min(180, Math.max(40, Math.floor(maxLag*0.85))));
+
+  const lagS = estimateLambdaInterp(rS);
+  const lagL = estimateLambdaInterp(rL);
+
+  const lamS = lagS*wS;
+  const lamL = lagL*wL;
+
+  const redWin = redundancyAbs(rS, rhoCut);
+  const deff = (isFinite(redWin)&&redWin>0) ? (CACHE.called/redWin) : NaN;
+
+  const rSnp = combineAutocorr(CACHE.hetByChr, Math.min(240, Math.max(60, Math.floor(maxLag*0.9))));
+  const redSnp = redundancyAbs(rSnp, rhoCut);
+
+  // per-chrom stability for short/long
+  const lamShortChr=[], lamLongChr=[];
+  const chrLagClamped = Math.min(120, Math.max(20, chrLag));
+
+  for(const chr of Object.keys(perSd)){
+    const rr=autocorr(perSd[chr], chrLagClamped);
+    if(!rr) continue;
+    lamShortChr.push(estimateLambdaInterp(rr)*wS);
+  }
+  for(const chr of Object.keys(perLd)){
+    const rr=autocorr(perLd[chr], chrLagClamped);
+    if(!rr) continue;
+    lamLongChr.push(estimateLambdaInterp(rr)*wL);
+  }
+
+  const qs = quantiles(lamShortChr);
+  const ql = quantiles(lamLongChr);
+
+  const missRate = CACHE.total ? (CACHE.missing/CACHE.total) : NaN;
+
+  // traits
+  const traitsProvided = parseTraits(el("traits").value).size;
+  const td=CACHE.traitDetails.slice();
+  let traitScore=0;
+  const traitWinS=new Set(), traitWinL=new Set();
+  for(const d of td){
+    traitScore+=d.contrib;
+    traitWinS.add(d.chr+":"+Math.floor(d.pos/wS));
+    traitWinL.add(d.chr+":"+Math.floor(d.pos/wL));
+  }
+  td.sort((a,b)=>Math.abs(b.contrib)-Math.abs(a.contrib));
+  const top = td.slice(0,12);
+
+  return {
+    called:CACHE.called, missing:CACHE.missing, missRate,
+    detr, hpWin, rhoCut, maxLag, chrLag:chrLagClamped,
+    wS,wL,
+    lamS, lamL,
+    redWin, redSnp,
+    deff,
+    qs, ql,
+    rS, // for plot
+    trait:{provided:traitsProvided, found:td.length, score:traitScore, uniqueS:traitWinS.size, uniqueL:traitWinL.size, top}
+  };
+}
+
+// ----- plotting -----
+function drawLine(canvas, xs, ys, yMin, yMax, title){
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width=Math.floor(canvas.clientWidth*2);
+  const H=canvas.height=Math.floor(canvas.clientHeight*2);
+  ctx.clearRect(0,0,W,H);
+
+  ctx.fillStyle="#07101a"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="rgba(30,247,210,.12)"; ctx.lineWidth=3;
+  ctx.strokeRect(2,2,W-4,H-4);
+
+  ctx.fillStyle="rgba(233,241,251,.85)";
+  ctx.font="24px var(--mono)";
+  ctx.fillText(title||"", 16, 34);
+
+  if(xs.length<2) return;
+
+  const padL=60, padR=18, padT=48, padB=50;
+  const x0=padL, x1=W-padR, y0=padT, y1=H-padB;
+
+  // axes
+  ctx.strokeStyle="rgba(159,176,195,.25)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.lineTo(x1,y1); ctx.stroke();
+
+  // 0 line
+  if(yMin<0 && yMax>0){
+    const yy=y1-(0-yMin)/(yMax-yMin)*(y1-y0);
+    ctx.strokeStyle="rgba(74,163,255,.20)";
+    ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+  }
+
+  // line
+  ctx.strokeStyle="rgba(30,247,210,.85)";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<xs.length;i++){
+    const xx=x0+(xs[i]-xs[0])/(xs[xs.length-1]-xs[0]+1e-9)*(x1-x0);
+    const yy=y1-(ys[i]-yMin)/(yMax-yMin+1e-9)*(y1-y0);
+    if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+  }
+  ctx.stroke();
+
+  // y labels
+  ctx.fillStyle="rgba(159,176,195,.85)";
+  ctx.font="20px var(--mono)";
+  ctx.fillText(yMax.toFixed(2), 10, y0+8);
+  ctx.fillText(yMin.toFixed(2), 10, y1+8);
+}
+function plotRhoShort(rS){
+  const K=Math.min(120, rS.length-1);
+  const xs=[], ys=[];
+  for(let k=0;k<=K;k++){ xs.push(k); ys.push(rS[k]); }
+  drawLine(el("cRho"), xs, ys, -0.40, 1.00, "ρ(k) short");
+}
+function plotSweep(points){
+  const xs=[], ys=[];
+  for(let i=0;i<points.length;i++){ xs.push(i); ys.push(points[i].y); }
+  const yMin=Math.min(...ys)*0.995, yMax=Math.max(...ys)*1.005;
+  drawLine(el("cSweep"), xs, ys, yMin, yMax, "D_eff sweep");
+}
+
+// ----- rendering -----
+function render(res, decisionLine){
+  el("k_raw").textContent = fmtInt(res.called);
+  el("k_miss").textContent = fmtPct(res.missRate);
+  el("k_lam").textContent = fmtBp(res.lamS)+" / "+fmtBp(res.lamL);
+  el("k_red").textContent = res.redWin.toFixed(3)+"× / "+res.redSnp.toFixed(3)+"×";
+  el("k_deff").textContent = fmtInt(res.deff);
+  el("k_dec").textContent = decisionLine || "—";
+
+  plotRhoShort(res.rS);
+
+  // traits panel
+  if(!res.trait.provided){
+    el("traitOut").textContent="No traits.";
+  }else{
+    const cov = res.trait.provided ? (res.trait.found/res.trait.provided) : 0;
+    const redTrait = res.trait.uniqueS ? (res.trait.found/res.trait.uniqueS) : NaN;
+    el("traitOut").textContent =
+`provided: ${res.trait.provided}
+found: ${res.trait.found} (${fmtPct(cov)})
+score: ${res.trait.score.toFixed(6)}
+unique windows: ${res.trait.uniqueS} (short) / ${res.trait.uniqueL} (long)
+trait redundancy(short): ${isFinite(redTrait)?redTrait.toFixed(2)+"×":"—"}
+
+top:
+${res.trait.top.map(d=>`${d.rs} chr${d.chr}:${d.pos} gt=${d.gt} ea=${d.ea} β=${d.beta} dose=${d.d} → ${d.contrib.toFixed(4)}`).join("\n") || "(none)"}
+`;
+  }
+
+  // watchlist output
+  const watch=parseWatchlist(el("watch").value);
+  if(!watch.size) el("watchOut").textContent="No watchlist.";
+  else{
+    const items=[...watch].sort();
+    el("watchOut").textContent = items.map(rs=>{
+      const hit=CACHE.watchHits[rs];
+      return hit?`${rs}: ${hit.gt} (chr${hit.chr}:${hit.pos})`:`${rs}: not found`;
+    }).join("\n");
+  }
+
+  // per-chrom counts
+  const keys=Object.keys(CACHE.chromC).sort((a,b)=>{
+    const A=(a==="X")?23:(a==="Y")?24:(a==="MT")?25:+a;
+    const B=(b==="X")?23:(b==="Y")?24:(b==="MT")?25:+b;
+    return A-B;
+  });
+  el("chromOut").textContent = keys.map(k=>`chr${k}: called=${CACHE.chromC[k]||0} missing=${CACHE.chromM[k]||0}`).join("\n");
+
+  // readout JSON
+  const read = {
+    version:"v6_market",
+    called:res.called,
+    missing:res.missing,
+    missing_rate:res.missRate,
+    w_short_bp:res.wS,
+    w_long_bp:res.wL,
+    detrend:res.detr,
+    hpWin:res.hpWin,
+    rhoCut:res.rhoCut,
+    maxLag:res.maxLag,
+    chrLag:res.chrLag,
+    lambda_short_bp:res.lamS,
+    lambda_long_bp:res.lamL,
+    redundancy_window:res.redWin,
+    redundancy_snp:res.redSnp,
+    d_eff:res.deff,
+    stability_short_q:res.qs,
+    stability_long_q:res.ql,
+    decision:decisionLine||""
+  };
+  el("readout").value = JSON.stringify(read,null,2);
+}
+
+// ----- file + compute actions -----
+async function ensureParsed(){
+  const f=el("file").files && el("file").files[0];
+  if(!f){ status("No file selected."); return false; }
+  if(CACHE.parsed) return true;
+
+  setBadge("loading");
+  status("Loading file…");
+  const txt = await new Promise((ok, bad)=>{
+    const r=new FileReader();
+    r.onload=()=>ok(String(r.result||""));
+    r.onerror=()=>bad(new Error("read error"));
+    r.readAsText(f);
+  });
+
+  await parseTextOnce(txt);
+  return true;
+}
+
+el("build").onclick = async()=>{
+  if(!await ensureParsed()) return;
+  setBadge("compute");
+  const res = computeFromCache({
+    detrend: el("detrend").value,
+    hpWin: +el("hpWin").value,
+    rhoCut: +el("rhoCut").value,
+    maxLag: +el("maxLag").value,
+    chrLag: +el("chrLag").value
+  });
+  if(!res){ setBadge("error"); status("Compute failed (too little data after detrend?)"); return; }
+  render(res, "");
+  setBadge("ready");
+  status(`Done. λ_short≈${fmtBp(res.lamS)} red≈${res.redWin.toFixed(3)}× D_eff≈${fmtInt(res.deff)} | λ_long≈${fmtBp(res.lamL)}`);
+};
+
+el("auto").onclick = async()=>{
+  if(!await ensureParsed()) return;
+  setBadge("autotest");
+  status("AutoTest… sweeping ρCut×hpWin (fast, no re-parse)");
+
+  const detr = el("detrend").value;
+  const maxLag = +el("maxLag").value;
+  const chrLag = +el("chrLag").value;
+
+  const rhoCuts=[0.01,0.02,0.03];
+  const hpWins=[9,13,17];
+
+  const rows=[];
+  const points=[];
+
+  // run grid
+  for(const rc of rhoCuts){
+    for(const hw of hpWins){
+      const res = computeFromCache({detrend:detr, hpWin:hw, rhoCut:rc, maxLag, chrLag});
+      if(!res) continue;
+      rows.push({rhoCut:rc, hpWin:hw, lamS:res.lamS, redWin:res.redWin, deff:res.deff, redSnp:res.redSnp, iqrShort:iqrWidth(res.qs)});
+      points.push({label:`ρ${rc.toFixed(2)}-h${hw}`, y:res.deff});
+    }
+  }
+
+  // plot D_eff sweep
+  plotSweep(points);
+
+  // -------- Decision rule (unbiased): stability-first then anti-extremes ----------
+  // Use baseline rhoCut=0.02 for decision evaluation (modern "default tail stop")
+  const base = rows.filter(r=>Math.abs(r.rhoCut-0.02)<1e-9);
+  const medDeff = median(base.map(r=>r.deff));
+
+  let pick=null;
+  for(const r of base){
+    const scoreStab = r.iqrShort;               // primary: minimal IQR width
+    const scoreMid  = Math.abs(r.deff-medDeff); // secondary: closest to median D_eff
+    const key={scoreStab, scoreMid, hpWin:r.hpWin, row:r};
+    if(!pick) pick=key;
+    else{
+      if(key.scoreStab < pick.scoreStab - 1e-9) pick=key;
+      else if(Math.abs(key.scoreStab-pick.scoreStab)<=1e-9 && key.scoreMid < pick.scoreMid - 1e-9) pick=key;
+      else if(Math.abs(key.scoreStab-pick.scoreStab)<=1e-9 && Math.abs(key.scoreMid-pick.scoreMid)<=1e-9){
+        // final tie-break: choose most central hpWin (keeps it sane)
+        if(Math.abs(key.hpWin-13) < Math.abs(pick.hpWin-13)) pick=key;
+      }
+    }
+  }
+
+  const decisionLine = pick
+    ? `AutoTest decision 🧬  hpWin=${pick.hpWin} (min IQR_short=${Math.round(pick.scoreStab)} bp; tie-break |D_eff-med|=${Math.round(pick.scoreMid)})`
+    : `AutoTest decision 🧬  (insufficient stability data)`;
+
+  // apply recommended hpWin for “current view”
+  if(pick){
+    el("hpWin").value = String(pick.hpWin);
+    updateSliderLabels();
+  }
+
+  // compute current view using sliders (rhoCut slider remains user-controlled)
+  const cur = computeFromCache({
+    detrend:detr,
+    hpWin:+el("hpWin").value,
+    rhoCut:+el("rhoCut").value,
+    maxLag, chrLag
+  });
+  if(cur) render(cur, decisionLine);
+
+  // append sweep table to readout
+  const header="rhoCut\thpWin\tlambda_short_bp\tred_win\tD_eff\tred_snp\tIQR_short_bp";
+  const table=[header].concat(rows.map(r=>
+    `${r.rhoCut.toFixed(2)}\t${r.hpWin}\t${Math.round(r.lamS)}\t${r.redWin.toFixed(3)}\t${Math.round(r.deff)}\t${r.redSnp.toFixed(3)}\t${Math.round(r.iqrShort)}`
+  )).join("\n");
+
+  el("readout").value += "\n\n" + decisionLine + "\n\n" + table + "\n";
+
+  setBadge("ready");
+  status("AutoTest done. Decision computed + table appended.");
+};
+
+el("copy").onclick = async()=>{
+  const s = el("readout").value || "";
+  try{
+    await navigator.clipboard.writeText(s);
+    status("Copied readout. 🧬");
+  }catch(e){
+    status("Clipboard blocked — select all in Readout and copy manually.");
+  }
+};
+
+// initialise mode defaults
+uiApplyMode();
+</script>
+</body>
+</html>

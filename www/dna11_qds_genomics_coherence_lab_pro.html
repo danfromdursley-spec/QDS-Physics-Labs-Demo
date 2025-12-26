@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>DNA11 PRO — QDS Genomics Coherence Lab (Market Edition) 🧬</title>
+<style>
+
+/* DNA11_MACRO_MODE_PATCH_v1 */
+.dna-macro-row{ margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08); }
+.toggle{ display:flex; align-items:center; gap:10px; user-select:none; }
+.toggle input{ position:absolute; opacity:0; pointer-events:none; }
+.toggle .track{ width:56px; height:30px; border-radius:999px; background:rgba(255,255,255,.10); box-shadow:0 0 0 1px rgba(255,255,255,.08) inset; display:inline-flex; align-items:center; padding:3px; transition:.2s; }
+.toggle .knob{ width:24px; height:24px; border-radius:999px; background:linear-gradient(135deg, rgba(0,255,180,.9), rgba(0,150,255,.9)); box-shadow:0 6px 16px rgba(0,0,0,.35); transform:translateX(0); transition:.2s; }
+.toggle input:checked + .track{ background:rgba(0,255,180,.16); box-shadow:0 0 0 1px rgba(0,255,180,.25) inset; }
+.toggle input:checked + .track .knob{ transform:translateX(26px); background:linear-gradient(135deg, rgba(255,120,0,.95), rgba(255,0,80,.85)); }
+.toggle .tlabel{ min-width:42px; font-weight:700; letter-spacing:.04em; font-size:12px; opacity:.85; }
+
+
+  :root{
+    --bg0:#070a12;
+    --bg1:#0a1020;
+    --panel:#0c1428cc;
+    --panel2:#0b1224;
+    --stroke:#1b2a52;
+    --muted:#9fb0d2;
+    --text:#e9f0ff;
+    --good:#00ff9c;
+    --cyan:#00b3ff;
+    --warn:#ffcc66;
+    --bad:#ff5c7a;
+
+    --radius:18px;
+    --shadow:0 10px 40px rgba(0,0,0,.45);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  }
+
+  html,body{height:100%; background: radial-gradient(1400px 900px at 20% 10%, rgba(0,179,255,.10), transparent 60%),
+                              radial-gradient(1200px 800px at 80% 30%, rgba(0,255,156,.10), transparent 60%),
+                              linear-gradient(160deg, var(--bg0), var(--bg1));
+            color:var(--text); font-family:var(--sans); margin:0; }
+
+  /* subtle “NASA battery” grid vibe */
+  body:before{
+    content:""; position:fixed; inset:0; pointer-events:none; opacity:.10;
+    background-image:
+      linear-gradient(to right, rgba(0,179,255,.18) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,255,156,.12) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(600px 420px at 50% 12%, black 0%, transparent 70%);
+  }
+
+  .wrap{max-width:1100px; margin:0 auto; padding:18px 14px 28px;}
+  .topbar{
+    display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .brand{
+    padding:14px 16px; border:1px solid rgba(0,179,255,.18); background:linear-gradient(180deg, rgba(12,20,40,.78), rgba(10,16,32,.72));
+    border-radius:var(--radius); box-shadow:var(--shadow);
+  }
+  .brand h1{margin:0 0 6px; font-size:16px; font-weight:750; letter-spacing:.2px;}
+  .brand p{margin:0; color:var(--muted); font-size:12.5px; line-height:1.35;}
+  .badges{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .badge{
+    font-size:11px; letter-spacing:.2px; padding:6px 9px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03);
+  }
+  .badge b{font-weight:700;}
+  .badge.ok{border-color:rgba(0,255,156,.28); background:rgba(0,255,156,.07);}
+  .badge.cyan{border-color:rgba(0,179,255,.28); background:rgba(0,179,255,.07);}
+  .badge.warn{border-color:rgba(255,204,102,.35); background:rgba(255,204,102,.08); color:#ffe3a9;}
+
+  .actions{
+    display:flex; gap:10px; align-items:stretch; flex-wrap:wrap;
+  }
+  .btn{
+    border-radius:16px; border:1px solid rgba(255,255,255,.10);
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    color:var(--text); padding:12px 14px; min-width:170px;
+    box-shadow:0 12px 36px rgba(0,0,0,.35);
+    cursor:pointer; user-select:none;
+    transition: transform .05s ease, border-color .15s ease, filter .15s ease;
+  }
+  .btn:hover{border-color:rgba(0,179,255,.35); filter:brightness(1.06);}
+  .btn:active{transform: translateY(1px);}
+  .btn.primary{border-color:rgba(0,255,156,.35); background:linear-gradient(180deg, rgba(0,255,156,.14), rgba(255,255,255,.02));}
+  .btn.small{min-width:unset; padding:10px 12px;}
+  .btn[disabled]{opacity:.5; cursor:not-allowed; filter:none;}
+
+  .grid{
+    display:grid; gap:12px;
+    grid-template-columns: 1.2fr .8fr;
+  }
+  @media (max-width: 980px){
+    .grid{grid-template-columns: 1fr;}
+  }
+
+  .card{
+    border-radius:var(--radius); border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg, rgba(12,20,40,.78), rgba(10,16,32,.70));
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .card .hd{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .card .hd h2{margin:0; font-size:13px; font-weight:750; letter-spacing:.25px;}
+  .card .bd{padding:12px 14px;}
+
+  .row{display:grid; grid-template-columns: 1fr; gap:10px;}
+  .two{display:grid; gap:10px; grid-template-columns: 1fr 1fr;}
+  @media (max-width: 560px){.two{grid-template-columns: 1fr;}}
+
+  .field{
+    border:1px solid rgba(255,255,255,.07);
+    background:rgba(0,0,0,.12);
+    border-radius:16px; padding:10px 12px;
+  }
+  .field label{
+    display:flex; justify-content:space-between; gap:10px; align-items:baseline;
+    font-size:12px; color:var(--muted); margin-bottom:8px;
+  }
+  .field label .v{color:var(--text); font-weight:700;}
+  input[type="range"]{width:100%;}
+  input[type="number"], input[type="text"]{
+    width:100%; border-radius:12px; border:1px solid rgba(255,255,255,.08);
+    background:rgba(0,0,0,.18); color:var(--text); padding:10px 10px;
+    font-family:var(--sans); font-size:13px;
+  }
+  textarea{
+    width:100%; min-height:120px; resize:vertical;
+    border-radius:16px; border:1px solid rgba(255,255,255,.08);
+    background:rgba(0,0,0,.18); color:var(--text); padding:10px 10px;
+    font-family:var(--mono); font-size:12px; line-height:1.35;
+  }
+  .hint{margin-top:8px; color:var(--muted); font-size:12px; line-height:1.35;}
+  .switch{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    color:var(--muted); font-size:12px;
+  }
+  .switch input{transform:scale(1.05);}
+  .status{
+    font-family:var(--mono); font-size:12px;
+    padding:10px 12px; border-radius:16px;
+    background:rgba(0,0,0,.20); border:1px solid rgba(255,255,255,.07);
+    color:var(--muted);
+  }
+  .status b{color:var(--text);}
+  .status .ok{color:var(--good);}
+  .status .warn{color:var(--warn);}
+  .status .bad{color:var(--bad);}
+
+  .kpis{
+    display:grid; gap:10px; grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 780px){.kpis{grid-template-columns: 1fr;}}
+  .kpi{
+    border-radius:16px; border:1px solid rgba(255,255,255,.07);
+    background:rgba(0,0,0,.12); padding:10px 12px;
+  }
+  .kpi .t{font-size:12px; color:var(--muted);}
+  .kpi .v{font-size:18px; font-weight:800; margin-top:6px;}
+  .kpi .s{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35;}
+  .mono{font-family:var(--mono);}
+
+  .plots{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+  @media (max-width: 780px){.plots{grid-template-columns: 1fr;}}
+  canvas{
+    width:100%; height:220px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.07);
+    background:rgba(0,0,0,.16);
+  }
+
+  .outbox{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;
+  }
+  .outbox .btn{min-width:unset;}
+  .readout{
+    width:100%; min-height:210px;
+  }
+</style>
+</head>
+<!-- DNA11_MACRO_MODE_PATCH_v1 -->
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1>DNA11 PRO — QDS Genomics Coherence Lab (Market Edition) 🧬</h1>
+      <p>Offline, phone-safe structure summariser for 23andMe raw TXT. <b>No PRS.</b> Not clinical. No external calls. Mainstream counts SNPs; QDS prices correlation.</p>
+      <div class="badges">
+        <div class="badge ok"><b>Signal:</b> entropy + change + het</div>
+        <div class="badge cyan"><b>Two-scale:</b> λg short/long</div>
+        <div class="badge"><b>Redundancy:</b> abs-ρ + cutoff</div>
+        <div class="badge warn"><b>AutoTest:</b> stability-first (dual-scale gated)</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnSingle" class="btn primary">Run (Single)</button>
+      <button id="btnAuto" class="btn">AutoTest (Stability-first)</button>
+      <button id="btnCopy" class="btn small" title="Copy readout to clipboard">Copy readout</button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="hd">
+        <h2>Inputs</h2>
+        <div class="switch">
+          <label><input id="dxAfter" type="checkbox"> ΔX after HP (aggressive edge)</label>
+          <label><input id="absRho" type="checkbox" checked> λ + redundancy use |ρ| (robust)</label>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="row">
+          <div class="field">
+            <label>1) 23andMe raw data (.txt) <span class="v" id="fileLabel">no file</span></label>
+            <input id="file" type="file" accept=".txt,.tsv,text/plain" />
+            <div class="hint">Tip: paste Watchlist / Traits first if you want lookup during parse. If you edit watch/traits after a run, DNA11 will auto-scan lookup only (fast-ish) on next run.</div>
+          </div>
+
+          <div class="two">
+
+            <div class="field">
+              <label>Short window (kb) — LD-ish <span class="v" id="wShortLbl">50 kb</span></label>
+              <input id="wShortKb" type="range" min="10" max="200" step="1" value="50" />
+              <div class="hint">Smaller = sharper/noisier. Default 50kb.</div>
+            </div>
+
+            <div class="field">
+              <label>Long window (Mb) — haplotype-ish <span class="v" id="wLongLbl">1.00 Mb</span></label>
+              <input id="wLongMb" type="range" min="0.25" max="3.00" step="0.05" value="1.00" />
+              <div class="hint">Captures longer-scale structure. Default 1.00Mb.</div>
+            </div>
+
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label>Max lag (windows) <span class="v" id="maxLagLbl">200</span></label>
+              <input id="maxLag" type="range" min="30" max="320" step="5" value="200" />
+              <div class="hint">More lag = smoother curves, more compute.</div>
+            </div>
+
+            <div class="field">
+              <label>ρ cutoff (abs-ρ) for redundancy <span class="v" id="rhoLbl">0.020</span></label>
+              <input id="rhoCut" type="range" min="0.001" max="0.060" step="0.001" value="0.020" />
+              <div class="hint">Stops correlation-time sum to avoid inflation. (You can test 0.006 safely.)</div>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label>High-pass window (hpWin, windows) <span class="v" id="hpLbl">9</span></label>
+              <input id="hpWin" type="range" min="3" max="21" step="1" value="9" />
+              <div class="hint">Detrending so “smoothness” ≠ “redundancy”.</div>
+            </div>
+
+            <div class="field">
+              <label>Per-chr stability lag (windows) <span class="v" id="chrLagLbl">30</span></label>
+              <input id="chrLag" type="range" min="10" max="120" step="2" value="30" />
+              <div class="hint">Per-chromosome λ quartiles (median + IQR).</div>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label>SNP sanity step (keep ~1 in N SNPs) <span class="v" id="snpLbl">8</span></label>
+              <input id="snpStep" type="range" min="1" max="16" step="1" value="8" />
+              <div class="hint">Faster on phones. Lower = heavier.</div>
+            </div>
+
+            <div class="field">
+              <label>AutoTest IQR tolerance (±%) <span class="v" id="tolLbl">±2%</span></label>
+              <input id="tolPct" type="range" min="0" max="6" step="0.25" value="2" />
+              <div class="hint">“Practically equal” stability bucket before tie-breakers.</div>
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label>Watchlist rsIDs (lookup-only) <span class="v mono">rsID per line</
+<!-- DNA11_MACRO_MODE_PATCH_v1 -->
+<div class="row dna-macro-row">
+  <div class="lbl">
+    Aggressive Macro Mode
+    <div class="hint">Sets <b>hpWin=3</b> and <b>chrLag=78</b> (macro-scale smoothing). Default stays hpWin=9, chrLag=30.</div>
+  </div>
+  <label class="toggle">
+    <input id="macroMode" type="checkbox" />
+    <span class="track"><span class="knob"></span></span>
+    <span class="tlabel">OFF</span>
+  </label>
+</div>
+span></label>
+              <textarea id="watch" placeholder="rs12913832&#10;rs1426654&#10;rs4988235"></textarea>
+              <div class="hint">Outputs genotype + chr:pos if found. No external databases.</div>
+            </div>
+
+            <div class="field">
+              <label>Trait weights (rsID effect_allele beta) <span class="v mono">3 columns</span></label>
+              <textarea id="traits" placeholder="rs12913832 G 0.10&#10;rs12913832 G -0.10&#10;rs762551 A 0.10"></textarea>
+              <div class="hint">You supply effect allele + beta. We compute dose(effect_allele) × beta. Missing ignored.</div>
+            </div>
+          </div>
+
+          <div class="status" id="status">
+            Status: <b>idle</b> · Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Outputs</h2>
+        <div class="badge">Clear + concise KPIs + plots + copy/paste readout</div>
+      </div>
+
+      <div class="bd">
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="t">Mainstream D_raw (called)</div>
+            <div class="v" id="kDraw">—</div>
+            <div class="s" id="kMiss">Missing: —</div>
+          </div>
+          <div class="kpi">
+            <div class="t">QDS D_eff (effective independent)</div>
+            <div class="v" id="kDeff">—</div>
+            <div class="s" id="kRed">Redundancy (win / SNP): —</div>
+          </div>
+          <div class="kpi">
+            <div class="t">AutoTest decision 🧬</div>
+            <div class="v" id="kDecision">—</div>
+            <div class="s" id="kLookup">Lookup: watchHits=0, traitFound=0/0.</div>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="kpi">
+          <div class="t">λ_g short / long + stability</div>
+          <div class="s mono" id="kLambda">—</div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="plots">
+          <canvas id="plotShort" width="900" height="360"></canvas>
+          <canvas id="plotLong" width="900" height="360"></canvas>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="outbox">
+          <div class="badge"><b>Readout:</b> JSON + AutoTest grid + watch/trait hits</div>
+        </div>
+        <textarea id="readout" class="readout" spellcheck="false"></textarea>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =========================
+   DNA11 PRO — Core engine
+   Offline. No external calls.
+   ========================= */
+
+const E_INV = 1 / Math.E;
+
+const CHR_ORDER = (() => {
+  const a = [];
+  for (let i=1;i<=22;i++) a.push(String(i));
+  a.push("X","Y","MT","M");
+  return a;
+})();
+
+const $ = (id)=>document.getElementById(id);
+
+const state = {
+  file: null,
+  parsed: false,
+  parseCfgKey: "",
+  // per chr raw window signals
+  rawShort: new Map(), // chr -> Float32Array
+  rawLong:  new Map(),
+  // per chr snp sanity signal
+  snpSig:   new Map(), // chr -> Float32Array
+  // counts
+  called: 0,
+  missing: 0,
+  missingRate: 0,
+  perChrCounts: new Map(), // chr -> {called, missing}
+  // lookup
+  lookupKey: "",
+  rsHits: new Map(), // rsid -> {chr,pos,gt}
+  // last result
+  last: null,
+  lastGrid: null
+};
+
+function fmtInt(n){
+  if (!Number.isFinite(n)) return "—";
+  return Math.round(n).toLocaleString("en-GB");
+}
+function fmtPct(x){
+  if (!Number.isFinite(x)) return "—";
+  return (100*x).toFixed(2) + "%";
+}
+function fmtBP(x){
+  if (!Number.isFinite(x)) return "—";
+  if (x >= 1e6) return (x/1e6).toFixed(2) + " Mb";
+  if (x >= 1e3) return (x/1e3).toFixed(1) + " kb";
+  return Math.round(x) + " bp";
+}
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+function setStatus(html){
+  $("status").innerHTML = html;
+}
+function statusBusy(msg){
+  setStatus(`Status: <b class="ok">${msg}</b> · Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.`);
+}
+function statusWarn(msg){
+  setStatus(`Status: <b class="warn">${msg}</b> · Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.`);
+}
+function statusIdle(msg="idle"){
+  setStatus(`Status: <b>${msg}</b> · Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.`);
+}
+
+function readControls(){
+  const wShortKb = parseFloat($("wShortKb").value);
+  const wLongMb  = parseFloat($("wLongMb").value);
+  const maxLag   = parseInt($("maxLag").value,10);
+  const rhoCut   = parseFloat($("rhoCut").value);
+  const hpWin    = parseInt($("hpWin").value,10);
+  const chrLag   = parseInt($("chrLag").value,10);
+  const snpStep  = parseInt($("snpStep").value,10);
+  const tolPct   = parseFloat($("tolPct").value);
+  const dxAfter  = !!$("dxAfter").checked;
+  const absRho   = !!$("absRho").checked;
+
+  return {
+    wShortBp: Math.round(wShortKb*1000),
+    wLongBp : Math.round(wLongMb*1e6),
+    maxLag  : clamp(maxLag, 30, 400),
+    rhoCut  : clamp(rhoCut, 0.001, 0.200),
+    hpWin   : clamp(hpWin, 3, 51),
+    chrLag  : clamp(chrLag, 5, 120),
+    snpStep : clamp(snpStep, 1, 64),
+    tolPct  : clamp(tolPct, 0, 20),
+    dxAfter,
+    absRho
+  };
+}
+
+function makeParseCfgKey(cfg){
+  // parsing depends on window sizes + snpStep (for sanity lane arrays)
+  return `${cfg.wShortBp}|${cfg.wLongBp}|${cfg.snpStep}`;
+}
+
+function normalizeRsid(s){
+  s = (s||"").trim();
+  if (!s) return null;
+  if (/^rs\d+$/i.test(s)) return s.toLowerCase();
+  return null;
+}
+
+function parseWatchlist(){
+  const t = $("watch").value || "";
+  const out = [];
+  for (const raw of t.split(/[\s,]+/g)){
+    const r = normalizeRsid(raw);
+    if (r) out.push(r);
+  }
+  // unique
+  return Array.from(new Set(out));
+}
+
+function parseTraits(){
+  const t = $("traits").value || "";
+  const rows = [];
+  for (const line of t.split(/\r?\n/g)){
+    const s = line.trim();
+    if (!s) continue;
+    if (s.startsWith("#")) continue;
+    const parts = s.split(/[\s,]+/g).filter(Boolean);
+    if (parts.length < 3) continue;
+    const rs = normalizeRsid(parts[0]);
+    const ea = (parts[1]||"").trim().toUpperCase();
+    const beta = parseFloat(parts[2]);
+    if (!rs) continue;
+    if (!/^[ACGT]$/.test(ea)) continue;
+    if (!Number.isFinite(beta)) continue;
+    rows.push({rsid: rs, ea, beta});
+  }
+  return rows;
+}
+
+function makeLookupKey(watchArr, traitRows){
+  const w = watchArr.slice().sort().join(",");
+  const t = traitRows.slice().sort((a,b)=>a.rsid.localeCompare(b.rsid)||a.ea.localeCompare(b.ea)||a.beta-b.beta)
+    .map(x=>`${x.rsid}:${x.ea}:${x.beta}`).join(",");
+  return `W=${w}|T=${t}`;
+}
+
+function entropy2(p1,p2){
+  // two-state entropy in bits
+  let H = 0;
+  if (p1>0) H -= p1*Math.log2(p1);
+  if (p2>0) H -= p2*Math.log2(p2);
+  return H;
+}
+
+function highPass(x, win){
+  // subtract moving average. O(n).
+  const n = x.length;
+  if (win <= 1 || n < 3) return x.slice();
+  const w = Math.max(2, Math.round(win));
+  const out = new Float32Array(n);
+  const c = new Float64Array(n+1);
+  for (let i=0;i<n;i++) c[i+1]=c[i]+x[i];
+  const half = Math.floor(w/2);
+  for (let i=0;i<n;i++){
+    const a = Math.max(0, i-half);
+    const b = Math.min(n, i+half+1);
+    const m = (c[b]-c[a])/(b-a);
+    out[i] = x[i] - m;
+  }
+  return out;
+}
+
+function diff1(x){
+  const n = x.length;
+  if (n < 2) return x.slice();
+  const out = new Float32Array(n);
+  out[0]=0;
+  for (let i=1;i<n;i++) out[i]=x[i]-x[i-1];
+  return out;
+}
+
+function autocorr(x, maxLag){
+  const n = x.length;
+  const L = Math.min(maxLag, n-1);
+  const rho = new Float32Array(L+1);
+  // mean
+  let mean=0;
+  for (let i=0;i<n;i++) mean += x[i];
+  mean /= n;
+  // var
+  let v=0;
+  for (let i=0;i<n;i++){ const d=x[i]-mean; v += d*d; }
+  v /= n;
+  if (!(v>0)){
+    rho[0]=1;
+    for (let k=1;k<=L;k++) rho[k]=0;
+    return rho;
+  }
+  rho[0]=1;
+  for (let k=1;k<=L;k++){
+    let s=0;
+    const m = n-k;
+    for (let i=0;i<m;i++){
+      s += (x[i]-mean)*(x[i+k]-mean);
+    }
+    s /= m;
+    rho[k] = s / v;
+  }
+  return rho;
+}
+
+function median(arr){
+  if (!arr.length) return NaN;
+  const a = arr.slice().sort((x,y)=>x-y);
+  const m = Math.floor(a.length/2);
+  return (a.length%2)? a[m] : 0.5*(a[m-1]+a[m]);
+}
+function quantiles(arr){
+  // returns p25 p50 p75
+  if (!arr.length) return {n:0,p25:NaN,p50:NaN,p75:NaN};
+  const a = arr.slice().sort((x,y)=>x-y);
+  const q = (p)=>{
+    const i = (a.length-1)*p;
+    const lo = Math.floor(i), hi = Math.ceil(i);
+    if (lo===hi) return a[lo];
+    const t = i-lo;
+    return a[lo]*(1-t)+a[hi]*t;
+  };
+  return {n:a.length,p25:q(0.25),p50:q(0.50),p75:q(0.75)};
+}
+
+function lambdaFromRho(rho, winBp, useAbs=true){
+  const L = rho.length-1;
+  const f = (k)=> useAbs ? Math.abs(rho[k]) : rho[k];
+  const target = E_INV;
+  for (let k=1;k<=L;k++){
+    const a = f(k-1), b = f(k);
+    if (b <= target){
+      // interpolate between k-1 and k (linear)
+      const denom = (b - a);
+      const t = (Math.abs(denom) < 1e-9) ? 0 : (target - a)/denom;
+      const kk = (k-1) + clamp(t,0,1);
+      return kk * winBp;
+    }
+  }
+  return L * winBp;
+}
+
+function redundancyFromRho(rho, rhoCut, useAbs=true){
+  let sum=0;
+  let below=0;
+  const needBelow=5;
+  for (let k=1;k<rho.length;k++){
+    const v = useAbs ? Math.abs(rho[k]) : rho[k];
+    if (v < rhoCut){
+      below++;
+      if (below >= needBelow) break;
+      continue;
+    }
+    below=0;
+    sum += v;
+  }
+  const red = 1 + 2*sum;
+  return Math.max(1, red);
+}
+
+function drawPlot(canvas, rhoMed, title){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // frame
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = "rgba(255,255,255,.10)";
+  ctx.lineWidth = 2;
+  roundRect(ctx, 10, 10, W-20, H-20, 18);
+  ctx.stroke();
+
+  // title
+  ctx.fillStyle = "rgba(233,240,255,.92)";
+  ctx.font = "700 16px system-ui, -apple-system, Segoe UI, Roboto";
+  ctx.fillText(title, 24, 38);
+
+  // axes box
+  const x0=24, y0=H-38, x1=W-24, y1=56;
+  ctx.strokeStyle = "rgba(255,255,255,.10)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(x0,y1); ctx.lineTo(x0,y0); ctx.lineTo(x1,y0);
+  ctx.stroke();
+
+  // y ticks
+  ctx.fillStyle="rgba(159,176,210,.85)";
+  ctx.font="12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas";
+  for (const yy of [1.0,0.5,0.0,-0.5]){
+    const y = mapY(yy, y1, y0);
+    ctx.strokeStyle="rgba(255,255,255,.06)";
+    ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    ctx.fillText(yy.toFixed(1), x0-6-ctx.measureText(yy.toFixed(1)).width, y+4);
+  }
+  // 1/e line
+  ctx.strokeStyle="rgba(0,255,156,.30)";
+  ctx.beginPath();
+  ctx.moveTo(x0, mapY(E_INV, y1, y0));
+  ctx.lineTo(x1, mapY(E_INV, y1, y0));
+  ctx.stroke();
+
+  if (!rhoMed || rhoMed.length < 2) return;
+
+  // plot
+  const n = rhoMed.length;
+  const xs = (i)=> x0 + (x1-x0)*(i/(n-1));
+  const ys = (v)=> mapY(v, y1, y0);
+
+  // glow underlay
+  ctx.strokeStyle="rgba(0,179,255,.20)";
+  ctx.lineWidth=6;
+  ctx.beginPath();
+  for (let i=0;i<n;i++){
+    const x=xs(i), y=ys(rhoMed[i]);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // main line
+  ctx.strokeStyle="rgba(0,179,255,.85)";
+  ctx.lineWidth=2.2;
+  ctx.beginPath();
+  for (let i=0;i<n;i++){
+    const x=xs(i), y=ys(rhoMed[i]);
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // label end
+  ctx.fillStyle="rgba(159,176,210,.85)";
+  ctx.font="12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas";
+  ctx.fillText(`lags: 0..${n-1}`, x1-110, y1+14);
+
+  function mapY(v, top, bot){
+    const vv = clamp(v, -1, 1);
+    return bot - (vv+1)/2*(bot-top);
+  }
+  function roundRect(ctx, x, y, w, h, r){
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y, x+w,y+h, r);
+    ctx.arcTo(x+w,y+h, x,y+h, r);
+    ctx.arcTo(x,y+h, x,y, r);
+    ctx.arcTo(x,y, x+w,y, r);
+    ctx.closePath();
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y, x+w,y+h, r);
+  ctx.arcTo(x+w,y+h, x,y+h, r);
+  ctx.arcTo(x,y+h, x,y, r);
+  ctx.arcTo(x,y, x+w,y, r);
+  ctx.closePath();
+}
+
+/* =========================
+   Parsing (build raw signals once)
+   ========================= */
+
+async function readFileText(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onerror = ()=>reject(fr.error);
+    fr.onload = ()=>resolve(fr.result);
+    fr.readAsText(file);
+  });
+}
+
+function initParseState(){
+  state.rawShort.clear();
+  state.rawLong.clear();
+  state.snpSig.clear();
+  state.perChrCounts.clear();
+  state.rsHits.clear();
+  state.called=0;
+  state.missing=0;
+  state.missingRate=0;
+  state.parsed=false;
+}
+
+function chrNorm(chr){
+  if (!chr) return null;
+  chr = String(chr).trim().toUpperCase();
+  if (chr.startsWith("CHR")) chr = chr.slice(3);
+  if (chr === "MT") return "MT";
+  if (chr === "M") return "MT";
+  // allow 1..22 X Y
+  if (/^\d+$/.test(chr)){
+    const n = parseInt(chr,10);
+    if (n>=1 && n<=22) return String(n);
+    return null;
+  }
+  if (chr==="X" || chr==="Y") return chr;
+  return null;
+}
+
+function buildWindowSignalsFromMaps(map, wBp){
+  const keys = Array.from(map.keys());
+  if (!keys.length) return null;
+  keys.sort((a,b)=>a-b);
+  const min = keys[0], max = keys[keys.length-1];
+  const len = max-min+1;
+
+  // compute mean of existing for impute
+  let mu=0, cnt=0;
+  for (const k of keys){
+    const r = map.get(k);
+    const n = r.n || 0;
+    if (n>0){
+      const pHet = r.het/n;
+      const pHom = r.hom/n;
+      const H = entropy2(pHet, pHom);
+      const chg = (n>1) ? r.chg/(n-1) : 0;
+      const hetRate = pHet;
+      const X = 0.45*H + 0.35*chg + 0.20*hetRate;
+      mu += X; cnt++;
+    }
+  }
+  mu = cnt ? (mu/cnt) : 0;
+
+  const arr = new Float32Array(len);
+  for (let i=0;i<len;i++){
+    const key = min+i;
+    const r = map.get(key);
+    if (!r || !r.n){
+      arr[i] = mu;
+      continue;
+    }
+    const n = r.n;
+    const pHet = r.het/n;
+    const pHom = r.hom/n;
+    const H = entropy2(pHet, pHom);
+    const chg = (n>1) ? r.chg/(n-1) : 0;
+    const hetRate = pHet;
+    arr[i] = 0.45*H + 0.35*chg + 0.20*hetRate;
+  }
+  return arr;
+}
+
+async function parseFileIfNeeded(cfg){
+  if (!state.file){
+    statusWarn("no file loaded");
+    throw new Error("No file");
+  }
+  const key = makeParseCfgKey(cfg);
+  if (state.parsed && state.parseCfgKey === key){
+    return; // already parsed at these parse-critical settings
+  }
+
+  initParseState();
+  state.parseCfgKey = key;
+
+  statusBusy("parsing 23andMe TXT…");
+
+  const fileText = await readFileText(state.file);
+  const lines = fileText.split(/\r?\n/g);
+
+  const wS = cfg.wShortBp;
+  const wL = cfg.wLongBp;
+  const snpStep = cfg.snpStep;
+
+  // build maps
+  const shortMaps = new Map(); // chr -> Map(win->{n,het,hom,chg})
+  const longMaps  = new Map();
+
+  // snp sanity arrays (heterozygosity signal)
+  const snpTemp = new Map(); // chr -> Array<number>
+  const snpCtr  = new Map(); // chr -> count
+
+  // change tracking
+  const prevGt = new Map();
+
+  // lookup sets (for hits during parse)
+  const watch = parseWatchlist();
+  const traits = parseTraits();
+  const lookupSet = new Set([...watch, ...traits.map(t=>t.rsid)]);
+  const lookupKey = makeLookupKey(watch, traits);
+  state.lookupKey = lookupKey;
+
+  // init per-chr counts
+  for (const c of CHR_ORDER){
+    state.perChrCounts.set(c, {called:0, missing:0});
+    shortMaps.set(c, new Map());
+    longMaps.set(c, new Map());
+    snpTemp.set(c, []);
+    snpCtr.set(c, 0);
+    prevGt.set(c, "");
+  }
+
+  // parse
+  let called=0, missing=0;
+  for (let i=0;i<lines.length;i++){
+    const line = lines[i];
+    if (!line || line[0]==="#") continue;
+    const p = line.split(/\s+/g);
+    if (p.length < 4) continue;
+    const rsid = normalizeRsid(p[0]);
+    const chr = chrNorm(p[1]);
+    const pos = parseInt(p[2],10);
+    const gtRaw = (p[3]||"").trim().toUpperCase();
+    if (!rsid || !chr || !Number.isFinite(pos)) continue;
+
+    const per = state.perChrCounts.get(chr) || {called:0, missing:0};
+
+    const isMissing = (gtRaw==="--" || gtRaw==="00" || gtRaw==="NN" || gtRaw.length<2);
+    if (isMissing){
+      missing++;
+      per.missing++;
+      state.perChrCounts.set(chr, per);
+      continue;
+    }
+
+    // genotype category
+    const a = gtRaw[0], b = gtRaw[1];
+    const isHet = (a !== b) ? 1 : 0;
+    const isHom = 1 - isHet;
+
+    called++;
+    per.called++;
+    state.perChrCounts.set(chr, per);
+
+    // SNP sanity sampling signal = het indicator
+    const ccount = (snpCtr.get(chr)||0) + 1;
+    snpCtr.set(chr, ccount);
+    if ((ccount % snpStep) === 0){
+      snpTemp.get(chr).push(isHet);
+    }
+
+    // window updates
+    const wsi = Math.floor(pos / wS);
+    const wli = Math.floor(pos / wL);
+
+    const sm = shortMaps.get(chr);
+    const lm = longMaps.get(chr);
+
+    const rS = sm.get(wsi) || {n:0, het:0, hom:0, chg:0};
+    const rL = lm.get(wli) || {n:0, het:0, hom:0, chg:0};
+
+    rS.n++; rS.het += isHet; rS.hom += isHom;
+    rL.n++; rL.het += isHet; rL.hom += isHom;
+
+    const prev = prevGt.get(chr);
+    if (prev && prev !== gtRaw){
+      rS.chg++;
+      rL.chg++;
+    }
+    prevGt.set(chr, gtRaw);
+
+    sm.set(wsi, rS);
+    lm.set(wli, rL);
+
+    // lookup hits
+    if (lookupSet.has(rsid)){
+      state.rsHits.set(rsid, {chr, pos, gt: gtRaw});
+    }
+  }
+
+  state.called = called;
+  state.missing = missing;
+  state.missingRate = called>0 ? (missing/(called+missing)) : 0;
+
+  // build raw window signals
+  for (const chr of CHR_ORDER){
+    const sArr = buildWindowSignalsFromMaps(shortMaps.get(chr), wS);
+    const lArr = buildWindowSignalsFromMaps(longMaps.get(chr), wL);
+    if (sArr && sArr.length>=8) state.rawShort.set(chr, sArr);
+    if (lArr && lArr.length>=8) state.rawLong.set(chr, lArr);
+
+    const sn = snpTemp.get(chr);
+    if (sn && sn.length>=64){
+      const f = new Float32Array(sn.length);
+      for (let i=0;i<sn.length;i++) f[i]=sn[i];
+      state.snpSig.set(chr, f);
+    }
+  }
+
+  state.parsed = true;
+
+  statusIdle(`parsed · called=${fmtInt(state.called)} missing=${fmtInt(state.missing)} (${fmtPct(state.missingRate)})`);
+}
+
+/* =========================
+   Lookup-only scan (if watch/traits changed after parse)
+   Does not rebuild signals — just finds rsIDs.
+   ========================= */
+
+async function scanLookupIfNeeded(){
+  if (!state.file) return;
+  const watch = parseWatchlist();
+  const traits = parseTraits();
+  const newKey = makeLookupKey(watch, traits);
+  if (newKey === state.lookupKey) return; // already matched
+  // scan only for rsIDs
+  const want = new Set([...watch, ...traits.map(t=>t.rsid)]);
+  state.lookupKey = newKey;
+  state.rsHits.clear();
+
+  if (!want.size) return;
+
+  statusBusy("lookup scan… (rsID watch/traits)");
+  const txt = await readFileText(state.file);
+  const lines = txt.split(/\r?\n/g);
+  let found=0;
+  for (const line of lines){
+    if (!line || line[0]==="#") continue;
+    const p = line.split(/\s+/g);
+    if (p.length<4) continue;
+    const rsid = normalizeRsid(p[0]);
+    if (!rsid || !want.has(rsid)) continue;
+    const chr = chrNorm(p[1]);
+    const pos = parseInt(p[2],10);
+    const gt = (p[3]||"").trim().toUpperCase();
+    if (!chr || !Number.isFinite(pos) || !gt || gt==="--") continue;
+    state.rsHits.set(rsid, {chr, pos, gt});
+    found++;
+    if (found >= want.size) break; // early exit if all found
+  }
+  statusIdle(`lookup updated · hits=${found}/${want.size}`);
+}
+
+/* =========================
+   Metrics compute (fast, uses raw signals)
+   ========================= */
+
+function computeScale(rawMap, cfg, winBp, maxLag){
+  const lambdas = [];
+  const rhos = [];
+  for (const [chr, raw] of rawMap.entries()){
+    let x = raw;
+    x = highPass(x, cfg.hpWin);
+    if (cfg.dxAfter) x = diff1(x);
+    const rho = autocorr(x, maxLag);
+    rhos.push(rho);
+    const lam = lambdaFromRho(rho, winBp, cfg.absRho);
+    if (Number.isFinite(lam)) lambdas.push(lam);
+  }
+
+  // median rho across chromosomes
+  let rhoMed = null;
+  if (rhos.length){
+    const L = rhos[0].length;
+    rhoMed = new Float32Array(L);
+    for (let k=0;k<L;k++){
+      const vals = [];
+      for (const r of rhos) vals.push(r[k]);
+      rhoMed[k] = median(vals);
+    }
+  }
+
+  const q = quantiles(lambdas);
+  const iqr = (Number.isFinite(q.p75) && Number.isFinite(q.p25)) ? (q.p75 - q.p25) : NaN;
+  const red = rhoMed ? redundancyFromRho(rhoMed, cfg.rhoCut, cfg.absRho) : 1;
+
+  return { rhoMed, q, iqr, red };
+}
+
+function computeSnpSanity(cfg){
+  // median autocorr across chromosomes for SNP sanity lane
+  const rhos = [];
+  for (const [chr, sig] of state.snpSig.entries()){
+    const rho = autocorr(sig, Math.min(cfg.maxLag, 320));
+    rhos.push(rho);
+  }
+  if (!rhos.length){
+    return { redSnp: 1, rhoMedSnp: new Float32Array([1,0]) };
+  }
+  const L = rhos[0].length;
+  const rhoMed = new Float32Array(L);
+  for (let k=0;k<L;k++){
+    const vals = [];
+    for (const r of rhos) vals.push(r[k]);
+    rhoMed[k] = median(vals);
+  }
+  const redSnp = redundancyFromRho(rhoMed, cfg.rhoCut, cfg.absRho);
+  return { redSnp, rhoMedSnp: rhoMed };
+}
+
+function traitAndWatchSummary(cfg){
+  const watch = parseWatchlist();
+  const traits = parseTraits();
+
+  const hits = [];
+  for (const r of watch){
+    const h = state.rsHits.get(r);
+    if (h) hits.push(`${r}: ${h.gt} (chr${h.chr}:${h.pos})`);
+  }
+
+  // trait scoring + unique windows
+  let score = 0;
+  let found = 0;
+  const uniqShort = new Set();
+  const uniqLong = new Set();
+  const contrib = [];
+
+  for (const t of traits){
+    const h = state.rsHits.get(t.rsid);
+    if (!h) continue;
+    const gt = h.gt;
+    if (!gt || gt==="--") continue;
+
+    const dose = (gt[0]===t.ea ? 1:0) + (gt[1]===t.ea ? 1:0);
+    const val = dose * t.beta;
+    score += val;
+    found++;
+
+    const ws = Math.floor(h.pos / cfg.wShortBp);
+    const wl = Math.floor(h.pos / cfg.wLongBp);
+    uniqShort.add(`${h.chr}:${ws}`);
+    uniqLong.add(`${h.chr}:${wl}`);
+
+    contrib.push({
+      rsid: t.rsid, chr: h.chr, pos: h.pos, gt, ea: t.ea, beta: t.beta, dose, val
+    });
+  }
+
+  contrib.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+  const top = contrib.slice(0, 12);
+
+  const traitRedShort = found ? (found / Math.max(1, uniqShort.size)) : 1;
+
+  return {
+    watchProvided: watch.length,
+    watchHits: hits.length,
+    watchHitsList: hits,
+    traitProvided: traits.length,
+    traitFound: found,
+    traitScore: score,
+    uniqueShort: uniqShort.size,
+    uniqueLong: uniqLong.size,
+    traitRedShort,
+    top
+  };
+}
+
+function computeResult(cfg, modeLabel){
+  // scales
+  const short = computeScale(state.rawShort, cfg, cfg.wShortBp, cfg.maxLag);
+  const long  = computeScale(state.rawLong,  cfg, cfg.wLongBp,  cfg.maxLag);
+
+  // snp sanity
+  const snp = computeSnpSanity(cfg);
+
+  const dEff = state.called / Math.max(1, short.red);
+
+  const lookup = traitAndWatchSummary(cfg);
+
+  const res = {
+    version: "DNA11_market_edition",
+    timestamp: new Date().toISOString(),
+    mode: modeLabel,
+    called: state.called,
+    missing: state.missing,
+    missing_rate: state.missingRate,
+    w_short_bp: cfg.wShortBp,
+    w_long_bp: cfg.wLongBp,
+    detrend: "hp",
+    hpWin: cfg.hpWin,
+    rhoCut: cfg.rhoCut,
+    maxLag: cfg.maxLag,
+    chrLag: cfg.chrLag,
+    snpStep: cfg.snpStep,
+    lambda_short_bp: short.q.p50,
+    lambda_long_bp: long.q.p50,
+    redundancy_window: short.red,
+    redundancy_snp: snp.redSnp,
+    d_eff: dEff,
+    stability_short_q: { ...short.q },
+    stability_long_q:  { ...long.q },
+    decision: modeLabel === "auto" ? "AutoTest decision pending" : "single run",
+    trait: {
+      provided: lookup.traitProvided,
+      found: lookup.traitFound,
+      score: lookup.traitScore,
+      unique_windows_short: lookup.uniqueShort,
+      unique_windows_long: lookup.uniqueLong,
+      trait_redundancy_short: lookup.traitRedShort,
+      top: lookup.top
+    },
+    watchlist_hits: lookup.watchHitsList,
+    _rho_short_med: short.rhoMed,
+    _rho_long_med: long.rhoMed
+  };
+
+  return { res, short, long, snp, lookup };
+}
+
+/* =========================
+   AutoTest selection logic (unbiased & accuracy-first)
+   Primary: minimise IQR_short (stability-first)
+   Gate: candidates within tol% of min IQR_short
+   Secondary: minimise relative IQR_long (avoid short-only gaming)
+   Tie-break: pick D_eff closest to median D_eff (anti-extremes)
+   ========================= */
+
+function pickAutoBest(rows, tolPct){
+  if (!rows.length) return null;
+
+  // compute IQR_short
+  const iqrS = rows.map(r => r.res.stability_short_q.p75 - r.res.stability_short_q.p25);
+  const minI = Math.min(...iqrS.filter(Number.isFinite));
+  const tol = (tolPct/100) * minI;
+
+  // bucket = within tolerance
+  const bucket = rows.filter((r, idx)=>{
+    const i = (r.res.stability_short_q.p75 - r.res.stability_short_q.p25);
+    return Number.isFinite(i) && (i <= minI + tol);
+  });
+
+  const cand = bucket.length ? bucket : rows;
+
+  // secondary metric: relative IQR_long
+  for (const r of cand){
+    const qL = r.res.stability_long_q;
+    const iL = (qL.p75 - qL.p25);
+    const mL = qL.p50;
+    r._relLong = (Number.isFinite(iL) && Number.isFinite(mL) && mL>0) ? (iL/mL) : Infinity;
+    const qS = r.res.stability_short_q;
+    const iS = (qS.p75 - qS.p25);
+    const mS = qS.p50;
+    r._relShort = (Number.isFinite(iS) && Number.isFinite(mS) && mS>0) ? (iS/mS) : Infinity;
+    // combined stability (used for reporting)
+    r._stab = r._relShort + 0.6*r._relLong;
+  }
+
+  // find best relLong among cand
+  let bestRel = Math.min(...cand.map(r=>r._relLong));
+  const cand2 = cand.filter(r=>r._relLong <= bestRel * 1.0000001);
+
+  // tie-break: D_eff closeness to median D_eff
+  const deffs = cand2.map(r=>r.res.d_eff).filter(Number.isFinite).sort((a,b)=>a-b);
+  const medDeff = deffs.length ? median(deffs) : NaN;
+  for (const r of cand2){
+    r._deffDist = Number.isFinite(medDeff) ? Math.abs(r.res.d_eff - medDeff) : 0;
+  }
+  cand2.sort((a,b)=> (a._deffDist - b._deffDist) || (a._stab - b._stab));
+
+  const best = cand2[0];
+  best._minIQRshort = minI;
+  best._tolAbs = tol;
+  best._medDeff = medDeff;
+  return best;
+}
+
+/* =========================
+   Render
+   ========================= */
+
+function render(resObj, gridRows=null){
+  const r = resObj.res;
+
+  $("kDraw").textContent = fmtInt(r.called);
+  $("kMiss").textContent = `Missing: ${fmtInt(r.missing)} (${fmtPct(r.missing_rate)})`;
+  $("kDeff").textContent = fmtInt(r.d_eff);
+  $("kRed").textContent = `Redundancy (win / SNP): ${r.redundancy_window.toFixed(3)}× / ${r.redundancy_snp.toFixed(3)}×`;
+
+  $("kDecision").textContent = r.decision === "single run" ? "single run" : r.decision;
+  $("kLookup").textContent = `Lookup updated: watchHits=${r.watchlist_hits.length}, traitFound=${r.trait.found}/${r.trait.provided}.`;
+
+  const s = r.stability_short_q;
+  const l = r.stability_long_q;
+  const lamLine =
+    `λ short: ${fmtBP(r.lambda_short_bp)} · med ${fmtBP(s.p50)} | IQR ${fmtBP(s.p25)}–${fmtBP(s.p75)} | n=${s.n}\n` +
+    `λ long : ${fmtBP(r.lambda_long_bp)} · med ${fmtBP(l.p50)} | IQR ${fmtBP(l.p25)}–${fmtBP(l.p75)} | n=${l.n}`;
+  $("kLambda").textContent = lamLine;
+
+  // plots
+  drawPlot($("plotShort"), r._rho_short_med, "Autocorrelation ρ(k) — short (median across chromosomes)");
+  drawPlot($("plotLong"),  r._rho_long_med,  "Autocorrelation ρ(k) — long (median across chromosomes)");
+
+  // readout
+  const clean = {...r};
+  delete clean._rho_short_med;
+  delete clean._rho_long_med;
+
+  let text = `DNA11 PRO — QDS Genomics Coherence Lab (Market Edition) 🧬\n` +
+             `Reality check: structure-aware summariser. Not clinical. Not PRS. No external calls.\n\n` +
+             `${r.decision}\n\n` +
+             JSON.stringify(clean, null, 2) + "\n\n";
+
+  if (gridRows && gridRows.length){
+    text += `AutoTest grid (tab-separated)\n`;
+    text += `rhoCut\thpWin\tlambda_short_bp\tred_win\tD_eff\tred_snp\tIQR_short_bp\tIQR_long_bp\tstab\n`;
+    for (const row of gridRows){
+      const rr = row.res;
+      const iS = rr.stability_short_q.p75 - rr.stability_short_q.p25;
+      const iL = rr.stability_long_q.p75 - rr.stability_long_q.p25;
+      text += `${rr.rhoCut.toFixed(3)}\t${rr.hpWin}\t${Math.round(rr.lambda_short_bp)}\t${rr.redundancy_window.toFixed(3)}\t${Math.round(rr.d_eff)}\t${rr.redundancy_snp.toFixed(3)}\t${Math.round(iS)}\t${Math.round(iL)}\t${(row._stab??0).toExponential(3)}\n`;
+    }
+    text += "\n";
+  }
+
+  text += `Watchlist hits (${r.watchlist_hits.length})\n` + (r.watchlist_hits.join(" ") || "(none)") + "\n\n";
+  text += `Trait contributions (top)\n`;
+  if (r.trait.top && r.trait.top.length){
+    for (const t of r.trait.top){
+      text += `${t.rsid}\tchr${t.chr}:${t.pos}\tgt=${t.gt}\tea=${t.ea}\tbeta=${t.beta}\tdose=${t.dose}\tval=${t.val.toFixed(6)}\n`;
+    }
+  } else {
+    text += "(none)\n";
+  }
+
+  $("readout").value = text;
+}
+
+/* =========================
+   Run handlers
+   ========================= */
+
+async function runSingle(){
+  try{
+    $("btnSingle").disabled = true;
+    $("btnAuto").disabled = true;
+
+    const cfg = readControls(); // read live values at click-time (fixes mismatch)
+    await parseFileIfNeeded(cfg);
+    await scanLookupIfNeeded();
+
+    statusBusy("computing (single)…");
+    const pack = computeResult(cfg, "single");
+    pack.res.decision = "single run";
+    state.last = pack.res;
+    state.lastGrid = null;
+
+    render(pack, null);
+    statusIdle("done (single)");
+  } catch (e){
+    console.error(e);
+    statusWarn("error: " + (e?.message || e));
+  } finally{
+    $("btnSingle").disabled = false;
+    $("btnAuto").disabled = false;
+  }
+}
+
+async function runAuto(){
+  try{
+    $("btnSingle").disabled = true;
+    $("btnAuto").disabled = true;
+
+    const base = readControls(); // read live values at click-time
+    await parseFileIfNeeded(base);
+    await scanLookupIfNeeded();
+
+    statusBusy("AutoTest running…");
+
+    // market-safe grid: rhoCut around base + standard anchors; hpWin around base
+    const rhoGrid = uniqueSorted([
+      0.010, 0.020, 0.030,
+      base.rhoCut
+    ].map(x=>clamp(x,0.001,0.060)));
+
+    // hp grid centred with bounds
+    const hpCandidates = uniqueSorted([
+      base.hpWin-4, base.hpWin-2, base.hpWin, base.hpWin+2, base.hpWin+4,
+      5,7,9,11,13,15
+    ].map(x=>clamp(Math.round(x),3,21)));
+
+    const rows = [];
+    for (const rho of rhoGrid){
+      for (const hp of hpCandidates){
+        const cfg = {...base, rhoCut: rho, hpWin: hp};
+        const pack = computeResult(cfg, "grid");
+        rows.push(pack);
+      }
+    }
+
+    const best = pickAutoBest(rows, base.tolPct);
+    if (!best){
+      throw new Error("AutoTest produced no candidates");
+    }
+
+    // annotate decision
+    const iS = best.res.stability_short_q.p75 - best.res.stability_short_q.p25;
+    const iL = best.res.stability_long_q.p75 - best.res.stability_long_q.p25;
+
+    best.res.mode = "auto";
+    best.res.decision =
+      `AutoTest decision 🧬 hpWin=${best.res.hpWin}, rhoCut=${best.res.rhoCut.toFixed(3)} ` +
+      `(min IQR_short=${Math.round(best._minIQRshort)} bp; tol=±${base.tolPct.toFixed(2)}%; ` +
+      `relIQR_long=${(best._relLong*100).toFixed(2)}%; |D_eff-med|=${Math.round(best._deffDist||0)})`;
+
+    // render (include grid)
+    state.last = best.res;
+    state.lastGrid = rows.map(r=>{
+      r._stab = (r._relShort ?? 0) + 0.6*(r._relLong ?? 0);
+      return r;
+    });
+
+    render(best, state.lastGrid);
+    statusIdle("AutoTest complete");
+  } catch (e){
+    console.error(e);
+    statusWarn("error: " + (e?.message || e));
+  } finally{
+    $("btnSingle").disabled = false;
+    $("btnAuto").disabled = false;
+  }
+}
+
+function uniqueSorted(arr){
+  return Array.from(new Set(arr)).sort((a,b)=>a-b);
+}
+
+/* =========================
+   Clipboard
+   ========================= */
+
+async function copyReadout(){
+  const t = $("readout").value || "";
+  if (!t.trim()){
+    statusWarn("nothing to copy yet");
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(t);
+    statusIdle("copied readout ✅");
+  } catch {
+    // fallback
+    $("readout").focus();
+    $("readout").select();
+    document.execCommand("copy");
+    statusIdle("copied readout ✅");
+  }
+}
+
+/* =========================
+   UI wiring
+   ========================= */
+
+function syncLabels(){
+  $("wShortLbl").textContent = `${$("wShortKb").value} kb`;
+  $("wLongLbl").textContent = `${parseFloat($("wLongMb").value).toFixed(2)} Mb`;
+  $("maxLagLbl").textContent = `${$("maxLag").value}`;
+  $("rhoLbl").textContent = `${parseFloat($("rhoCut").value).toFixed(3)}`;
+  $("hpLbl").textContent = `${$("hpWin").value}`;
+  $("chrLagLbl").textContent = `${$("chrLag").value}`;
+  $("snpLbl").textContent = `${$("snpStep").value}`;
+  $("tolLbl").textContent = `±${parseFloat($("tolPct").value).toFixed(2)}%`;
+}
+
+["wShortKb","wLongMb","maxLag","rhoCut","hpWin","chrLag","snpStep","tolPct"].forEach(id=>{
+  $(id).addEventListener("input", syncLabels);
+});
+syncLabels();
+
+$("file").addEventListener("change", (e)=>{
+  const f = e.target.files && e.target.files[0];
+  state.file = f || null;
+  state.parsed = false;
+  state.parseCfgKey = "";
+  state.lookupKey = "";
+  $("fileLabel").textContent = f ? f.name : "no file";
+  statusIdle(f ? "file loaded" : "idle");
+});
+
+$("btnSingle").addEventListener("click", runSingle);
+$("btnAuto").addEventListener("click", runAuto);
+$("btnCopy").addEventListener("click", copyReadout);
+
+// default placeholders: control watchlist + null-control traits (bias-resistant smoke test)
+$("watch").value = [
+  "rs12913832","rs1426654","rs4988235","rs762551","rs429358","rs7412","rs713598","rs1801260","rs2814778","rs3827760"
+].join("\n");
+
+$("traits").value = [
+  "rs12913832 G 0.10","rs12913832 G -0.10",
+  "rs4988235 T 0.10","rs4988235 T -0.10",
+  "rs762551 A 0.10","rs762551 A -0.10",
+  "rs429358 C 0.10","rs429358 C -0.10",
+  "rs7412 C 0.10","rs7412 C -0.10"
+].join("\n");
+
+statusIdle("ready");
+
+</script>
+
+<script>
+
+// DNA11_MACRO_MODE_PATCH_v1
+(function(){
+  function qs(id){ return document.getElementById(id); }
+  function setVal(id, v){
+    var el = qs(id);
+    if(!el) return;
+    el.value = String(v);
+    try { el.dispatchEvent(new Event('input', {bubbles:true})); } catch(e){}
+    try { el.dispatchEvent(new Event('change', {bubbles:true})); } catch(e){}
+  }
+  function refreshIfPossible(){
+    // best-effort: many builds use event listeners already; this is a gentle nudge.
+    var fns = ['scheduleRun','scheduleRecompute','queueRun','queueRecompute','recompute','render','runSingle','runDNA','run'];
+    for (var i=0;i<fns.length;i++){
+      var fn = window[fns[i]];
+      if (typeof fn === 'function'){
+        try { fn(); return; } catch(e){}
+      }
+    }
+  }
+  function applyMacro(on){
+    if(on){
+      setVal('hpWin', 3);
+      setVal('chrLag', 78);
+      var tl = document.querySelector('.dna-macro-row .tlabel'); if(tl) tl.textContent='ON';
+    } else {
+      setVal('hpWin', 9);
+      setVal('chrLag', 30);
+      var tl2 = document.querySelector('.dna-macro-row .tlabel'); if(tl2) tl2.textContent='OFF';
+    }
+    refreshIfPossible();
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var mm = qs('macroMode');
+    if(!mm) return;
+    mm.addEventListener('change', function(){ applyMacro(!!mm.checked); });
+
+    // ensure defaults are sane on load
+    setTimeout(function(){
+      var hp = qs('hpWin'), cl = qs('chrLag');
+      if(hp && (!hp.value || hp.value === '0')) setVal('hpWin', 9);
+      if(cl && (!cl.value || cl.value === '0')) setVal('chrLag', 30);
+    }, 50);
+  });
+})();
+
+</script>
+
+<script>
+
+/* === DNA11_SPAN_KILL_v1 === */
+(function(){
+  let t=null;
+  function kill(){
+    try{
+      const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      const dead=[];
+      while(w.nextNode()){
+        const v = (w.currentNode.nodeValue||"").trim();
+        if(v === "span>") dead.push(w.currentNode);
+      }
+      dead.forEach(n => n.parentNode && n.parentNode.removeChild(n));
+    }catch(e){}
+  }
+  function schedule(){
+    if(t) return;
+    t=setTimeout(()=>{ t=null; kill(); }, 80);
+  }
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded", kill);
+  } else kill();
+  setTimeout(kill, 400);
+  try{
+    const mo=new MutationObserver(schedule);
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(e){}
+})();
+
+</script>
+<!-- DNA11_SPAN_KILL_v1 -->
+
+
+<style>
+
+/* === DNA11_BOX_STABILISER_v1 === */
+:root{
+  --dna11-pre-max: 52vh;
+  --dna11-pre-pad: 12px;
+}
+/* prevent “JSON punches through card” */
+.dna11-readout pre, .dna11-readout code, .dna11-readout textarea{
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
+/* keep readout from detonating the whole page; scroll instead */
+.dna11-readout pre{
+  max-height: var(--dna11-pre-max) !important;
+  overflow: auto !important;
+  padding: var(--dna11-pre-pad) !important;
+}
+/* canvas containers behave on mobile */
+.dna11-plot canvas{
+  max-width: 100% !important;
+}
+/* if any ancestor is clipping, we override ONLY on tagged boxes */
+.dna11-autoheight{
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+</style>
+<script>
+
+/* === DNA11_BOX_STABILISER_v1 === */
+(function(){
+  let t=null;
+
+  function climbAndFix(el, steps=5){
+    let cur = el;
+    for(let i=0;i<steps && cur && cur!==document.body;i++){
+      try{
+        const cs = getComputedStyle(cur);
+        // Only fix if it looks like it might be clipping dynamic content
+        const h = cs.height || "";
+        const badHeight = h.endsWith("px") && parseFloat(h) > 0 && cur.scrollHeight > cur.clientHeight + 4;
+        const badOverflow = (cs.overflowY === "hidden" || cs.overflow === "hidden") && cur.scrollHeight > cur.clientHeight + 4;
+        if(badHeight || badOverflow){
+          cur.classList.add("dna11-autoheight");
+          // inline override beats weird css stacks
+          cur.style.height = "auto";
+          cur.style.maxHeight = "none";
+          cur.style.overflow = "visible";
+        }
+      }catch(e){}
+      cur = cur.parentElement;
+    }
+  }
+
+  function tagTargets(){
+    // “Readout” tends to be pre/code block; tag its card/ancestors
+    const pres = Array.from(document.querySelectorAll("pre")).filter(p => (p.textContent||"").trim().startsWith("{") || (p.textContent||"").includes('"version"'));
+    pres.forEach(p=>{
+      const host = p.closest("section, .card, .panel, .box, .glass, div") || p.parentElement;
+      if(host){
+        host.classList.add("dna11-readout");
+        climbAndFix(host, 7);
+      } else {
+        climbAndFix(p, 7);
+      }
+    });
+
+    // Plots: tag canvases too
+    document.querySelectorAll("canvas").forEach(c=>{
+      const host = c.closest("section, .card, .panel, .box, .glass, div") || c.parentElement;
+      if(host){
+        host.classList.add("dna11-plot");
+        climbAndFix(host, 7);
+      } else {
+        climbAndFix(c, 7);
+      }
+    });
+  }
+
+  function run(){
+    try{ tagTargets(); }catch(e){}
+  }
+
+  function schedule(){
+    if(t) return;
+    t = setTimeout(()=>{ t=null; run(); }, 80);
+  }
+
+  // initial
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", run, {once:true});
+  } else run();
+
+  // run again after dynamic render
+  setTimeout(run, 250);
+  setTimeout(run, 900);
+
+  // and whenever JSON/plots get injected
+  try{
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(e){}
+})();
+
+</script>
+<!-- DNA11_BOX_STABILISER_v1 -->
+
+
+<style>
+
+/* === DNA11_CLEAN_MODE_v1 === */
+body.dna11-clean .noise,
+body.dna11-clean .bgfx,
+body.dna11-clean .vignette,
+body.dna11-clean .grain,
+body.dna11-clean .scanlines{ display:none !important; }
+
+body.dna11-clean .card,
+body.dna11-clean .panel,
+body.dna11-clean .box,
+body.dna11-clean .glass{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+
+body.dna11-clean pre, body.dna11-clean code, body.dna11-clean textarea{
+  white-space: pre-wrap !important;
+  overflow-wrap:anywhere !important;
+  word-break:break-word !important;
+  max-width:100% !important;
+}
+body.dna11-clean details > summary{
+  cursor:pointer;
+  opacity:0.9;
+}
+
+</style>
+<script>
+
+/* === DNA11_CLEAN_MODE_v1 === */
+(function(){
+  const KEY="dna11_clean_mode";
+  function setClean(on){
+    document.body.classList.toggle("dna11-clean", !!on);
+    try{ localStorage.setItem(KEY, on ? "1":"0"); }catch(e){}
+  }
+  function getClean(){
+    try{ return localStorage.getItem(KEY)==="1"; }catch(e){ return false; }
+  }
+
+  function injectToggle(){
+    if(document.getElementById("dna11CleanToggle")) return;
+    const wrap = document.createElement("div");
+    wrap.id="dna11CleanToggle";
+    wrap.style.cssText="position:sticky;top:0;z-index:50;margin:10px 0;padding:10px 12px;border-radius:14px;background:rgba(10,14,20,.55);backdrop-filter:blur(6px);display:flex;gap:10px;align-items:center;justify-content:space-between;";
+    wrap.innerHTML = `
+      <div style="font-weight:700;">Clean Mode</div>
+      <label style="display:flex;gap:10px;align-items:center;">
+        <span style="opacity:.8;font-size:12px;">kill box noise + tidy readout</span>
+        <input type="checkbox" id="dna11CleanCheck" />
+      </label>
+    `;
+    const host = document.querySelector("main") || document.body;
+    host.insertBefore(wrap, host.firstChild);
+    const cb = document.getElementById("dna11CleanCheck");
+    cb.checked = getClean();
+    cb.addEventListener("change", ()=>setClean(cb.checked));
+  }
+
+  // Collapse raw JSON readout into <details> so it stops wrecking layout
+  function collapseJson(){
+    const pres = Array.from(document.querySelectorAll("pre")).filter(p=>{
+      const t=(p.textContent||"").trim();
+      return t.startsWith("{") && (t.includes('"version"') || t.includes('"timestamp"'));
+    });
+    pres.forEach(pre=>{
+      if(pre.closest("details")) return;
+      const det = document.createElement("details");
+      det.open = false;
+      const sum = document.createElement("summary");
+      sum.textContent = "Raw JSON (tap to expand)";
+      sum.style.cssText="font-weight:700;margin-bottom:8px;";
+      det.appendChild(sum);
+      pre.parentNode.insertBefore(det, pre);
+      det.appendChild(pre);
+    });
+  }
+
+  // Deduplicate Trait weights lines (rsid allele beta)
+  function dedupeTraitWeights(){
+    const blocks = Array.from(document.querySelectorAll("textarea, pre")).filter(el=>{
+      const t=(el.textContent||el.value||"");
+      return t.includes("rs") && t.includes(" 0.") && t.split("\n").length>=4 && t.includes("Trait weights");
+    });
+
+    // If “Trait weights” is not in the same node, scan nearby:
+    const candidates = Array.from(document.querySelectorAll("textarea, pre")).filter(el=>{
+      const t=(el.value||el.textContent||"");
+      return t.trim().startsWith("rs") && t.split("\n").length>=4;
+    });
+
+    const list = blocks.length ? blocks : candidates;
+
+    list.forEach(el=>{
+      const raw = (el.value!==undefined ? el.value : el.textContent) || "";
+      const lines = raw.split("\n").map(x=>x.trim()).filter(Boolean);
+      // keep only lines that look like: rs123 A 0.10
+      const keep=[]
+      const seen=set()
+      for(const ln of lines){
+        const parts = ln.split(/\s+/);
+        if(parts.length<3 || !parts[0].startsWith("rs")) { keep.append if False else None }
+        key = parts[0]+"|"+(parts[1]||"")+"|"+(parts[2]||"")
+      }
+    });
+  }
+
+  // safer dedupe: only for obvious “trait weights” blocks by header proximity
+  function dedupeTraitWeightsSafe(){
+    const headers = Array.from(document.querySelectorAll("*")).filter(n=>{
+      return (n.textContent||"").trim().toLowerCase().startsWith("trait weights");
+    });
+    headers.forEach(h=>{
+      const box = h.closest("section, .card, .panel, .box, .glass, div") || h.parentElement;
+      if(!box) return;
+      const el = box.querySelector("textarea, pre");
+      if(!el) return;
+      const raw = (el.value!==undefined ? el.value : el.textContent) || "";
+      const lines = raw.split("\n").map(x=>x.trim()).filter(Boolean);
+      const out=[]
+      const seen=new Set()
+      for(const ln of lines){
+        const parts = ln.split(/\s+/);
+        if(parts.length<3 || !parts[0].startsWith("rs")) { out.push(ln); continue; }
+        const key = parts[0]+"|"+parts[1]+"|"+parts[2];
+        if(seen.has(key)) continue;
+        seen.add(key);
+        out.push(ln);
+      }
+      const joined = out.join("\n");
+      if(el.value!==undefined) el.value = joined; else el.textContent = joined;
+    });
+  }
+
+  function run(){
+    injectToggle();
+    setClean(getClean());
+    collapseJson();
+    dedupeTraitWeightsSafe();
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", run, {once:true});
+  else run();
+
+  // re-run after dynamic render
+  setTimeout(run, 250);
+  setTimeout(run, 900);
+
+  // repair after JSON inject
+  try{
+    const mo = new MutationObserver(()=>setTimeout(run, 80));
+    mo.observe(document.body, {subtree:true, childList:true, characterData:true});
+  }catch(e){}
+})();
+
+</script>
+<!-- DNA11_CLEAN_MODE_v1 -->
+</body>
+</html>
