@@ -16,7 +16,7 @@ No logins, no back-end, no external API calls. Open the page, run a test, export
 
 Public link (no install):
 
-https://danfromdursley-spec.github.io/QDS-Physics-Labs-Demo/qds_physics_omega_frontdoor_v3.html
+https://danfromdursley-spec.github.io/QDS-Physics-Labs-Demo/www/qds_physics_omega_frontdoor_v3.html
 
 **Try this path:**
 
