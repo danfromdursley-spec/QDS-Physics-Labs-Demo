@@ -1,0 +1,66 @@
+:root{
+  --qdsP:#8b5cf6; --qdsP2:#a78bfa; --qdsA:#7dd3fc;
+  --bg:#070b10; --panel:#0b1220; --panel2:#0f1626; --line:#1c2a3b;
+  --fg:#eaf2ff; --mut:#a8b7cc;
+}
+html,body{background:radial-gradient(1100px 520px at 20% -10%, rgba(125,211,252,.14), transparent 60%),
+                 radial-gradient(900px 480px at 90% 0%, rgba(167,139,250,.14), transparent 55%),
+                 var(--bg) !important;color:var(--fg);}
+
+#qdsTopbar{
+  position:sticky; top:0; z-index:9999;
+  padding:12px 12px 10px;
+  background:
+    radial-gradient(900px 260px at 10% -40%, rgba(139,92,246,.35), transparent 60%),
+    radial-gradient(900px 260px at 90% -30%, rgba(167,139,250,.22), transparent 60%),
+    linear-gradient(180deg, rgba(15,22,38,.92), rgba(11,18,32,.86));
+  border-bottom:1px solid rgba(139,92,246,.25);
+  backdrop-filter: blur(6px);
+}
+#qdsTopbar .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+#qdsBrand{display:flex;gap:10px;align-items:center;min-width:0}
+#qdsDot{
+  width:14px;height:14px;border-radius:999px;
+  background: radial-gradient(circle at 30% 30%, rgba(125,211,252,.9), rgba(139,92,246,.9));
+  box-shadow: 0 0 18px rgba(139,92,246,.35);
+}
+#qdsTitle{font-weight:900;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58vw}
+#qdsSub{font-size:12px;color:var(--mut)}
+
+#qdsActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.qdsBtn{
+  border:1px solid rgba(139,92,246,.30);
+  background: rgba(11,18,32,.72);
+  color: var(--fg);
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:14px;
+}
+.qdsBtn:active{transform:scale(.98)}
+.qdsChip{
+  border:1px solid var(--line);
+  background: rgba(7,11,16,.55);
+  color: #d7e6ff;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+}
+
+#qdsMenuPanel{
+  display:none;
+  margin-top:10px;
+  border:1px solid rgba(139,92,246,.22);
+  background: linear-gradient(180deg, rgba(15,22,38,.92), rgba(11,18,32,.88));
+  border-radius:18px;
+  padding:10px;
+}
+body.qds-menu-open #qdsMenuPanel{display:block}
+#qdsMenuPanel .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+#qdsMenuPanel a{
+  display:block;text-decoration:none;color:var(--qdsA);
+  border:1px solid var(--line);
+  background: rgba(11,18,32,.55);
+  padding:10px;border-radius:14px;
+}
+#qdsMenuPanel a:active{transform:scale(.99)}
+

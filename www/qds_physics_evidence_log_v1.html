@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QDS Physics Evidence Log v1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #030515;
+      --bg-alt: #06091f;
+      --card: #0b1024;
+      --card-soft: rgba(11, 16, 36, 0.9);
+      --border-soft: rgba(120, 150, 255, 0.5);
+      --accent: #4af2ff;
+      --accent-soft: rgba(74, 242, 255, 0.15);
+      --accent-warm: #ff4d6a;
+      --accent-gold: #ffd94a;
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --pill-bg: rgba(255, 255, 255, 0.05);
+      --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.8);
+      --radius-lg: 20px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(90, 255, 210, 0.18) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(120, 140, 255, 0.24) 0, transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255, 77, 106, 0.22) 0, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 16px 32px;
+    }
+
+    header {
+      background: linear-gradient(
+          135deg,
+          rgba(255, 77, 106, 0.18),
+          rgba(74, 242, 255, 0.12)
+        ),
+        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 55%),
+        var(--card-soft);
+      border-radius: 28px;
+      padding: 14px 14px 16px;
+      border-width: 1px;
+      border-style: solid;
+      border-image: linear-gradient(
+        135deg,
+        #4af2ff,
+        #ff4d6a,
+        #ffd94a
+      ) 1;
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 720px) {
+      header {
+        padding: 18px 22px 18px;
+      }
+    }
+
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2ff);
+      box-shadow: 0 0 18px rgba(74, 242, 255, 0.8);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      margin: 4px 0 0;
+      max-width: 640px;
+    }
+
+    .subtitle span {
+      color: var(--accent);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      font-size: 0.74rem;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--pill-bg);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .pill.badge-pass strong {
+      color: #41e66d;
+    }
+
+    .pill.badge-fail strong {
+      color: var(--accent-warm);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4af2ff, #ff4d6a);
+      box-shadow: 0 0 10px rgba(250, 255, 255, 0.6);
+    }
+
+    .toggle-btn {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(160, 185, 255, 0.7);
+      background: rgba(3, 4, 24, 0.9);
+      color: var(--text-soft);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toggle-btn span {
+      font-size: 0.9rem;
+    }
+
+    .header-body {
+      margin-top: 10px;
+    }
+
+    header.collapsed .header-body {
+      display: none;
+    }
+
+    header.collapsed .toggle-btn span {
+      transform: rotate(180deg);
+    }
+
+    main {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    section {
+      background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0)
+        ),
+        var(--bg-alt);
+      border-radius: 22px;
+      padding: 14px 12px 16px;
+      border: 1px solid rgba(90, 118, 220, 0.65);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 720px) {
+      section {
+        padding: 18px 18px 20px;
+      }
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      inset: -90px;
+      opacity: 0.18;
+      background: radial-gradient(
+        circle at 10% 0%,
+        rgba(255, 77, 106, 0.35),
+        transparent 55%
+      );
+      pointer-events: none;
+    }
+
+    section h2 {
+      font-size: 1.0rem;
+      margin: 0 0 6px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    section h2 .tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(74, 242, 255, 0.6);
+      color: var(--accent);
+      background: rgba(4, 8, 24, 0.9);
+    }
+
+    .section-sub {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+      max-width: 640px;
+    }
+
+    /* Form layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.3fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    select,
+    input[type="text"],
+    textarea {
+      font: inherit;
+      font-size: 0.86rem;
+      background: rgba(3, 5, 24, 0.96);
+      border-radius: 10px;
+      border: 1px solid rgba(120, 150, 255, 0.6);
+      color: var(--text);
+      padding: 6px 8px;
+      resize: vertical;
+      min-height: 32px;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+
+    .field-row-inline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .field-row-inline .field-group {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .btn-primary,
+    .btn-ghost {
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(160, 185, 255, 0.85);
+      background: radial-gradient(circle at 0 0, rgba(74, 242, 255, 0.22), transparent 65%);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+    }
+
+    .btn-ghost {
+      background: rgba(3, 4, 24, 0.95);
+      color: var(--text-soft);
+    }
+
+    .btn-primary:hover,
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.85);
+      background: radial-gradient(circle at 10% 0, rgba(74, 242, 255, 0.32), transparent 65%);
+    }
+
+    .btn-danger {
+      border-color: rgba(255, 77, 106, 0.75);
+      color: #ffb0c0;
+    }
+
+    /* Results grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 11px 12px;
+      border-radius: 18px;
+      text-decoration: none;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0 0, rgba(250, 255, 255, 0.04), transparent 55%),
+        radial-gradient(circle at 110% 110%, rgba(255, 217, 74, 0.06), transparent 60%),
+        rgba(3, 4, 24, 0.96);
+      border-width: 1px;
+      border-style: solid;
+      border-image: linear-gradient(
+        135deg,
+        #4af2ff,
+        #ff4d6a,
+        #ffd94a
+      ) 1;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85);
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 0.96rem;
+      font-weight: 600;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: baseline;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--text-soft);
+      background: rgba(3, 5, 24, 0.95);
+    }
+
+    .badge-cat-ROTATION { border-color: rgba(74, 242, 255, 0.8); color: #bdf6ff; }
+    .badge-cat-VARIANCE { border-color: rgba(255, 217, 74, 0.9); color: #ffeaa1; }
+    .badge-cat-PULSAR   { border-color: rgba(190, 130, 255, 0.9); color: #e3caff; }
+    .badge-cat-BATTERY  { border-color: rgba(120, 255, 160, 0.9); color: #c4ffdb; }
+    .badge-cat-BIRD     { border-color: rgba(255, 183, 120, 0.9); color: #ffd6b4; }
+    .badge-cat-GENOMICS { border-color: rgba(255, 126, 229, 0.9); color: #ffd3f7; }
+
+    .badge-pass {
+      border-color: rgba(65, 230, 109, 0.9);
+      color: #c5ffd8;
+      background: rgba(5, 30, 15, 0.98);
+    }
+
+    .badge-fail {
+      border-color: rgba(255, 77, 106, 0.95);
+      color: #ffc3cf;
+      background: rgba(40, 5, 10, 0.98);
+    }
+
+    .card-meta {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-metrics {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .card-notes {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .card-footer-line {
+      font-size: 0.72rem;
+      color: rgba(190, 200, 255, 0.75);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-footer-line span {
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      font-style: italic;
+      margin-top: 6px;
+    }
+
+    /* Import/export */
+    .io-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .io-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .io-note {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 1px 4px;
+      border-radius: 5px;
+    }
+
+    footer {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      max-width: 720px;
+    }
+
+    footer .line {
+      margin-top: 4px;
+    }
+  
+  /* LAB_HDR_TOGGLE_V1 */
+  [data-lab-intro="1"] {
+    transition:
+      max-height 0.2s ease,
+      padding 0.2s ease,
+      margin 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  [data-lab-intro="1"].lab-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 4px !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .lab-hdr-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    margin: 6px auto 4px;
+    max-width: 1120px;
+    border-radius: 999px;
+    background: rgba(3, 5, 25, 0.96);
+    border: 1px solid rgba(255, 120, 140, 0.85);
+    font-size: 0.78rem;
+    color: #f5f5ff;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+  }
+
+  .lab-hdr-label {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+
+  .lab-hdr-toolbar button {
+    border-radius: 999px;
+    border: 0;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    background: linear-gradient(135deg, #ff4e80, #ffce4e);
+    color: #050518;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 140, 180, 0.8);
+  }
+
+</style>
+
+    <!-- QDS_LAB_HEADER_STRIP_V1 -->
+    <style>
+      .qds-lab-strip {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 14px;
+        margin: 0 0 8px 0;
+        border-radius: 999px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: radial-gradient(circle at 0% 0%, rgba(0,255,255,0.16), rgba(0,0,0,0.8));
+        border: 1px solid rgba(255,255,255,0.16);
+        color: #f5f5ff;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+        backdrop-filter: blur(20px);
+      }
+      .qds-lab-strip-label {
+        padding-right: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .qds-lab-strip-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: linear-gradient(90deg,#ff6b6b,#ffb347);
+        color: #160016;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+      }
+      .qds-lab-strip-btn:active {
+        transform: translateY(1px);
+      }
+    </style>
+
+</head>
+<body>
+  <div class="shell">
+    <header id="hdr">
+      <div class="toolbar-row">
+        <div class="toolbar-left">
+          <div class="dot"></div>
+          <div>
+            <h1>QDS Physics Evidence Log v1</h1>
+            <p class="subtitle">
+              One page that says: <span>“yes, these tests were actually run.”</span>
+              Rotation, variance, pulsar, batteries, birds, genomics — all using the same kernel knobs.
+            </p>
+          </div>
+        </div>
+        <button class="toggle-btn" id="hdrToggle" type="button">
+          <span>▲</span> collapse
+        </button>
+      </div>
+      <div class="header-body">
+        <div class="pill-row">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span><strong>Local only</strong> · uses browser storage</span>
+          </div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span><strong>Deduped</strong> by category + label</span>
+          </div>
+          <div class="pill badge-pass">
+            <span class="pill-dot"></span>
+            <span><strong>Evidence-ready</strong> summary cards</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <h2>1. Add / update a result <span class="tag">input</span></h2>
+        <p class="section-sub">
+          Fill this in whenever you’ve run a test in one of the labs. 
+          The log is <strong>deduped on (category, label)</strong> — so editing the same combo just overwrites the card instead of spamming clones.
+        </p>
+
+        <div class="form-grid">
+          <div>
+            <div class="field-group">
+              <label for="cat">Category</label>
+              <select id="cat">
+                <option value="ROTATION">Rotation (ROTMOD)</option>
+                <option value="VARIANCE">Variance / H₀</option>
+                <option value="PULSAR">Binary / Pulsar</option>
+                <option value="BATTERY">Battery / NASA RW</option>
+                <option value="BIRD">Bird migration / nav</option>
+                <option value="GENOMICS">Genomics coherence</option>
+                <option value="OTHER">Other / misc</option>
+              </select>
+            </div>
+
+            <div class="field-row-inline">
+              <div class="field-group">
+                <label for="label">Label / object</label>
+                <input id="label" type="text" placeholder="e.g. DDO154, NGC2403, RW3 pack, DNA panel" />
+              </div>
+              <div class="field-group">
+                <label for="status">Status</label>
+                <select id="status">
+                  <option value="PASS">QDS helps / consistent</option>
+                  <option value="NEUTRAL">Neutral / inconclusive</option>
+                  <option value="FAIL">QDS hurt / pushed out</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="kernel">Kernel / settings snapshot</label>
+              <input id="kernel" type="text" placeholder="e.g. α=0.8, λc=10 kpc, τc=0.35, σ²=0.27" />
+            </div>
+          </div>
+
+          <div>
+            <div class="field-group">
+              <label for="metrics">Metric summary</label>
+              <textarea id="metrics" placeholder="χ²_base=…, χ²_QDS=…, Δχ²=…, N=…  or H0 slope p, A; or coherence indices etc."></textarea>
+            </div>
+            <div class="field-group">
+              <label for="notes">Notes / interpretation (optional)</label>
+              <textarea id="notes" placeholder="Short interpretation in referee-speak. What did QDS do here?"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="btnSave" type="button">
+            <span>💾</span> Save / update entry
+          </button>
+          <button class="btn-ghost btn-danger" id="btnClearAll" type="button">
+            <span>🧨</span> Clear all entries (this device)
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. Evidence cards <span class="tag">log</span></h2>
+        <p class="section-sub">
+          Each card below is one <strong>(category, label)</strong> pair with the latest metrics and notes. 
+          Use this page live in a room, or export the JSON into a paper appendix / code repo.
+        </p>
+
+        <div id="resultsContainer">
+          <div class="empty-state">
+            No entries yet. Run a lab, copy the χ² (or coherence) summary in here, and hit <strong>Save / update</strong>.
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. Import / export <span class="tag">JSON</span></h2>
+        <p class="section-sub">
+          This stays <strong>local to the device</strong> via browser storage. 
+          Use export/import if you want the same log on both phones, or to drop into your QDS repo.
+        </p>
+
+        <div class="io-row">
+          <div>
+            <div class="field-group">
+              <label for="exportBox">Exported JSON (read-only)</label>
+              <textarea id="exportBox" readonly></textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn-ghost" id="btnExport" type="button">
+                <span>📤</span> Refresh export JSON
+              </button>
+            </div>
+            <p class="io-note">
+              Copy this into <code>QDS_EVIDENCE_LOG.json</code> or paste into a paper appendix.
+              It’s deliberately simple: one flat array of entries.
+            </p>
+          </div>
+
+          <div>
+            <div class="field-group">
+              <label for="importBox">Import JSON (overwrite)</label>
+              <textarea id="importBox" placeholder='Paste a JSON array of entries here and hit "Import".'></textarea>
+            </div>
+            <div class="btn-row">
+              <button class="btn-ghost" id="btnImport" type="button">
+                <span>📥</span> Import JSON → log
+              </button>
+            </div>
+            <p class="io-note">
+              Expected shape: <code>[{ category, label, status, kernel, metrics, notes, key, updatedAt }]</code>.
+              <br />Import will <strong>replace</strong> the current log on this device.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>How to talk about this page:</strong></div>
+      <div class="line">
+        “This isn’t a new model, it’s just the <strong>evidence ledger</strong>. 
+        Every card is one real test we ran: which data set, which kernel, what happened to χ² (or coherence), and whether QDS helped or hurt.”
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'qdsPhysicsEvidenceLogV1';
+
+      /** Load/save helpers */
+      function loadLog() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          console.warn('Load log failed', e);
+          return [];
+        }
+      }
+
+      function saveLog(arr) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        } catch (e) {
+          console.warn('Save log failed', e);
+        }
+      }
+
+      function normaliseKey(cat, label) {
+        return String(cat || '').trim().toUpperCase() + '|' + String(label || '').trim().toUpperCase();
+      }
+
+      function fmtDate(ts) {
+        try {
+          const d = new Date(ts);
+          if (isNaN(d.getTime())) return '';
+          return d.toISOString().replace('T', ' ').slice(0, 19) + 'Z';
+        } catch {
+          return '';
+        }
+      }
+
+      function catBadgeClass(cat) {
+        const k = String(cat || '').toUpperCase();
+        return 'badge badge-cat-' + k;
+      }
+
+      function statusBadgeClass(status) {
+        const s = String(status || '').toUpperCase();
+        if (s === 'PASS') return 'badge badge-pass';
+        if (s === 'FAIL') return 'badge badge-fail';
+        return 'badge';
+      }
+
+      function statusLabel(status) {
+        const s = String(status || '').toUpperCase();
+        if (s === 'PASS') return 'QDS helps / consistent';
+        if (s === 'FAIL') return 'QDS hurt / pushed out';
+        if (s === 'NEUTRAL') return 'Neutral / inconclusive';
+        return s || 'Unknown';
+      }
+
+      /** Render */
+      function renderLog() {
+        const container = document.getElementById('resultsContainer');
+        const log = loadLog();
+
+        if (!container) return;
+
+        if (!log.length) {
+          container.innerHTML = '<div class="empty-state">No entries yet. Add at least one result above.</div>';
+          return;
+        }
+
+        const cards = log
+          .slice()
+          .sort((a, b) => {
+            const ta = a.updatedAt || 0;
+            const tb = b.updatedAt || 0;
+            return tb - ta;
+          })
+          .map((item) => {
+            const cat = item.category || '';
+            const lbl = item.label || '';
+            const key = item.key || normaliseKey(cat, lbl);
+            const status = item.status || 'NEUTRAL';
+            const kernel = item.kernel || '';
+            const metrics = item.metrics || '';
+            const notes = item.notes || '';
+            const updatedAt = fmtDate(item.updatedAt || Date.now());
+
+            return `
+              <article class="card" data-key="${key}">
+                <div class="card-header-row">
+                  <div class="card-title">
+                    <span>${lbl || '(no label)'}</span>
+                    <span class="${catBadgeClass(cat)}">${cat || 'OTHER'}</span>
+                  </div>
+                  <span class="${statusBadgeClass(status)}">${statusLabel(status)}</span>
+                </div>
+                <div class="card-meta">
+                  ${kernel ? `<span>Kernel: ${kernel}</span>` : ''}
+                </div>
+                ${metrics ? `<div class="card-metrics">${metrics}</div>` : ''}
+                ${notes ? `<div class="card-notes">${notes}</div>` : ''}
+                <div class="card-footer-line">
+                  <span>Key: ${key}</span>
+                  <span>Updated: ${updatedAt}</span>
+                </div>
+              </article>
+            `;
+          })
+          .join('');
+
+        container.innerHTML = '<div class="results-grid">' + cards + '</div>';
+      }
+
+      /** Export/import helpers */
+      function refreshExportBox() {
+        const box = document.getElementById('exportBox');
+        if (!box) return;
+        const log = loadLog();
+        box.value = JSON.stringify(log, null, 2);
+      }
+
+      function doImport() {
+        const box = document.getElementById('importBox');
+        if (!box) return;
+        let raw = box.value || '';
+        if (!raw.trim()) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) {
+            alert('Import failed: JSON must be an array of entries.');
+            return;
+          }
+          saveLog(parsed);
+          renderLog();
+          refreshExportBox();
+          alert('Import complete.');
+        } catch (e) {
+          console.warn('Import failed', e);
+          alert('Import failed: invalid JSON.');
+        }
+      }
+
+      /** Wire up buttons */
+      function init() {
+        const btnSave = document.getElementById('btnSave');
+        const btnClearAll = document.getElementById('btnClearAll');
+        const btnExport = document.getElementById('btnExport');
+        const btnImport = document.getElementById('btnImport');
+
+        const catEl = document.getElementById('cat');
+        const labelEl = document.getElementById('label');
+        const statusEl = document.getElementById('status');
+        const kernelEl = document.getElementById('kernel');
+        const metricsEl = document.getElementById('metrics');
+        const notesEl = document.getElementById('notes');
+
+        if (btnSave) {
+          btnSave.addEventListener('click', function () {
+            const cat = catEl.value;
+            const lbl = labelEl.value;
+            const status = statusEl.value;
+            const kernel = kernelEl.value;
+            const metrics = metricsEl.value;
+            const notes = notesEl.value;
+
+            const key = normaliseKey(cat, lbl);
+            if (!lbl.trim()) {
+              alert('Please set a label / object (e.g. NGC2403, RW3, DNA panel).');
+              return;
+            }
+
+            let log = loadLog();
+            const idx = log.findIndex((x) => (x.key || normaliseKey(x.category, x.label)) === key);
+
+            const entry = {
+              category: cat,
+              label: lbl,
+              status,
+              kernel,
+              metrics,
+              notes,
+              key,
+              updatedAt: Date.now()
+            };
+
+            if (idx >= 0) {
+              log[idx] = entry;
+            } else {
+              log.push(entry);
+            }
+
+            saveLog(log);
+            renderLog();
+            refreshExportBox();
+          });
+        }
+
+        if (btnClearAll) {
+          btnClearAll.addEventListener('click', function () {
+            if (!confirm('Clear all evidence entries on this device?')) return;
+            saveLog([]);
+            renderLog();
+            refreshExportBox();
+          });
+        }
+
+        if (btnExport) {
+          btnExport.addEventListener('click', refreshExportBox);
+        }
+
+        if (btnImport) {
+          btnImport.addEventListener('click', doImport);
+        }
+
+        // Header collapse toggle
+        const hdr = document.getElementById('hdr');
+        const hdrToggle = document.getElementById('hdrToggle');
+        if (hdr && hdrToggle) {
+          hdrToggle.addEventListener('click', function () {
+            hdr.classList.toggle('collapsed');
+          });
+        }
+
+        renderLog();
+        refreshExportBox();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+
+  <!-- LAB_HDR_TOGGLE_V1 -->
+  <script>
+  (function () {
+    try {
+      var h1 = document.querySelector('h1');
+      if (!h1) return;
+
+      var intro = h1.closest('header') ||
+                  h1.closest('section') ||
+                  h1.closest('.card') ||
+                  h1.closest('article') ||
+                  h1.parentElement;
+      if (!intro) return;
+
+      intro.setAttribute('data-lab-intro', '1');
+      intro.classList.add('lab-expanded');
+
+      var toolbar = document.createElement('div');
+      toolbar.className = 'lab-hdr-toolbar';
+
+      var label = document.createElement('span');
+      label.className = 'lab-hdr-label';
+      label.textContent = 'QDS lab header';
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Collapse header ▲';
+
+      btn.addEventListener('click', function () {
+        var collapsed = intro.classList.toggle('lab-collapsed');
+        intro.classList.toggle('lab-expanded', !collapsed);
+        btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+      });
+
+      toolbar.appendChild(label);
+      toolbar.appendChild(btn);
+
+      var shell = document.querySelector('.shell') || document.body;
+      if (shell.parentNode) {
+        shell.parentNode.insertBefore(toolbar, shell);
+      } else {
+        document.body.insertBefore(toolbar, document.body.firstChild);
+      }
+    } catch (e) {
+      if (window.console && console.warn) {
+        console.warn('LAB_HDR_TOGGLE init failed', e);
+      }
+    }
+  })();
+  </script>
+
+
+    <!-- QDS_LAB_HEADER_STRIP_V1_SCRIPT -->
+    <script>
+      (function(){
+        try {
+          // Find something that looks like the top hero/header block
+          var target =
+            document.querySelector('[data-qds-header]') ||
+            document.querySelector('.page-hero, .hero, .hero-card') ||
+            document.querySelector('main section') ||
+            document.querySelector('.card, .shell, section');
+
+          if (!target) return;
+
+          // Build strip
+          var strip = document.createElement('div');
+          strip.className = 'qds-lab-strip';
+
+          var label = document.createElement('div');
+          label.className = 'qds-lab-strip-label';
+          var title = document.title || 'QDS Lab';
+          label.textContent = title.toUpperCase();
+
+          var btn = document.createElement('button');
+          btn.className = 'qds-lab-strip-btn';
+          btn.textContent = 'Collapse header ▲';
+
+          strip.appendChild(label);
+          strip.appendChild(btn);
+
+          // Insert before the header block
+          target.parentNode.insertBefore(strip, target);
+
+          var collapsed = false;
+          btn.addEventListener('click', function(){
+            collapsed = !collapsed;
+            target.style.display = collapsed ? 'none' : '';
+            btn.textContent = collapsed ? 'Expand header ▼' : 'Collapse header ▲';
+          });
+        } catch(e){
+          console && console.warn && console.warn('QDS lab strip failed:', e);
+        }
+      })();
+    </script>
+
+</body>
+</html>

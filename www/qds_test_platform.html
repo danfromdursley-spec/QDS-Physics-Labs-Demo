@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title id="sf-intro-anchor">QDS Core Validation Labs • Front Door</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #030515;
+      --bg-alt: #06091f;
+      --card: #0b1024;
+      --card-soft: rgba(11,16,36,0.86);
+      --border-soft: rgba(120,150,255,0.4);
+      --accent: #4af2ff;
+      --accent-soft: rgba(74,242,255,0.16);
+      --accent-warm: #ff4a7a;
+      --accent-warm-soft: rgba(255,74,122,0.2);
+      --text: #f5f5ff;
+      --text-soft: #a8b0d8;
+      --pill-bg: rgba(255,255,255,0.04);
+      --shadow-soft: 0 22px 60px rgba(0,0,0,0.75);
+      --radius-lg: 22px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(90,255,210,0.18) 0, transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(120,140,255,0.24) 0, transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255,74,122,0.18) 0, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 16px 32px;
+    }
+
+    header[data-sf-intro] {
+      background:
+        linear-gradient(135deg, rgba(255,74,122,0.18), rgba(74,242,255,0.12)),
+        radial-gradient(circle at 0 0, rgba(255,255,255,0.06), transparent 55%),
+        var(--card-soft);
+      border-radius: 26px;
+      padding: 18px 16px 18px;
+      border: 1px solid rgba(145,180,255,0.5);
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+      transition: transform 0.15s ease, opacity 0.15s ease, max-height 0.2s ease;
+      overflow: hidden;
+    }
+
+    header[data-sf-intro].sf-collapsed {
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      opacity: 0;
+      border-width: 0;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    header[data-sf-intro].sf-expanded {
+      max-height: 300px;
+      opacity: 1;
+    }
+
+    @media (min-width: 720px) {
+      header[data-sf-intro] {
+        padding: 22px 26px 20px;
+      }
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2ff);
+      box-shadow: 0 0 18px rgba(74,242,255,0.8);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      margin: 0;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 0.84rem;
+      color: var(--text-soft);
+      margin: 3px 0 0;
+      max-width: 640px;
+    }
+
+    .subtitle span {
+      color: var(--accent);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      font-size: 0.74rem;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--pill-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill strong { color: var(--accent); font-weight: 600; }
+    .pill.badge-hot strong { color: var(--accent-warm); }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4af2ff, #ff4a7a);
+      box-shadow: 0 0 10px rgba(250,255,255,0.6);
+    }
+
+    nav {
+      margin-top: 8px;
+      border-top: 1px solid rgba(160,185,255,0.32);
+      padding-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    nav a {
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: var(--text-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(3,4,24,0.9);
+      border: 1px solid rgba(111,140,255,0.5);
+      transition: background 0.15s ease, transform 0.12s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    nav a:hover {
+      background: rgba(74,242,255,0.16);
+      color: var(--text);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px rgba(74,242,255,0.4);
+    }
+
+    .sf-toolbar-top {
+      position: sticky;
+      top: 0;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      background: radial-gradient(circle at 0 0, rgba(74,242,255,0.25), transparent 55%),
+                  rgba(8,10,32,0.96);
+      border-bottom: 1px solid rgba(145,180,255,0.55);
+      backdrop-filter: blur(16px);
+    }
+
+    .sf-toolbar-top-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .sf-toggle-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(145,180,255,0.8);
+      background: rgba(10,14,40,0.9);
+      color: var(--text);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .sf-toggle-btn:hover {
+      background: rgba(74,242,255,0.16);
+    }
+
+    main {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin: 0 0 4px;
+    }
+
+    .section-title {
+      font-size: 0.98rem;
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title span.badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-soft);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 720px) {
+      .card-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .lab-card {
+      background: linear-gradient(
+          135deg,
+          rgba(255,255,255,0.02),
+          rgba(255,255,255,0)
+        ),
+        var(--bg-alt);
+      border-radius: 20px;
+      padding: 13px 12px 14px;
+      border: 1px solid rgba(90,118,220,0.7);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lab-card::before {
+      content: "";
+      position: absolute;
+      inset: -90px;
+      opacity: 0.22;
+      background: radial-gradient(
+        circle at 10% 0%,
+        rgba(255,74,122,0.35),
+        transparent 55%
+      );
+      pointer-events: none;
+    }
+
+    .lab-name {
+      font-size: 0.96rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lab-name .tag {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-soft);
+    }
+
+    .lab-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 0.72rem;
+      color: var(--text-soft);
+    }
+
+    .meta-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(140,165,255,0.6);
+    }
+
+    .lab-body {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 9px;
+    }
+
+    .lab-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.74rem;
+      color: var(--text-soft);
+      opacity: 0.9;
+    }
+
+    .lab-footer span.hint {
+      opacity: 0.8;
+      font-style: italic;
+    }
+
+    .lab-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .lab-links a {
+      font-size: 0.78rem;
+      text-decoration: none;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(150,180,255,0.85);
+      background: rgba(9,12,40,0.96);
+      color: var(--text);
+    }
+
+    .lab-links a.secondary {
+      border-style: dashed;
+      opacity: 0.9;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.76rem;
+      color: var(--text-soft);
+      border-top: 1px solid rgba(110,135,225,0.5);
+      padding-top: 10px;
+      opacity: 0.95;
+    }
+
+    footer .line + .line {
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header data-sf-intro="1" class="sf-expanded">
+      <div class="header-top">
+        <div class="dot"></div>
+        <div>
+          <h1>QDS Core Validation Labs • Front Door</h1>
+          <p class="subtitle">
+            One place to launch the <span>hard QDS tests</span>: H₀ variance, galaxy rotation,
+            and kernel microphysics. No cloud, no fairy dust — just χ² and whether it passes.
+          </p>
+        </div>
+      </div>
+      <div class="pill-row">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Real datasets</strong> • ROTMOD · H(z) · kernel shapes</span>
+        </div>
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span><strong>Kernel fixed</strong> • σ², τ<sub>c</sub>, λ<sub>c</sub> shared across labs</span>
+        </div>
+        <div class="pill badge-hot">
+          <span class="pill-dot"></span>
+          <span><strong>Phone-first</strong> • offline · reproducible · exportable</span>
+        </div>
+      </div>
+      <nav>
+        <a href="#sec-h0">H₀ variance</a>
+        <a href="#sec-rot">Rotation curves</a>
+        <a href="#sec-micro">Microphysics</a>
+        <a href="#sec-distance">Distance probe</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="sec-h0">
+        <p class="section-label">Cosmology • Hubble variance</p>
+        <h2 class="section-title">
+          H₀ Variance Lab
+          <span class="badge">public toy·sim + table</span>
+        </h2>
+        <div class="card-grid">
+          <div class="lab-card">
+            <div class="lab-name">
+              H₀ Variance Lab
+              <span class="tag">σ(H)/H = A R<sup>−p</sup></span>
+            </div>
+            <div class="lab-meta-row">
+              <div class="meta-pill">Law: A = 0.017, p = 0.35</div>
+              <div class="meta-pill">Scale: 5–100 Mpc</div>
+            </div>
+            <div class="lab-body">
+              Enter survey radii and measured fractional scatter, compare against the QDS variance law,
+              and see pass/fail vs tolerance. Good for showing the small-scale excess and large-scale floor.
+            </div>
+            <div class="lab-links">
+              <a href="qds_variance_lab.html">Open H₀ Variance Lab</a>
+              <a href="qds_variance_lab.html" class="secondary">View table / chart</a>
+            </div>
+            <div class="lab-footer">
+              <span>Evidence: H₀ variance vs QDS law.</span>
+              <span class="hint">Use when people ask “where’s the cosmology in this?”</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-rot">
+        <p class="section-label">Galaxies • rotation curves</p>
+        <h2 class="section-title">
+          Rotation Curve Labs
+          <span class="badge">ROTMOD public curves</span>
+        </h2>
+        <div class="card-grid">
+          <div class="lab-card">
+            <div class="lab-name">
+              Rotation Curve Tester
+              <span class="tag">toy · per-point</span>
+            </div>
+            <div class="lab-meta-row">
+              <div class="meta-pill">Law: v<sub>QDS</sub> = v<sub>N</sub> √(1 + α e<sup>−r/λc</sup>)</div>
+              <div class="meta-pill">Custom lists / quick checks</div>
+            </div>
+            <div class="lab-body">
+              Manual entry of r, Newtonian v<sub>N</sub> and observed v, then compare against the QDS-modified law.
+              Useful for whiteboard-style demos and sanity checks without touching the full ROTMOD stack.
+            </div>
+            <div class="lab-links">
+              <a href="qds_rotation_lab.html">Open Rotation Lab</a>
+              <a href="qds_rotation_lab.html" class="secondary">Newtonian vs QDS view</a>
+            </div>
+            <div class="lab-footer">
+              <span>Evidence: shape-level fit intuition.</span>
+              <span class="hint">Use when you want to explain the modification by hand.</span>
+            </div>
+          </div>
+
+          <div class="lab-card">
+            <div class="lab-name">
+              RotMod Extreme Lab
+              <span class="tag">batch · χ²-first</span>
+            </div>
+            <div class="lab-meta-row">
+              <div class="meta-pill">Inputs: ROTMOD CSVs (public)</div>
+              <div class="meta-pill">Outputs: χ²<sub>base</sub>, χ²<sub>QDS</sub>, Δχ²</div>
+            </div>
+            <div class="lab-body">
+              Full rotation-curve fitter on the public ROTMOD set. For each galaxy, compute χ² with baryons-only
+              vs baryons×QDS, and log Δχ². This is where DDO154, NGC2403, NGC6503, etc. live.
+            </div>
+            <div class="lab-links">
+              <a href="qds_rotmod_extreme_lab.html">Open RotMod Extreme Lab</a>
+            </div>
+            <div class="lab-footer">
+              <span>Evidence: real-galaxy χ² improvements / failures.</span>
+              <span class="hint">Use when someone says “show me actual galaxies.”</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-micro">
+        <p class="section-label">Microphysics • kernel shape</p>
+        <h2 class="section-title">
+          Microphysics Kernel Lab
+          <span class="badge">K(t,r) = σ² e<sup>−|t|/τc</sup> e<sup>−r²/(2λc²)</sup></span>
+        </h2>
+        <div class="card-grid">
+          <div class="lab-card">
+            <div class="lab-name">
+              Kernel Shape Explorer
+              <span class="tag">micro</span>
+            </div>
+            <div class="lab-meta-row">
+              <div class="meta-pill">Parameters: σ², τ<sub>c</sub>, λ<sub>c</sub></div>
+              <div class="meta-pill">Views: temporal & spatial slices</div>
+            </div>
+            <div class="lab-body">
+              Set σ², τ<sub>c</sub>, λ<sub>c</sub>, and see how the kernel behaves in time and space.
+              This is the link between the maths in the paper and the χ² numbers in the other labs.
+            </div>
+            <div class="lab-links">
+              <a href="qds_micro_lab.html">Open Microphysics Lab</a>
+            </div>
+            <div class="lab-footer">
+              <span>Evidence: kernel is finite, smooth, physically sane.</span>
+              <span class="hint">Use when someone wants to see the actual K(t,r).</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-distance">
+        <p class="section-label">Exploratory • distance probe</p>
+        <h2 class="section-title">
+          NGC3198 Distance Probe
+          <span class="badge">toy · assumption-mode</span>
+        </h2>
+        <div class="card-grid">
+          <div class="lab-card">
+            <div class="lab-name">
+              Distance Probe Lab
+              <span class="tag">NGC3198</span>
+            </div>
+            <div class="lab-meta-row">
+              <div class="meta-pill">Inputs: ROTMOD NGC3198 CSV</div>
+              <div class="meta-pill">Scan: s = D/D₀ vs χ²<sub>QDS</sub></div>
+            </div>
+            <div class="lab-body">
+              Keep the QDS kernel fixed from cosmology and let NGC3198 “vote” on which distance factor
+              minimises χ²<sub>QDS</sub>. Framed explicitly as a what-if sandbox, not a formal distance ladder.
+            </div>
+            <div class="lab-links">
+              <a href="qds_ngc3198_distance_lab_v1.html">Open NGC3198 Distance Lab</a>
+            </div>
+            <div class="lab-footer">
+              <span>Evidence: exploratory cross-check between distance and kernel.</span>
+              <span class="hint">Use carefully; always mention the assumptions out loud.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="line"><strong>Device:</strong> Ω-Phone QDS Lab • localhost • file: <code>qds_test_platform.html</code></div>
+      <div class="line">
+        This door doesn’t invent new physics; it just lines up the labs that already exist and makes it
+        obvious which tests hit which claims. One page to open in a room and say, “here’s how you rerun it”.
+      </div>
+    </footer>
+  </div>
+
+  <!-- SF_TOOLBAR_PATCH_FOR_QDS_TEST_PLATFORM_V1 -->
+  <script>
+    (function () {
+      try {
+        var anchor = document.getElementById('sf-intro-anchor');
+        if (!anchor) return;
+        var intro = anchor.closest('header') || anchor.closest('section') || anchor.parentElement;
+        if (!intro) return;
+        intro.setAttribute('data-sf-intro', '1');
+        intro.classList.add('sf-expanded');
+
+        var toolbar = document.createElement('div');
+        toolbar.className = 'sf-toolbar-top';
+
+        var label = document.createElement('span');
+        label.className = 'sf-toolbar-top-label';
+        label.textContent = 'QDS core validation labs';
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sf-toggle-btn';
+        btn.textContent = 'Collapse intro ▲';
+
+        btn.addEventListener('click', function () {
+          var collapsed = intro.classList.toggle('sf-collapsed');
+          intro.classList.toggle('sf-expanded', !collapsed);
+          btn.textContent = collapsed ? 'Expand intro ▼' : 'Collapse intro ▲';
+        });
+
+        toolbar.appendChild(label);
+        toolbar.appendChild(btn);
+        intro.parentNode.insertBefore(toolbar, intro);
+      } catch (e) {
+        console && console.warn && console.warn('SF toolbar init failed', e);
+      }
+    })();
+  </script>
+</body>
+</html>
