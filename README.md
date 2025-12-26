@@ -46,3 +46,9 @@ python -m http.server 8011
 #    (on the same device or another device on the network)
 #    e.g. on the same phone:
 #      http://127.0.0.1:8011/qds_physics_omega_frontdoor_v3.html
+---
+
+### LifeFirst & guardrails
+
+This demo pack follows **QDS_LifeFirst_EthicalDirective_v1.1** — an immutable “do no harm, no dark patterns” charter for all QDS tools.  
+See **LIFEFIRST.md** in this repo for the full directive.
