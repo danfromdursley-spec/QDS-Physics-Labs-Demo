@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>QDS · Binary Pulsar Constraint Lab · One-Button Neon</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+
+  <style>
+    :root{
+      --bg:#02040a;
+      --bg2:#020712;
+      --panel:#050b16;
+      --panel-soft:#070f1f;
+      --txt:#eef4ff;
+      --muted:#9dadcc;
+      --dim:#7181a3;
+
+      --line-soft:#1b2536;
+
+      --green:#1ef59a;
+      --green-soft:rgba(30,245,154,0.18);
+      --orange:#ff9d1a;
+      --yellow:#ffd642;
+      --red:#ff4b4b;
+      --blue:#29c8ff;
+
+      --shadow:0 20px 60px rgba(0,0,0,0.65);
+      --radius:18px;
+      --radius-lg:26px;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      padding:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--txt);
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(41,200,255,0.14), transparent 60%),
+        radial-gradient(1100px 700px at 90% 110%, rgba(30,245,154,0.12), transparent 60%),
+        linear-gradient(180deg,#010308,#02040a 40%,#02030a);
+    }
+
+    .shell{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 14px 48px;
+    }
+
+    .frame{
+      position:relative;
+      background:linear-gradient(180deg,rgba(5,11,22,0.96),rgba(5,7,16,0.96));
+      border-radius:var(--radius-lg);
+      padding:18px 16px 22px;
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .frame::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius:var(--radius-lg);
+      background:
+        conic-gradient(from 130deg,
+          rgba(255,157,26,0.6),
+          rgba(255,214,66,0.55),
+          rgba(41,200,255,0.55),
+          rgba(30,245,154,0.6),
+          rgba(255,75,75,0.65),
+          rgba(255,157,26,0.6)
+        );
+      filter:blur(12px);
+      opacity:0.4;
+      z-index:-1;
+    }
+
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .title{
+      font-size:24px;
+      font-weight:800;
+      letter-spacing:0.3px;
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:750;
+      text-transform:uppercase;
+      letter-spacing:0.6px;
+      background:rgba(0,0,0,0.35);
+      border:1px solid rgba(255,214,66,0.35);
+      color:var(--yellow);
+    }
+    .pill span{
+      color:var(--txt);
+    }
+
+    .sub{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .status-bar{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(0,0,0,0.45);
+      border:1px solid rgba(255,255,255,0.07);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      font-size:12px;
+    }
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:750;
+      letter-spacing:0.4px;
+      font-size:11px;
+    }
+    .status-chip.ok{
+      background:rgba(30,245,154,0.12);
+      border:1px solid rgba(30,245,154,0.5);
+      color:var(--green);
+    }
+    .status-chip.bad{
+      background:rgba(255,75,75,0.10);
+      border:1px solid rgba(255,75,75,0.5);
+      color:var(--red);
+    }
+    .status-chip.neutral{
+      background:rgba(41,200,255,0.10);
+      border:1px solid rgba(41,200,255,0.45);
+      color:var(--blue);
+    }
+    .status-text{
+      color:var(--muted);
+      flex:1 1 auto;
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:1.02fr 0.98fr;
+      gap:14px;
+    }
+    @media (max-width:820px){
+      .grid{grid-template-columns:1fr;}
+    }
+
+    .card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:14px 12px 16px;
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .card h2{
+      margin:0 0 4px;
+      font-size:15px;
+      letter-spacing:0.3px;
+    }
+    .card p.hint{
+      margin:0 0 8px;
+      font-size:12px;
+      color:var(--dim);
+      line-height:1.45;
+    }
+
+    label{
+      display:block;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.6px;
+      color:var(--muted);
+      margin:9px 0 4px;
+    }
+
+    textarea,input[type="number"]{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:var(--panel-soft);
+      padding:10px 11px;
+      color:var(--txt);
+      font-size:12px;
+      outline:none;
+    }
+    textarea{
+      min-height:120px;
+      resize:vertical;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      line-height:1.35;
+    }
+    input[type="number"]{
+      font-family:inherit;
+      -moz-appearance:textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .row > div{
+      flex:1 1 120px;
+    }
+
+    .btn-row{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .btn{
+      appearance:none;
+      border-radius:999px;
+      border:none;
+      padding:12px 14px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      cursor:pointer;
+      min-width:160px;
+      flex:1 1 160px;
+    }
+    .btn-primary{
+      background:linear-gradient(180deg,var(--green),#15c973);
+      color:#00140d;
+      box-shadow:0 14px 40px var(--green-soft);
+    }
+    .btn-secondary{
+      background:rgba(0,0,0,0.3);
+      color:var(--txt);
+      border:1px solid rgba(255,255,255,0.10);
+    }
+    .btn-warn{
+      background:linear-gradient(180deg,var(--orange),#e08110);
+      color:#1a0b00;
+      box-shadow:0 14px 40px rgba(255,157,26,0.18);
+    }
+
+    .canvas-card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:12px 10px 14px;
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .canvas-card h2{
+      margin:0 0 4px;
+      font-size:15px;
+      letter-spacing:0.3px;
+    }
+    .chip-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+      font-size:11px;
+    }
+    .chip{
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(0,0,0,0.35);
+      color:var(--muted);
+    }
+
+    canvas{
+      width:100%;
+      height:260px;
+      display:block;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:radial-gradient(circle at 0 0,rgba(41,200,255,0.09),transparent 55%),
+                 radial-gradient(circle at 100% 100%,rgba(30,245,154,0.08),transparent 55%),
+                 #050914;
+      margin-top:8px;
+    }
+
+    .section{
+      margin-top:16px;
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:14px 12px 16px;
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .section h2{
+      margin:0 0 4px;
+      font-size:15px;
+    }
+    .section p.hint{
+      margin:0 0 6px;
+      font-size:12px;
+      color:var(--dim);
+    }
+
+    .table-wrap{
+      margin-top:8px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.06);
+      overflow:hidden;
+      background:var(--panel-soft);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    th,td{
+      padding:8px 9px;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    th{
+      text-align:left;
+      color:var(--muted);
+      font-weight:700;
+      background:rgba(0,0,0,0.25);
+    }
+    tr:last-child td{border-bottom:none;}
+    td.system-name{
+      max-width:180px;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+      overflow:hidden;
+    }
+
+    .log-box{
+      margin-top:8px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:var(--panel-soft);
+      padding:10px 10px;
+      max-height:220px;
+      overflow-y:auto;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:12px;
+      line-height:1.35;
+      color:#dbe6ff;
+      white-space:pre-wrap;
+    }
+
+    .scope{
+      margin-top:8px;
+      font-size:11px;
+      color:var(--dim);
+      line-height:1.4;
+    }
+    .scope b{
+      color:var(--yellow);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="frame">
+      <div class="topbar">
+        <div>
+          <div class="title">QDS · Binary Pulsar Constraint Lab</div>
+          <div class="pill-row">
+            <div class="pill"><span>Mode</span> ONE-BUTTON ULTRA</div>
+            <div class="pill"><span>Sweep</span> NEON ENVELOPE</div>
+          </div>
+          <div class="sub">
+            Fast check: given orbital separation <b>r</b> and a fractional timing band,
+            compute the tightest allowed QDS amplitude <b>α</b> over a λ-grid.
+            No fits, no timing model — just a constraint envelope.
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div id="statusBadge" class="status-chip neutral">READY</div>
+        <div id="statusText" class="status-text">Waiting for sweep. Load demo systems or paste your own.</div>
+      </div>
+
+      <div class="grid">
+        <!-- Left: Systems & controls -->
+        <div class="card">
+          <h2>SYSTEMS &amp; CONTROLS</h2>
+          <p class="hint">
+            JSON array of systems: { <b>name</b>, <b>r</b>, <b>band</b>, units }.
+            Band is the allowed fractional QDS contribution (e.g. 0.001 = 0.1%).
+          </p>
+
+          <label for="systemsJson">Systems JSON</label>
+          <textarea id="systemsJson" spellcheck="false"></textarea>
+
+          <div class="row">
+            <div>
+              <label for="lamMin">λ<sub>min</sub> (same units as r)</label>
+              <input id="lamMin" type="number" step="0.0001" value="0.05">
+            </div>
+            <div>
+              <label for="lamMax">λ<sub>max</sub></label>
+              <input id="lamMax" type="number" step="0.0001" value="5">
+            </div>
+            <div>
+              <label for="lamN">Grid points N</label>
+              <input id="lamN" type="number" step="1" value="200">
+            </div>
+          </div>
+
+          <p class="hint">
+            Model: f(r,λ) = exp(−r/λ) (potential-like).<br/>
+            Constraint uses α<sub>max</sub>(λ) = band / f(r,λ);
+            envelope = minimum over systems.
+          </p>
+
+          <div class="btn-row">
+            <button id="btnDemo" class="btn btn-secondary">Load Demo Systems</button>
+            <button id="btnRun" class="btn btn-primary">Run Constraint Sweep</button>
+            <button id="btnSelf" class="btn btn-warn">Run Self-Tests</button>
+          </div>
+        </div>
+
+        <!-- Right: Envelope plot -->
+        <div class="canvas-card">
+          <h2>CONSTRAINT ENVELOPE · α<sub>max</sub>(λ)</h2>
+          <canvas id="envCanvas" width="900" height="520"></canvas>
+          <div class="chip-row">
+            <div class="chip" id="chipRange">λ range: –</div>
+            <div class="chip" id="chipGrid">Grid: –</div>
+            <div class="chip" id="chipSystems">Systems: –</div>
+            <div class="chip" id="chipKernel">Kernel: exp(−r/λ)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-system summary -->
+      <div class="section">
+        <h2>PER-SYSTEM SUMMARY</h2>
+        <p class="hint">
+          Rough tightness of each system against the envelope over the scanned λ range.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>r</th>
+                <th>Band</th>
+                <th>Min α<sub>max</sub></th>
+                <th>Max α<sub>max</sub></th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--dim);padding:10px 8px;">No sweep run yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Run log -->
+      <div class="section">
+        <h2>RUN LOG</h2>
+        <p class="hint">
+          Text trace for audits and paper notes. Self-tests tag obvious mistakes in JSON or controls.
+        </p>
+        <div id="runLog" class="log-box"></div>
+        <div class="scope">
+          <b>Scope:</b> sanity-check only. Uses a toy Yukawa-like envelope model,
+          not a full timing solution. Offline, client-side only. Not advice.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Utilities =====
+    const $ = (id)=>document.getElementById(id);
+
+    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+    function isFiniteNum(x){ return Number.isFinite(x) && !Number.isNaN(x); }
+
+    function fmt(x, sig=4){
+      if(!isFiniteNum(x)) return "—";
+      const ax = Math.abs(x);
+      if(ax === 0) return "0";
+      if(ax >= 1e4 || ax < 1e-3) return x.toExponential(sig-1);
+      return x.toPrecision(sig);
+    }
+
+    function nowISO(){
+      const d = new Date();
+      return d.toISOString().replace("T"," ").replace("Z","");
+    }
+
+    function logLine(s){
+      const el = $("runLog");
+      el.textContent += (el.textContent ? "\\n" : "") + s;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setStatus(kind, text){
+      const badge = $("statusBadge");
+      const txt = $("statusText");
+      badge.className = "status-chip " + (kind || "neutral");
+      badge.textContent = (kind==="ok" ? "SUITE COMPLETE"
+                      : kind==="bad" ? "ISSUE"
+                      : "READY");
+      txt.textContent = text;
+    }
+
+    function safeJsonParse(s){
+      try{ return {ok:true, val: JSON.parse(s)}; }
+      catch(e){ return {ok:false, err:String(e)}; }
+    }
+
+    // ===== Model =====
+    function kernelFactor(r, lam){
+      if(!(r>=0) || !(lam>0)) return NaN;
+      const x = r/lam;
+      return Math.exp(-x);
+    }
+
+    function alphaMaxAllowed(band, f){
+      if(!(band>=0) || !isFiniteNum(f) || f<=0) return NaN;
+      return band / f;
+    }
+
+    const DEFAULT_SYSTEMS = [
+      {name:"PSR B1913+16 (demo)",       r:1.0,  band:0.002,  units:"custom"},
+      {name:"Double Pulsar J0737−3039",  r:0.6,  band:0.0015, units:"custom"},
+      {name:"PSR J0348+0432",            r:0.25, band:0.0010, units:"custom"},
+      {name:"PSR J1738+0333",            r:0.35, band:0.0012, units:"custom"}
+    ];
+
+    let state = {
+      systems: [],
+      lamGrid: [],
+      curves: null // { perSystem:[{name,r,band,xs,ys}], envelope:{xs,ys} }
+    };
+
+    function loadDemo(){
+      $("systemsJson").value = JSON.stringify(DEFAULT_SYSTEMS, null, 2);
+      setStatus("neutral","Demo systems loaded. Adjust r / bands or hit Run Constraint Sweep.");
+    }
+
+    function buildLamGrid(){
+      const lmin = parseFloat($("lamMin").value);
+      const lmax = parseFloat($("lamMax").value);
+      const nRaw = parseFloat($("lamN").value);
+
+      const n = clamp(Math.floor(nRaw || 0), 20, 800);
+      const a = Math.min(lmin, lmax);
+      const b = Math.max(lmin, lmax);
+
+      $("lamN").value = String(n);
+
+      const grid = [];
+      if(isFiniteNum(a) && isFiniteNum(b) && n > 0){
+        for(let i=0;i<n;i++){
+          const t = (n===1)?0 : i/(n-1);
+          const logL = Math.log10(a) + (Math.log10(b) - Math.log10(a))*t;
+          grid.push(Math.pow(10, logL));
+        }
+      }
+      state.lamGrid = grid;
+      $("chipRange").textContent = grid.length
+        ? `λ range: ${fmt(grid[0])} → ${fmt(grid[grid.length-1])}`
+        : "λ range: –";
+      $("chipGrid").textContent = `Grid: N = ${grid.length || "–"}`;
+    }
+
+    function validateSystems(val){
+      const out = [];
+      const errs = [];
+      if(!Array.isArray(val)){
+        return {ok:false, errs:["Systems JSON must be an array of objects."]};
+      }
+      for(let i=0;i<val.length;i++){
+        const it = val[i] || {};
+        const name = String(it.name ?? `System_${i+1}`).trim();
+        const r = Number(it.r);
+        const band = Number(it.band);
+        const units = String(it.units ?? "").trim();
+        if(!name) errs.push(`Row ${i+1}: missing name`);
+        if(!(r>=0)) errs.push(`Row ${i+1} (${name}): r must be ≥ 0`);
+        if(!(band>=0)) errs.push(`Row ${i+1} (${name}): band must be ≥ 0`);
+        out.push({name, r, band, units});
+      }
+      if(out.length===0) errs.push("No systems provided.");
+      return {ok:errs.length===0, systems:out, errs};
+    }
+
+    // ===== Sweep =====
+    function runSweep(){
+      $("runLog").textContent = "";
+      setStatus("neutral","Running constraint sweep…");
+      buildLamGrid();
+
+      if(state.lamGrid.length === 0){
+        setStatus("bad","λ grid invalid. Check λmin, λmax and N.");
+        logLine("❌ λ grid invalid. Ensure λmin>0, λmax>0 and N ≥ 20.");
+        return;
+      }
+
+      const parsed = safeJsonParse($("systemsJson").value);
+      if(!parsed.ok){
+        setStatus("bad","Systems JSON parse error.");
+        logLine("❌ Systems JSON parse error: " + parsed.err);
+        return;
+      }
+
+      const v = validateSystems(parsed.val);
+      if(!v.ok){
+        setStatus("bad","Systems invalid. See log.");
+        v.errs.forEach(e => logLine("❌ " + e));
+        return;
+      }
+      state.systems = v.systems;
+
+      $("chipSystems").textContent = `Systems: ${state.systems.length}`;
+      $("chipKernel").textContent = "Kernel: exp(−r/λ)";
+
+      logLine("=== QDS Binary Pulsar Constraint Lab — One-Button Neon ===");
+      logLine("Time:   " + nowISO());
+      logLine("Kernel: f(r,λ) = exp(−r/λ) (potential-like).");
+      logLine(`Systems: ${state.systems.length}`);
+      logLine(`λ grid:  ${state.lamGrid.length} points, range ${fmt(state.lamGrid[0])} → ${fmt(state.lamGrid[state.lamGrid.length-1])}.`);
+
+      const xs = state.lamGrid.slice();
+      const perSystem = [];
+      const mins = [];
+      const maxs = [];
+
+      for(const sys of state.systems){
+        const ys = new Array(xs.length);
+        let lo = Infinity, hi = -Infinity;
+        for(let i=0;i<xs.length;i++){
+          const lam = xs[i];
+          const f = kernelFactor(sys.r, lam);
+          const amax = alphaMaxAllowed(sys.band, f);
+          ys[i] = amax;
+          if(isFiniteNum(amax)){
+            if(amax < lo) lo = amax;
+            if(amax > hi) hi = amax;
+          }
+        }
+        perSystem.push({name:sys.name, r:sys.r, band:sys.band, units:sys.units, xs, ys});
+        mins.push(lo);
+        maxs.push(hi);
+      }
+
+      const envY = xs.map((_,i)=>{
+        let m = Infinity;
+        for(const c of perSystem){
+          const y = c.ys[i];
+          if(isFiniteNum(y) && y < m) m = y;
+        }
+        return (m===Infinity)?NaN:m;
+      });
+
+      state.curves = {perSystem, envelope:{xs,ys:envY}};
+
+      renderSummary(perSystem, mins, maxs);
+      drawEnvelope();
+      setStatus("ok","Suite complete. Envelope + summary updated.");
+      logLine("✅ Suite finished. Envelope curve available in plot and table.");
+    }
+
+    // ===== Summary table =====
+    function renderSummary(perSystem, mins, maxs){
+      const tbody = $("summaryBody");
+      if(!perSystem || perSystem.length === 0){
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:10px 8px;">No data.</td></tr>';
+        return;
+      }
+      let rows = "";
+      for(let i=0;i<perSystem.length;i++){
+        const s = perSystem[i];
+        const lo = mins[i];
+        const hi = maxs[i];
+        rows += `<tr>
+          <td class="system-name">${s.name}</td>
+          <td>${fmt(s.r)}</td>
+          <td>${fmt(s.band)}</td>
+          <td>${isFiniteNum(lo)?fmt(lo):"—"}</td>
+          <td>${isFiniteNum(hi)?fmt(hi):"—"}</td>
+        </tr>`;
+      }
+      tbody.innerHTML = rows;
+    }
+
+    // ===== Plotting =====
+    function niceLogBounds(vals){
+      let lo = Infinity, hi = -Infinity;
+      for(const v of vals){
+        if(isFiniteNum(v) && v>0){
+          const lv = Math.log10(v);
+          if(lv<lo) lo = lv;
+          if(lv>hi) hi = lv;
+        }
+      }
+      if(lo===Infinity){
+        lo = -6; hi = 1;
+      }
+      const span = hi - lo || 1;
+      const pad = 0.25 * span;
+      return {ymin:lo-pad, ymax:hi+pad};
+    }
+
+    function drawEnvelope(){
+      const cv = $("envCanvas");
+      if(!cv || !state.curves){ return; }
+
+      const dpr = window.devicePixelRatio || 1;
+      const cssW = cv.clientWidth || 900;
+      const cssH = cv.clientHeight || 520;
+      cv.width = Math.round(cssW * dpr);
+      cv.height = Math.round(cssH * dpr);
+
+      const g = cv.getContext("2d");
+      g.setTransform(dpr,0,0,dpr,0,0);
+
+      // background
+      g.clearRect(0,0,cssW,cssH);
+      g.fillStyle = "rgba(3,7,16,0.98)";
+      g.fillRect(0,0,cssW,cssH);
+
+      const xs = state.curves.envelope.xs;
+      const envY = state.curves.envelope.ys;
+
+      const allY = [];
+      for(const c of state.curves.perSystem){
+        for(const v of c.ys) allY.push(v);
+      }
+      for(const v of envY) allY.push(v);
+      const {ymin,ymax} = niceLogBounds(allY);
+
+      const xMin = Math.log10(xs[0]);
+      const xMax = Math.log10(xs[xs.length-1]);
+
+      const padL = 60, padR = 18, padT = 26, padB = 42;
+      const x0 = padL, y0 = padT, x1 = cssW - padR, y1 = cssH - padB;
+
+      g.strokeStyle = "rgba(255,255,255,0.12)";
+      g.lineWidth = 1;
+      g.strokeRect(x0,y0,x1-x0,y1-y0);
+
+      // grid
+      g.strokeStyle = "rgba(255,255,255,0.06)";
+      g.lineWidth = 1;
+      for(let i=0;i<=6;i++){
+        const t = i/6;
+        const x = x0 + (x1-x0)*t;
+        g.beginPath(); g.moveTo(x,y0); g.lineTo(x,y1); g.stroke();
+      }
+      for(let i=0;i<=6;i++){
+        const t = i/6;
+        const y = y0 + (y1-y0)*t;
+        g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
+      }
+
+      // axes labels
+      g.fillStyle = "rgba(228,236,255,0.96)";
+      g.font = "600 12px system-ui, -apple-system, sans-serif";
+      g.fillText("log₁₀ α_max(λ)", x0+4, y0-8);
+      g.fillText("λ (same units as r)", x0+4, cssH-10);
+
+      // mapping
+      const xToPx = (logL)=> x0 + ( (logL - xMin)/(xMax - xMin) )*(x1-x0);
+      const yToPx = (logA)=> y1 - ( (logA - ymin)/(ymax - ymin) )*(y1-y0);
+
+      function drawSeries(xs, ys, color, width){
+        g.beginPath();
+        let started = false;
+        for(let i=0;i<xs.length;i++){
+          const y = ys[i];
+          if(!isFiniteNum(y) || y<=0) continue;
+          const logL = Math.log10(xs[i]);
+          const logA = Math.log10(y);
+          const px = xToPx(logL);
+          const py = yToPx(logA);
+          if(!started){
+            g.moveTo(px,py);
+            started=true;
+          }else{
+            g.lineTo(px,py);
+          }
+        }
+        if(started){
+          g.strokeStyle = color;
+          g.lineWidth = width;
+          g.stroke();
+        }
+      }
+
+      // per-system curves
+      const palette = [ "#1ef59a", "#29c8ff", "#ffd642", "#ff9d1a", "#ff4b4b" ];
+      state.curves.perSystem.forEach((c,idx)=>{
+        drawSeries(xs, c.ys, palette[idx % palette.length], 1.4);
+      });
+
+      // envelope on top
+      drawSeries(xs, envY, "#1ef59a", 2.2);
+    }
+
+    // ===== Self-tests =====
+    function runSelfTests(){
+      $("runLog").textContent = "";
+      setStatus("neutral","Running self-tests…");
+
+      let pass = 0, fail = 0;
+
+      function check(label, fn){
+        try{
+          if(fn()){ pass++; logLine("✅ " + label); }
+          else{ fail++; logLine("❌ " + label); }
+        }catch(e){
+          fail++; logLine("❌ " + label + " — threw: " + e);
+        }
+      }
+
+      check("exp(-0.1) within sane range", ()=>{
+        const v = kernelFactor(0.1,1);
+        return Math.abs(v - Math.exp(-0.1)) < 1e-10;
+      });
+      check("negative r → NaN", ()=> Number.isNaN(kernelFactor(-1,1)));
+      check("negative λ → NaN", ()=> Number.isNaN(kernelFactor(1,-1)));
+      check("r=0 ⇒ f=1", ()=> Math.abs(kernelFactor(0,1) - 1) < 1e-12);
+      check("f decreases with r", ()=>{
+        const f1 = kernelFactor(0.5,1), f2 = kernelFactor(1.0,1);
+        return f1 > f2;
+      });
+      check("α_max shrinks as band shrinks", ()=>{
+        const f = kernelFactor(1,1);
+        return alphaMaxAllowed(0.001,f) < alphaMaxAllowed(0.01,f);
+      });
+
+      logLine("");
+      logLine(`Self-tests: ${pass} pass, ${fail} fail.`);
+
+      if(fail === 0){
+        setStatus("ok","Self-tests passed. Model wiring looks sane.");
+      }else{
+        setStatus("bad","Self-tests reported issues. See log.");
+      }
+    }
+
+    // ===== Wiring =====
+    window.addEventListener("DOMContentLoaded", ()=>{
+      loadDemo();
+      buildLamGrid();
+      $("chipSystems").textContent = "Systems: demo";
+
+      $("btnDemo").addEventListener("click", loadDemo);
+      $("btnRun").addEventListener("click", runSweep);
+      $("btnSelf").addEventListener("click", runSelfTests);
+
+      window.addEventListener("resize", ()=>{
+        if(state.curves) drawEnvelope();
+      }, {passive:true});
+    });
+  </script>
+</body>
+</html>

@@ -52,3 +52,16 @@ python -m http.server 8011
 
 This demo pack follows **QDS_LifeFirst_EthicalDirective_v1.1** — an immutable “do no harm, no dark patterns” charter for all QDS tools.  
 See **LIFEFIRST.md** in this repo for the full directive.
+
+---
+
+### 🌠 QDS · Pulsar One-Button NEON (Binary Pulsar Constraint Lab)
+
+- **What it does:**  
+  One-button QDS constraint sweep for binary pulsars — shows max allowed Yukawa α(λ) envelope vs per-system curves.
+
+- **Demo URL (GitHub Pages):**  
+  https://danfromdursley-spec.github.io/QDS-Physics-Labs-Demo/www/qds_pulsar_onebutton_neon.html  
+
+- **Status:**  
+  Offline, client-side only. Sanity-suite vibe — not a full timing-model fitter.
